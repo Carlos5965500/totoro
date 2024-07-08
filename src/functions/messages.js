@@ -68,20 +68,6 @@ async function sendSuccess(totoro, msg) {
   }
 }
 
-async function sendInfo(totoro, msg) {
-  const remoteJid = msg.messages[0].key.remoteJid;
-  const infoMessage = 
-  `╭─⬣「 *Información* 」⬣` +
-  `╰─ ≡◦ *🍭 Totoro tiene información para ti*\n`+
-  `> *Información*: ${infoMessage}`; 
-  try { 
-    await msg.react("ℹ️");
-    await totoro.sendMessage(remoteJid, { text: infoMessage });
-  } catch (error) {
-    console.error("Error enviando mensaje de información:", error);
-  }
-}
-
 async function noCommand(totoro, msg) {
   const remoteJid = msg.messages[0].key.remoteJid;
   const noCommandMessage = 
@@ -109,8 +95,7 @@ module.exports = {
   sendError,
   sendReminder,
   sendSuccess,
-  help,
-  sendInfo,
+  help, 
   noCommand,
   totoreact,
 };

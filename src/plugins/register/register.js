@@ -6,8 +6,8 @@ const urlRegex = /https?:\/\/[^\s]+/;
 const domainRegex = /[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+/;
 const numberRegex = /\d/;
 const invalidCharsRegex = /[^a-zA-Z0-9]/;
-const repeatedCharsRegex = /(.)\1{2,}/;
-const { parsePhoneNumberFromString } = require('libphonenumber-js');
+const repeatedCharsRegex = /(.)\1{2,}/; 
+const totoroLog = require("../../functions/totoroLog");
 
 module.exports = {
   name: "register",
@@ -63,9 +63,7 @@ module.exports = {
       // Generar un hash MD5 del nombre para el serialNumber
       const serialNumber = createHash("md5").update(nombre).digest("hex");
       const userCount = await countTotoUsers();
-      // Obtener el país del número de teléfono
       
-
       // Buscar el usuario
       let user = await totoUser.findOne({ where: { phone: phone } });
       if (user) {
@@ -74,12 +72,15 @@ module.exports = {
         return;
       }
 
-      // Enviar mensaje de registro exitoso
-      await registerNewUser(phone, nombre, edadInt, serialNumber, country)
+      // Registrar nuevo usuario
+      await registerNewUser(phone, nombre, edadInt, serialNumber, country);
       await sendRegistrationMessage(totoro, remoteJid, phone, nombre, edadInt, serialNumber, country, userCount + 1);
       await msg.react("🍭");
     } catch (error) {
-      console.error("Error al registrar usuario:", error);
+      totoroLog.error(
+        './logs/plugins/register/register.js',
+        `Error al registrar usuario: ${error}`
+      );
       await sendError(totoro, msg, "Error al registrar usuario.");
     }
   },
@@ -94,7 +95,10 @@ async function help(totoro, remoteJid) {
   try {
     await totoro.sendMessage(remoteJid, { text: helpMessage });
   } catch (error) {
-    console.error("Error enviando mensaje de ayuda:", error);
+    totoroLog.error(
+      './logs/plugins/register/register.js',
+      `Error enviando mensaje de ayuda: ${error}`
+    );
   }
 }
 
@@ -106,7 +110,10 @@ async function sendWarning(totoro, msg, warningMessage) {
       text: `╭─⬣「 *Aviso* 」⬣\n╰─ ≡◦ *🍭 Totoro te avisa lo siguiente:*\n> *Aviso*: ${warningMessage}`,
     });
   } catch (error) {
-    console.error("Error enviando mensaje de aviso:", error);
+    totoroLog.error(
+      './logs/plugins/register/register.js',
+      `Error enviando mensaje de aviso: ${error}`
+    );
   }
 }
 
@@ -118,7 +125,10 @@ async function sendError(totoro, msg, errorMessage) {
       text: `╭─⬣「 *Error* 」⬣\n╰─ ≡◦ *🍭 Totoro está experimentando un error*\n> *Error*: ${errorMessage}`,
     });
   } catch (error) {
-    console.error("Error enviando mensaje de error:", error);
+    totoroLog.error(
+      './logs/plugins/register/register.js',
+      `Error enviando mensaje de error: ${error}`
+    );
   }
 }
 
@@ -133,7 +143,10 @@ async function sendReminder(totoro, remoteJid, nombre, userCount) {
   try {
     await totoro.sendMessage(remoteJid, { text: reminderMessage });
   } catch (error) {
-    console.error("Error enviando mensaje de recordatorio:", error);
+    totoroLog.error(
+      './logs/plugins/register/register.js',
+      `Error enviando mensaje de recordatorio: ${error}`
+    );
   }
 }
 
@@ -149,8 +162,10 @@ async function registerNewUser(phone, nombre, edad, serialNumber, country) {
     await user.save();
     return user;
   } catch (error) {
-    console.error("Error al registrar nuevo usuario:", error);
-    throw error;
+    totoroLog.error(
+      './logs/plugins/register/register.js',
+      `Error al registrar usuario: ${error}`
+    );
   }
 }
 
@@ -169,15 +184,17 @@ async function sendRegistrationMessage(totoro, remoteJid, phone, nombre, edad, s
   try {
     await totoro.sendMessage(remoteJid, { text: registrationMessage });
   } catch (error) {
-    console.error("Error enviando mensaje de registro:", error);
-    throw error;
+    totoroLog.error(
+      './logs/plugins/register/register.js',
+      `Error enviando mensaje de registro: ${error}`
+    );
   }
 }
 
 function getCountryFromPhoneNumber(phoneNumber) {
   if (!phoneNumber) return "Desconocido";
   
-  const { parsePhoneNumberFromString } = require("libphonenumber-js")
+  const { parsePhoneNumberFromString } = require("libphonenumber-js");
   const paises = require("../../../paises.json");
   
   const extract = parsePhoneNumberFromString("+" + phoneNumber);

@@ -1,4 +1,5 @@
 const { getHistoryMsg } = require("@whiskeysockets/baileys");
+const totoroLog = require("../functions/totoroLog");
 
 module.exports = {
   name: "call",
@@ -18,6 +19,9 @@ module.exports = {
       });
     });
 
-    console.log(`- ${call[0].from} intentó llamarme.`);
+    totoroLog.info(
+      "./logs/handlers/call.log",
+      `[CALL] ${from} ha intentado llamarme.`
+    );
   },
 };

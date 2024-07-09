@@ -2,6 +2,7 @@ const {
     generateWAMessageFromContent,
     proto
 } = require("@whiskeysockets/baileys");
+const totoroLog = require("../../functions/totoroLog");
 
 module.exports = {
     name: "menu",
@@ -12,7 +13,7 @@ module.exports = {
     usage: "menu <comando>",
     cooldown: 5,
 
-    async execute(sock, msg, _) {
+    async execute(totoro, msg, _) {
         const from = msg.messages[0]?.key?.remoteJid;
 
         if (!from) {
@@ -20,7 +21,7 @@ module.exports = {
             return;
         }
 
-        const plugins = sock.plugins || [];
+        const plugins = totoro.plugins || [];
         //console.log("Comandos cargados:", plugins); // Mensaje de depuración
         const categories = {};
 
@@ -53,8 +54,7 @@ module.exports = {
         txt += `© ᴍᴀᴅᴇ ʙʏ @Nia 🦊\n`;
         txt += `Si necesitas más información sobre un comando, usa: -ayuda <nombre del comando>`;
 
-        //console.log("Texto del menú:", txt); // Mensaje de depuración
-
+        //totoroLog.debug("./logs/plugins/information/menu.log", `Texto del menú: ${txt}`);
         const messageContent = {
             extendedTextMessage: {
                 text: txt,
@@ -71,6 +71,6 @@ module.exports = {
             }
         );
 
-        await sock.relayMessage(from, message.message, { messageId: message.key.id });
+        await totoro.relayMessage(from, message.message, { messageId: message.key.id });
     },
 };

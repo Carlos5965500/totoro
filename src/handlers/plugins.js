@@ -1,6 +1,6 @@
 const { readdir } = require("fs/promises");
-
-module.exports = async (sock) => {
+const totoroLog = require("../functions/totoroLog");
+module.exports = async (totoro) => {
   const directory = await readdir("./src/plugins");
 
   for (const folder of directory) {
@@ -10,9 +10,11 @@ module.exports = async (sock) => {
       delete require.cache[require.resolve(`../plugins/${folder}/${file}`)];
 
       const plugin = require(`../plugins/${folder}/${file}`); 
-      sock.plugins.set(plugin.name, plugin);
+      totoro.plugins.set(plugin.name, plugin);
     }
   }
-
-  console.log(`- ${sock.plugins.size} [PLUGINS] cargados.`);
+  totoroLog.info(
+    "./logs/handlers/plugins.log",
+    `[PLUGINS] ${totoro.plugins.size} cargados.`
+  );
 };

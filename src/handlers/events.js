@@ -1,15 +1,19 @@
 const { readdir } = require("fs/promises");
+const totoroLog = require("../functions/totoroLog");
 
-module.exports = async (sock) => {
+module.exports = async (totoro) => {
   const folder = await readdir("./src/events");
 
   for (const file of folder) {
     const event = require(`../events/${file}`);
 
-    sock.ev.on(event.name, (...args) => {
-      event.load(...args, sock);
+    totoro.ev.on(event.name, (...args) => {
+      event.load(...args, totoro);
     });
   }
 
-  console.log(`- ${folder.length} [EVENTS] cargados.`);
+  totoroLog.info(
+    "./logs/handlers/events.log",
+    `[EVENTS] ${folder.length} cargados.`
+  );
 };

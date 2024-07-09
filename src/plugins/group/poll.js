@@ -1,4 +1,5 @@
 const { help, sendError } = require("../../functions/messages");
+const totoroLog = require("../../functions/totoroLog");
 
 module.exports = {
     name: "poll",
@@ -68,7 +69,7 @@ module.exports = {
             await msg.react("📊");
             await totoro.sendMessage(remoteJid, pollMessage);
         } catch (error) {
-            console.error("Error creando encuesta:", error);
+            totoroLog.error("./logs/plugins/group/poll.log", `Error en el comando 'poll': ${error.message}`);
             return sendError(totoro, msg, "Hubo un error al crear la encuesta. Inténtalo de nuevo.");
         }
     }

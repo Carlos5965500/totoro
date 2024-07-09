@@ -1,7 +1,8 @@
 const { DisconnectReason } = require("@whiskeysockets/baileys");
 const { connectToWA } = require("../index.js");
 const { Boom } = require("@hapi/boom");
-const { render } = require("cfonts");
+const totoroLog = require("../functions/totoroLog");
+
 
 module.exports = {
   name: "connection.update",
@@ -25,8 +26,11 @@ module.exports = {
         await connectToWA();
       }
     } else if (connection === "open") {
-
-      console.log("- [ MOMO ] Connected to WA");
+      
+      totoroLog.info(
+        "./logs/handlers/connection.log",
+        `[CONNECTION] ${connection}`
+      );
     }
   },
 };

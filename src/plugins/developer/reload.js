@@ -1,3 +1,4 @@
+const e = require("express");
 const loadplugins = require("../../handlers/plugins");
 
 module.exports = {
@@ -8,11 +9,18 @@ module.exports = {
   description: "Recarga los plugins",
   dev: true,
 
-  async execute(sock, msg, _) {
-    sock.plugins.clear();
+  async execute(totoro, msg, _) {
+    totoro.plugins.clear();
 
-    await loadplugins(sock);
+    await loadplugins(totoro);
 
-    msg.reply(`*plugins* recargados con éxito.`);
+    if (!totoro.plugins.size) {
+      return msg.reply(
+        `╭──⬣「 Error 」⬣\n│  ≡◦ No hay plugins para recargar.\n╰──⬣`
+      );
+    } 
+    msg.reply(
+      `╭──⬣「 Recargado de Plugins 」⬣\n│  ≡◦ ${totoro.plugins.size} plugins recargados.\n╰──⬣`
+    ); 
   },
 };

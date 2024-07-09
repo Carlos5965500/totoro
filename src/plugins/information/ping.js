@@ -15,7 +15,8 @@ module.exports = {
     });
 
     const end = Date.now();
-
-    msg.reply(`\`${end - start}ms\``);
+    const ping = end - start;
+    
+    msg.reply(`╭──⬣「 Pong! 」⬣\n│  ≡◦ ${ping}ms\n╰──⬣`);
   },
 };

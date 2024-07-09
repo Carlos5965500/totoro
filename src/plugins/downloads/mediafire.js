@@ -4,6 +4,9 @@ const { scrapeMediafire } = require('../../modules/scrapeMediaFire');
 const axios = require('axios');
 const path = require('path');
 const mime = require('mime-types');
+const totoroLog = require("../../functions/totoroLog");
+const sendError = require("../../functions/messages");
+
 
 module.exports = {
     name: "mediafire",
@@ -11,11 +14,11 @@ module.exports = {
     subcategory: "mediafire",
     usage: "mediafire <enlace>",
     description: "Descarga archivos de Mediafire",
-    async execute(sock, msg, args, text) {
+    async execute(totoro, msg, args, text) {
         if (!args[0]) {
             return msg.reply(
                 "🍭 Ingresa el enlace del archivo de Mediafire junto al comando.\n\n" +
-                `Ejemplo: ${sock.prefix}mediafire https://www.mediafire.com/file/433hbpsc95unywu/Oshi_no_Ko_01.mp4/file?dkey=jpivv6z5osa&r=1587`
+                `Ejemplo: ${totoro.prefix}mediafire https://www.mediafire.com/file/433hbpsc95unywu/Oshi_no_Ko_01.mp4/file?dkey=jpivv6z5osa&r=1587`
             );
         }
 
@@ -28,7 +31,7 @@ module.exports = {
             const url = args[0];
 
             // Enviar reacción de carga al iniciar la descarga
-            await sock.sendMessage(msg.messages[0].key.remoteJid, {
+            await totoro.sendMessage(msg.messages[0].key.remoteJid, {
                 react: {
                     text: '⏳', // Emoji de carga
                     key: msg.messages[0].key
@@ -39,7 +42,7 @@ module.exports = {
             const { title, size, uploadDate, dl_url, ext } = datos[1];
             if (datos[0]) {
                 // Enviar reacción de error con signo de interrogación y cruz
-                await sock.sendMessage(msg.messages[0].key.remoteJid, {
+                await totoro.sendMessage(msg.messages[0].key.remoteJid, {
                     react: {
                         text: '❓', // Emoji de interrogación y cruz
                         key: msg.messages[0].key
@@ -60,10 +63,10 @@ module.exports = {
                 caption: `╭─⬣「 *Mediafire Download* 」─⬣\n│ ≡◦ *🍭 fecha ∙* ${uploadDate}\n│ ≡◦ *🍭 Nombre ∙* ${title}\n│ ≡◦ *📚 Extensión ∙* ${ext}\n│ ≡◦ *⚖ Peso ∙* ${size}\n╰─⬣`
             };
 
-            await sock.sendMessage(msg.messages[0].key.remoteJid, messageOptions);
+            await totoro.sendMessage(msg.messages[0].key.remoteJid, messageOptions);
 
             // Enviar reacción de éxito al terminar la descarga
-            await sock.sendMessage(msg.messages[0].key.remoteJid, {
+            await totoro.sendMessage(msg.messages[0].key.remoteJid, {
                 react: {
                     text: '🍭', // Emoji de éxito
                     key: msg.messages[0].key
@@ -71,8 +74,11 @@ module.exports = {
             });
 
         } catch (error) {
-            console.error(error);
-            await sock.sendMessage(msg.messages[0].key.remoteJid, {
+            totoroLog.error(
+                './logs/plugins/downloads/mediafire.log',
+                `Error al descargar el archivo: ${error.message}`
+            );
+            await totoro.sendMessage(msg.messages[0].key.remoteJid, {
                 react: {
                     text: '❌', // Emoji de error
                     key: msg.messages[0].key
@@ -98,7 +104,10 @@ async function descargarArchivo(url) {
         // Devuelve el buffer de datos y el nombre del archivo
         return { data: respuesta.data, nombreArchivo };
     } catch (error) {
-        console.error('Error al descargar el archivo:', error);
-        throw error; // Lanzar el error para que sea capturado por el bloque catch en execute
+        totoroLog.error(
+            './logs/plugins/downloads/mediafire.log',
+            `Error al descargar el archivo: ${error.message}`
+        );
+        sendError(totoro, msg,  `Error al descargar el archivo: ${error.message}`);
     }
 }

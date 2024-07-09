@@ -1,4 +1,5 @@
 const axios = require('axios');
+const totoroLog = require("../functions/totoroLog");
 
 module.exports = {
     async scrapeMediafire(getUrl) {
@@ -18,7 +19,11 @@ module.exports = {
             }];
             
         } catch (e) {
-            return console.error(e);
+            totoroLog.error(
+                './logs/modules/scrapeMediaFire.log', 
+                `[MODULE - SCRAPE MEDIAFIRE] ${e.message} ${e.stack} ${e.response.data.error} ${e.response.data.message} ${e.response.data.stack} ${e.response.data}`
+            );
+            return [true, null];
         }
     }
 }

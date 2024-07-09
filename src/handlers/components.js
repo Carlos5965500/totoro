@@ -1,14 +1,17 @@
 const { readdir } = require("fs/promises");
-
-module.exports = async (sock) => {
+const totoroLog = require("../functions/totoroLog");
+module.exports = async (totoro) => {
   const directory = await readdir("./src/components");
 
   for (const file of directory) {
     const component = require(`../components/${file}`);
     if (!component) continue;
 
-    sock.components.set(component.id, component);
+    totoro.components.set(component.id, component);
   }
-
-  console.log( `- ${sock.components.size} [COMPONENTS] cargados.` );
+ 
+  totoroLog.info(
+    "./logs/handlers/components.log",
+    `[COMPONENTS] ${directory.length} cargados.`
+  );
 };

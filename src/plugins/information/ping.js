@@ -17,6 +17,6 @@ module.exports = {
     const end = Date.now();
     const ping = end - start;
     
-    msg.reply(`╭──⬣「 Pong! 」⬣\n│  ≡◦ ${ping}ms\n╰──⬣`);
+    msg.reply(`╭──⬣「 Pong! 」⬣\n│  ≡◦ 🍭 ${ping}ms\n╰──⬣`);
   },
 };

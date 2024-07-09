@@ -1,8 +1,8 @@
 const { DataTypes } = require("sequelize");
 const TotoDB = require("../libs/db/totoDB");
 const { parsePhoneNumberFromString } = require('libphonenumber-js');
-
 const phoneRegex = /^\+?\d{1,3}[-. ]?\(?\d{1,4}\)?[-. ]?\d{1,4}[-. ]?\d{1,4[-. ]?\d{1,4}$/;
+const totoroLog = require("../functions/totoroLog");
 
 const tDB = new TotoDB();
 
@@ -79,6 +79,10 @@ const totoUser = tDB.sequelize.define(
   }
 );
 
+totoroLog.info(
+  "./logs/models/totoUser.log",
+  `[MODELS] Modelo ${totoUser.name} creado.`
+);
 totoUser.getCountryFromPhone = function (phone) {
   const phoneNumber = parsePhoneNumberFromString(phone);
   return phoneNumber.country;

@@ -1,3 +1,5 @@
+const totoroLog = require("../functions/totoroLog");
+
 module.exports = {
   name: "messages.upsert",
 
@@ -73,10 +75,13 @@ module.exports = {
 
     command.execute(sock, msg, args)?.catch((error) => {
       msg.reply(sock.config.msg.error).then(() => {
-        msg.react();
+        msg.react("❌");
       });
 
-      console.error(error);
+      totoroLog.error(
+        "./logs/events/messages.upsert.log",
+        `[COMMAND ERROR] ${error.message} ${error.stack}`
+      );
     });
   },
 };

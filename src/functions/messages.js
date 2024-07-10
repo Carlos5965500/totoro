@@ -95,12 +95,35 @@ async function totoreact(msg, emoji) {
   }
 }
 
+async function sendReg(totoro, remoteJid, phone, nombre, edad, serialNumber, country, userCount) {
+  const registrationMessage =
+    `–  *R E G I S T R O  - T O T O  U S E R*   –\n` +
+    `┌  ✩  *Nombre* : ${nombre}\n` +
+    `│  ✩  *Edad* : ${edad}\n` +
+    `│  ✩  *Teléfono* : ${phone}\n` +
+    `│  ✩  *País* : ${country}\n` +
+    `│  ✩  *Número Serial* : ${serialNumber}\n` +
+    `│  ✩  *Fecha de Registro* : ${new Date().toLocaleString('es-ES', { timeZone: 'UTC', hour12: true })}\n` +
+    `└  ✩  *Registrado* : ✅\n` +
+    `> *¡Bienvenido a la comunidad de Totoro contigo ya ${userCount} totoUsers*!`;
+
+  try {
+    await totoro.sendMessage(remoteJid, { text: registrationMessage });
+  } catch (error) {
+    totoroLog.error(
+      './logs/plugins/register/register.js',
+      `Error enviando mensaje de registro: ${error}`
+    );
+  }
+}
+
 module.exports = {
   sendWarning,
   sendError,
   sendReminder,
   sendSuccess,
   help, 
+  sendReg,
   noCommand,
   totoreact,
 };

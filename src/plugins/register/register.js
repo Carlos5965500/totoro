@@ -8,6 +8,9 @@ const numberRegex = /\d/;
 const invalidCharsRegex = /[^a-zA-Z0-9]/;
 const repeatedCharsRegex = /(.)\1{2,}/; 
 const totoroLog = require("../../functions/totoroLog");
+const { sendWarning, sendError, sendReminder, help, sendReg } = require("../../functions/messages");
+const registerNewUser = require("../../functions/registerTotoUser");
+const getCountryFromPhoneNumber = require("../../functions/countryNumber");
 
 module.exports = {
   name: "register",
@@ -20,7 +23,7 @@ module.exports = {
       const remoteJid = msg.messages[0].key.remoteJid;
       const [nombre, edad] = args.join(" ").split(".");
       if (!nombre || !edad || isNaN(edad)) {
-        await help(totoro, remoteJid);
+        await help(totoro, msg, "Registro", "Ingresa tu nombre y edad", "+reg Nia.22");
         await msg.react("❓");
         return;
       }
@@ -67,14 +70,14 @@ module.exports = {
       // Buscar el usuario
       let user = await totoUser.findOne({ where: { phone: phone } });
       if (user) {
-        await sendReminder(totoro, remoteJid, nombre, userCount);
+        await sendReminder(totoro, msg, nombre, userCount);
         await msg.react("ℹ️");
         return;
       }
 
       // Registrar nuevo usuario
       await registerNewUser(phone, nombre, edadInt, serialNumber, country);
-      await sendRegistrationMessage(totoro, remoteJid, phone, nombre, edadInt, serialNumber, country, userCount + 1);
+      await sendReg(totoro, remoteJid, phone, nombre, edadInt, serialNumber, country, userCount + 1);
       await msg.react("🍭");
     } catch (error) {
       totoroLog.error(
@@ -85,119 +88,3 @@ module.exports = {
     }
   },
 };
-
-async function help(totoro, remoteJid) {
-  const helpMessage =
-    `╭─⬣「 *Ayuda de Registro* 」⬣\n` +
-    `│  ≡◦  *🍭 Ingresa tu nombre y edad*\n` +
-    `╰─⬣\n` +
-    `> *Ejemplo*: +reg Nia.22`;
-  try {
-    await totoro.sendMessage(remoteJid, { text: helpMessage });
-  } catch (error) {
-    totoroLog.error(
-      './logs/plugins/register/register.js',
-      `Error enviando mensaje de ayuda: ${error}`
-    );
-  }
-}
-
-async function sendWarning(totoro, msg, warningMessage) {
-  try {
-    const remoteJid = msg.messages[0].key.remoteJid;
-    await msg.react("⚠️");
-    await totoro.sendMessage(remoteJid, {
-      text: `╭─⬣「 *Aviso* 」⬣\n╰─ ≡◦ *🍭 Totoro te avisa lo siguiente:*\n> *Aviso*: ${warningMessage}`,
-    });
-  } catch (error) {
-    totoroLog.error(
-      './logs/plugins/register/register.js',
-      `Error enviando mensaje de aviso: ${error}`
-    );
-  }
-}
-
-async function sendError(totoro, msg, errorMessage) {
-  try {
-    const remoteJid = msg.messages[0].key.remoteJid;
-    await msg.react("❌");
-    await totoro.sendMessage(remoteJid, {
-      text: `╭─⬣「 *Error* 」⬣\n╰─ ≡◦ *🍭 Totoro está experimentando un error*\n> *Error*: ${errorMessage}`,
-    });
-  } catch (error) {
-    totoroLog.error(
-      './logs/plugins/register/register.js',
-      `Error enviando mensaje de error: ${error}`
-    );
-  }
-}
-
-async function sendReminder(totoro, remoteJid, nombre, userCount) {
-  const reminderMessage =
-    `╭─⬣「 *Recordatorio de Toto para ${nombre}* 」⬣\n` +
-    `│  ≡◦  *🍭 ¡${nombre} ya eres un totoUser!*\n` +
-    `│  ≡◦  *🍭 Usa +menu para ver mis comandos*\n` +
-    `╰─⬣\n\n` +
-    `> *Contigo somos ${userCount} totoUsers*`;
-
-  try {
-    await totoro.sendMessage(remoteJid, { text: reminderMessage });
-  } catch (error) {
-    totoroLog.error(
-      './logs/plugins/register/register.js',
-      `Error enviando mensaje de recordatorio: ${error}`
-    );
-  }
-}
-
-async function registerNewUser(phone, nombre, edad, serialNumber, country) {
-  try {
-    const user = new totoUser({
-      phone: phone,
-      name: nombre,
-      age: edad,
-      serialNumber: serialNumber,
-      country: country
-    });
-    await user.save();
-    return user;
-  } catch (error) {
-    totoroLog.error(
-      './logs/plugins/register/register.js',
-      `Error al registrar usuario: ${error}`
-    );
-  }
-}
-
-async function sendRegistrationMessage(totoro, remoteJid, phone, nombre, edad, serialNumber, country, userCount) {
-  const registrationMessage =
-    `–  *R E G I S T R O  - T O T O  U S E R*   –\n` +
-    `┌  ✩  *Nombre* : ${nombre}\n` +
-    `│  ✩  *Edad* : ${edad}\n` +
-    `│  ✩  *Teléfono* : ${phone}\n` +
-    `│  ✩  *País* : ${country}\n` +
-    `│  ✩  *Número Serial* : ${serialNumber}\n` +
-    `│  ✩  *Fecha de Registro* : ${new Date().toLocaleString('es-ES', { timeZone: 'UTC', hour12: true })}\n` +
-    `└  ✩  *Registrado* : ✅\n` +
-    `> *¡Bienvenido a la comunidad de Totoro contigo ya ${userCount} totoUsers*!`;
-
-  try {
-    await totoro.sendMessage(remoteJid, { text: registrationMessage });
-  } catch (error) {
-    totoroLog.error(
-      './logs/plugins/register/register.js',
-      `Error enviando mensaje de registro: ${error}`
-    );
-  }
-}
-
-function getCountryFromPhoneNumber(phoneNumber) {
-  if (!phoneNumber) return "Desconocido";
-  
-  const { parsePhoneNumberFromString } = require("libphonenumber-js");
-  const paises = require("../../../paises.json");
-  
-  const extract = parsePhoneNumberFromString("+" + phoneNumber);
-
-  return paises[extract?.countryCallingCode] || "Desconocido";
-}

@@ -1,19 +1,18 @@
 const { DataTypes } = require("sequelize");
 const TotoDB = require("../libs/db/totoDB");
 const { parsePhoneNumberFromString } = require('libphonenumber-js');
-const phoneRegex = /^\+?\d{1,3}[-. ]?\(?\d{1,4}\)?[-. ]?\d{1,4}[-. ]?\d{1,4[-. ]?\d{1,4}$/;
 const totoroLog = require("../functions/totoroLog");
 
 const tDB = new TotoDB();
 
 const totoUser = tDB.sequelize.define(
   "totoUser",
-  { 
+  {
     phone: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true, 
-    }, 
+      unique: true,
+    },
     name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -32,12 +31,12 @@ const totoUser = tDB.sequelize.define(
     },
     country: {
       type: DataTypes.STRING,
-      allowNull: false, 
+      allowNull: false,
     },
     regTime: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: DataTypes.NOW,
+      defaultValue: new Date(),
       validate: {
         isDate: true,
       },
@@ -51,31 +50,18 @@ const totoUser = tDB.sequelize.define(
       },
     },
     serialNumber: {
-      type: DataTypes.STRING,
+      type: DataTypes.UUID,
       allowNull: false,
       unique: true,
-      validate: {
-        len: [1, 100],
-        isAlphanumeric: true,
-        isLowercase: true,
-        notEmpty: true,
-        is: /^[a-f0-9]+$/i,
-        isHash: function (value) {
-          if (value.length !== 32) {
-            throw new Error(
-              `El serialNumber debe tener 32 caracteres, pero tiene ${value.length}`
-            );
-          }
-        },
-      },
-    } 
+      defaultValue: DataTypes.UUIDV4, 
+    },
   },
   {
     tableName: "totousers",
-    createdAt: "regTime", // Use regTime as createdAt
-    timestamps: true, // createdAt, updatedAt
-    updatedAt: true, // updatedAt
-    deletedAt: true, // deletedAt
+    createdAt: "regTime",
+    timestamps: true,
+    updatedAt: true,
+    deletedAt: true,
   }
 );
 
@@ -83,6 +69,7 @@ totoroLog.info(
   "./logs/models/totoUser.log",
   `[MODELS] Modelo ${totoUser.name} creado.`
 );
+
 totoUser.getCountryFromPhone = function (phone) {
   const phoneNumber = parsePhoneNumberFromString(phone);
   return phoneNumber.country;

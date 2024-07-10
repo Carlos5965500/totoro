@@ -2,7 +2,7 @@ const totoUser = require("../models/totoUser");
 const totoroLog = require("../functions/totoroLog");
 
 async function registerTotoUser(phone, nombre, edad, serialNumber, country) {
-  try {
+  try { 
     const user = new totoUser({
       phone: phone,
       name: nombre,

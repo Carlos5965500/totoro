@@ -19,9 +19,6 @@ module.exports = {
       });
     });
 
-    totoroLog.info(
-      "./logs/handlers/call.log",
-      `[CALL] ${from} ha intentado llamarme.`
-    );
+    
   },
 };

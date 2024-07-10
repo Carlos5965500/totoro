@@ -9,7 +9,7 @@ module.exports = async (totoro) => {
     for (const file of files) {
       delete require.cache[require.resolve(`../plugins/${folder}/${file}`)];
 
-      const plugin = require(`../plugins/${folder}/${file}`); 
+      const plugin = require(`../plugins/${folder}/${file}`);
       totoro.plugins.set(plugin.name, plugin);
     }
   }

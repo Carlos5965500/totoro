@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const TotoDB = require("../libs/db/totoDB");
-const { parsePhoneNumberFromString } = require('libphonenumber-js');
+const { parsePhoneNumberFromString } = require("libphonenumber-js");
 const totoroLog = require("../functions/totoroLog");
 
 const tDB = new TotoDB();
@@ -36,7 +36,6 @@ const totoUser = tDB.sequelize.define(
     regTime: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: new Date(),
       validate: {
         isDate: true,
       },
@@ -53,7 +52,7 @@ const totoUser = tDB.sequelize.define(
       type: DataTypes.UUID,
       allowNull: false,
       unique: true,
-      defaultValue: DataTypes.UUIDV4, 
+      defaultValue: DataTypes.UUIDV4,
     },
   },
   {
@@ -73,6 +72,6 @@ totoroLog.info(
 totoUser.getCountryFromPhone = function (phone) {
   const phoneNumber = parsePhoneNumberFromString(phone);
   return phoneNumber.country;
-}
+};
 
 module.exports = totoUser;

@@ -1,3 +1,4 @@
+const { sendSuccess } = require("../../functions/messages");
 module.exports = {
   name: "ping",
   description: "Muestra la latencia del bot.",
@@ -7,16 +8,20 @@ module.exports = {
   usage: "<ping>",
   cooldown: 5,
 
-  async execute(sock, msg, _) {
+  async execute(totoro, msg) {
     const start = Date.now();
-
-    await sock.sendMessage(msg.messages[0].key.remoteJid, {
-      text: "¡Pong!",
+    await totoro.sendMessage(msg.messages[0].key.remoteJid, {
+      text: ` 🍭  Totoro midiendo la latencia`
     });
-
     const end = Date.now();
     const ping = end - start;
-    
-    msg.reply(`╭──⬣「 Pong! 」⬣\n│  ≡◦ 🍭 ${ping}ms\n╰──⬣`);
-  },
+    sendSuccess(
+      totoro,  
+      msg.reply(
+        `╭──⬣「 Pong! 」⬣\n`+
+        `│  ≡◦  🍭  ${ping}ms\n`+
+        `╰──────────────`
+      )
+    ); 
+  }
 };

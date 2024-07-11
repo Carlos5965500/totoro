@@ -1,5 +1,6 @@
 const e = require("express");
 const loadplugins = require("../../handlers/plugins");
+const totoroLog = require("../../functions/totoroLog");
 
 module.exports = {
   name: "reload",
@@ -15,12 +16,24 @@ module.exports = {
     await loadplugins(totoro);
 
     if (!totoro.plugins.size) {
-      return msg.reply(
-        `╭──⬣「 Error 」⬣\n│  ≡◦ No hay plugins para recargar.\n╰──⬣`
+
+      totoroLog.error(
+        totoroLog.verbose,
+        "./logs/plugins/developer/reload.log",
+        "[PLUGINS] No se encontraron plugins."
+      )
+      msg.reply(
+        `╭──⬣「 Recargado 」⬣\n` +
+        `│  ≡◦ 🍭 Plugins\n` +
+        `╰──⬣` +
+        `> No se encontraron plugins.`
       );
-    } 
+    }
     msg.reply(
-      `╭──⬣「 Recargado de Plugins 」⬣\n│  ≡◦ ${totoro.plugins.size} plugins recargados.\n╰──⬣`
-    ); 
+      `╭──⬣「 Totoro recargando 」⬣\n` +
+      `│  ≡◦ 🍭  Plugins\n` +
+      `╰──⬣\n` +
+      `> ${totoro.plugins.size} plugins recargados.`
+    );
   },
 };

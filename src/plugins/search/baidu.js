@@ -8,7 +8,7 @@ module.exports = {
     usage: "baidu <consulta>",
     description: "Realiza una búsqueda en Baidu",
 
-    async execute(sock, msg, args, text) {
+    async execute(totoro, msg, args, text) {
         const consulta = args.join(' ');
         const message = msg.messages && msg.messages[0];
 
@@ -20,7 +20,7 @@ module.exports = {
 
         if (!consulta) {
             if (remoteJid) {
-                return sock.sendMessage(remoteJid, { text: '🍭 Ingresa lo que deseas buscar en Baidu.' });
+                return totoro.sendMessage(remoteJid, { text: '🍭 Ingresa lo que deseas buscar en Baidu.' });
             } else {
                 return;  // Termina si no se puede obtener remoteJid
             }
@@ -84,10 +84,10 @@ module.exports = {
                 teks += `╰─⬣\n\n`;
             });
 
-            sock.sendMessage(remoteJid, { text: teks.trim() });
+            totoro.sendMessage(remoteJid, { text: teks.trim() });
         } catch (error) {
             try {
-                sock.sendMessage(remoteJid, { 
+                totoro.sendMessage(remoteJid, { 
                     text: `╭─⬣「 *Baidu Search Error* 」⬣\n╰─ ≡◦ *🍭 Totoro está experimentando un error*\n> *Error*: ${error.message}`
                 });
             } catch (sendError) {

@@ -1,14 +1,20 @@
 const fs = require("fs");
 const path = require("path");
-const totoroLog = require("../../functions/totoroLog"); 
-const { sendError } = require("../../functions/messages");
+const totoroLog = require("../../functions/totoroLog");
+const {
+  sendError,
+  sendWarning,
+  sendSuccess,
+} = require("../../functions/messages");
 
 module.exports = {
   name: "logs",
   category: "developer",
   subcategory: "owner",
   usage: "<logs>",
-  description: "Muestra los archivos de logs generados en el bot y el total de archivos de logs en la carpeta logs",
+  description:
+    "Muestra los archivos de logs generados en el bot y el total de archivos de logs en la carpeta logs",
+  dev: true,
 
   async execute(totoro, msg, _) {
     try {
@@ -22,17 +28,20 @@ module.exports = {
         const files = await fs.promises.readdir(folderPath);
         totalFiles += files.length;
         filesList += `│  ≡◦ *🍭* ${folder}\n`;
-        filesList += files.map(file => `│  ≡◦ *🐥* ${file}.log`).join('\n') + '\n';
+        filesList +=
+          files.map((file) => `│  ≡◦ *🐥* ${file}`).join("\n") + "\n";
       }
       filesList += `╰──⬣\n> Total de archivos de logs: ${totalFiles}\n`;
 
+      if (totalFiles === 0) {
+        filesList =
+          `╭──⬣「 Archivos de logs generados 」⬣\n` +
+          `│  ≡◦ 🐥 No se han generado archivos de logs.\n` +
+          `╰──⬣\n> Total de archivos de logs: ${totalFiles}\n`;
+      }
       msg.reply(filesList);
     } catch (error) {
-      totoroLog.error(
-        "./logs/handlers/plugins.log",
-        `[PLUGINS] Error al leer los archivos de logs: ${error}`
-      );
-      sendError(totoro, msg, "Error al leer los archivos de logs")
+      sendSuccess(totoro, msg, "La carpeta de logs no existe o ya está vacía.");
     }
-  }
+  },
 };

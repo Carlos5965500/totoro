@@ -1,3 +1,5 @@
+const verifyUser = require("../../utils/verifyuser");
+
 module.exports = {
   name: "ping",
   description: "Muestra la latencia del bot.",
@@ -17,11 +19,9 @@ module.exports = {
     const end = Date.now();
 
     msg.reply(
-      `╭──⬣「 Pong! 」⬣\n`+
-      `│  ≡◦  🍭  \`${end - start}ms\`\n` +
-      `╰──⬣`
-    )
+      `╭──⬣「 Pong! 」⬣\n` + `│  ≡◦  🍭  \`${end - start}ms\`\n` + `╰──⬣`
+    );
 
-    await msg.react("🏓")
+    await msg.react("🏓");
   },
 };

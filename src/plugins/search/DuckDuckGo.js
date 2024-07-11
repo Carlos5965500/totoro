@@ -7,7 +7,7 @@ module.exports = {
     usage: "duckduckgo <consulta>",
     description: "Realiza una búsqueda en DuckDuckGo",
 
-    async execute(sock, msg, args, text) {
+    async execute(totoro, msg, args, text) {
         const consulta = args.join(' ');
         const message = msg.messages && msg.messages[0];
 
@@ -20,7 +20,7 @@ module.exports = {
 
         if (!consulta) {
             if (remoteJid) {
-                return sock.sendMessage(remoteJid, { text: '🍭 Ingresa lo que deseas buscar.' });
+                return totoro.sendMessage(remoteJid, { text: '🍭 Ingresa lo que deseas buscar.' });
             } else {
                 console.error('La estructura del mensaje no es correcta. No se puede obtener remoteJid.', msg);
                 return;
@@ -83,11 +83,11 @@ module.exports = {
                 }
             });
 
-            sock.sendMessage(remoteJid, { text: teks.trim() });
+            totoro.sendMessage(remoteJid, { text: teks.trim() });
         } catch (error) {
             console.error('Error al realizar la búsqueda en DuckDuckGo:', error);
             try {
-                sock.sendMessage(remoteJid, { 
+                totoro.sendMessage(remoteJid, { 
                     text: `╭─⬣「 *Search Error* 」⬣\n╰─ ≡◦ *🍭 Totoro está experimentando un error*\n> *Error*: ${error.message}`
                 });
             } catch (sendError) {

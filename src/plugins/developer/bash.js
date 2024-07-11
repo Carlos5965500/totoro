@@ -1,3 +1,4 @@
+const { sendMessage } = require("../../functions/messages");
 const totoroLog = require("../../functions/totoroLog");
 
 module.exports = {
@@ -36,9 +37,12 @@ module.exports = {
         await msg.reply(
           `╭──⬣「 Output 」⬣\n` + `│  ≡◦ ${stdout.trim()}\n` + `╰──⬣`
         );
-        return totoro.sendMessage(msg.messages[0].key.remoteJid, {
-          text: stdout,
-        });
+
+        await sendMessage(
+          totoro,
+          msg,
+          `╭──⬣「 Error 」⬣\n` + `│  ≡◦ ${stderr.trim()}\n` + `╰──⬣`
+        );
       }
 
       if (stderr.trim()) {

@@ -17,26 +17,41 @@ module.exports = {
 
     exec(plugins, async (error, stdout, stderr) => {
       if (error) {
-        msg.reply(`╭──⬣「 Error 」⬣\n│  ≡◦ ${error.message}\n╰──⬣`);
+        totoroLog.error(
+          totoroLog.verbose,
+          ".logs/plugins/developer/bash.log",
+          `[PLUGINS] Error al ejecutar el comando bash: ${error.message}`
+        );
+        msg.reply(`╭──⬣「 Error 」⬣\n` + `│  ≡◦ ${error.message}\n` + `╰──⬣`);
         return;
       }
 
       if (stdout.trim() && stderr.trim()) {
+        totoroLog.error(
+          totoroLog.verbose,
+          ".logs/plugins/developer/bash.log",
+          `[PLUGINS] Error al ejecutar el comando bash: ${error.message}`
+        );
+
         await msg.reply(
-          `╭──⬣「 Output 」⬣\n│  ≡◦ ${stderr}\n╰──⬣`)
+          `╭──⬣「 Output 」⬣\n` + `│  ≡◦ ${stdout.trim()}\n` + `╰──⬣`
+        );
         return totoro.sendMessage(msg.messages[0].key.remoteJid, {
           text: stdout,
         });
       }
 
       if (stderr.trim()) {
-        msg.reply( `╭──⬣「 Error 」⬣\n│  ≡◦ ${stderr.trim()}\n╰──⬣`);
+        totoroLog.error(
+          totoroLog.verbose,
+          ".logs/plugins/developer/bash.log",
+          `[PLUGINS] Error al ejecutar el comando bash: ${stderr}`
+        );
+        msg.reply(`╭──⬣「 Error 」⬣\n` + `│  ≡◦ ${stderr.trim()}\n` + `╰──⬣`);
         return;
       }
 
-      msg.reply(
-        `╭──⬣「 Output 」⬣\n│  ≡◦ ${stdout.trim()}\n╰──⬣`
-      );
+      msg.reply(`╭──⬣「 Output 」⬣\n` + `│  ≡◦ ${stdout.trim()}\n` + `╰──⬣`);
     });
   },
 };

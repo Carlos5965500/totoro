@@ -1,20 +1,22 @@
 const totoroLog = require("../functions/totoroLog");
-
+const { sendError } = require("../functions/messages");
 module.exports = {
   name: "messages.upsert",
 
-  async load(msg, sock) {
+  async load(msg, totoro) {
     if (!msg.messages[0]?.message) return;
 
     if (msg.type !== "notify") return;
 
     if (msg.messages[0].key?.fromMe) return;
 
-    if (msg.sender && msg.sender.is_bot) {  return; }
+    if (msg.sender && msg.sender.is_bot) {
+      return;
+    }
 
     const { message: ctx, key } = msg.messages[0];
 
-    require("../utils/messageUtils")(sock, msg);
+    require("../utils/messageUtils")(totoro, msg);
 
     const btn = ctx?.templateButtonReplyMessage || ctx?.buttonsResponseMessage;
 
@@ -22,10 +24,10 @@ module.exports = {
       const selected = btn?.selectedId || btn?.selectedButtonId;
       const [id, ...args] = selected.split("+");
 
-      const component = sock.components.get(id);
+      const component = totoro.components.get(id);
       if (!component) return;
 
-      return component.execute(sock, msg, args);
+      return component.execute(totoro, msg, args);
     }
 
     const body =
@@ -39,10 +41,10 @@ module.exports = {
 
     if (!body) return;
 
-    if (  
+    if (
       !body.startsWith("!") &&
       !body.startsWith("#") &&
-      !body.startsWith("$") && 
+      !body.startsWith("$") &&
       !body.startsWith("-") &&
       !body.startsWith("+")
     ) {
@@ -50,9 +52,9 @@ module.exports = {
 
       const { chatAI } = require("../utils/chatAI");
 
-      await sock.sendPresenceUpdate("composing", key.remoteJid);
+      await totoro.sendPresenceUpdate("composing", key.remoteJid);
 
-      const response = await chatAI(sock, body);
+      const response = await chatAI(totoro, body);
 
       return msg.reply(response);
     }
@@ -60,21 +62,21 @@ module.exports = {
     const args = body.slice(1).trim().split(/\s+/);
     const label = args.shift().toLowerCase();
 
-    const command = sock.plugins.get(label);
+    const command = totoro.plugins.get(label);
 
     if (!command) {
       const suggest = require("../utils/suggestCommand");
-      return msg.reply(suggest(sock, label));
+      return msg.reply(suggest(totoro, label));
     }
 
     let user = key.remoteJid;
 
     if (user.includes("@g.us")) user = key.participant;
 
-    if (command.dev && !sock.config.dev.includes(user)) return;
+    if (command.dev && !totoro.config.dev.includes(user)) return;
 
-    command.execute(sock, msg, args)?.catch((error) => {
-      msg.reply(sock.config.msg.error).then(() => {
+    command.execute(totoro, msg, args)?.catch((error) => {
+      msg.reply(totoro.config.msg.error).then(() => {
         msg.react("❌");
       });
 

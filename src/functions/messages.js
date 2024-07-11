@@ -1,4 +1,6 @@
 const totoroLog = require("./totoroLog");
+const path = require("path");
+
 
 async function sendMessage(totoro, msg, message) {
   const mensaje =
@@ -12,7 +14,7 @@ async function sendMessage(totoro, msg, message) {
     await totoro.sendMessage(remoteJid, { text: mensaje });
   } catch (error) {
     totoroLog.error(
-      "./logs/functions/messages.log",
+      path.join(__dirname, "./logs/functions/messages.log"),
       `Error enviando mensaje: ${error}`
     );
   }
@@ -23,7 +25,11 @@ async function sendWarning(totoro, msg, warningMessage) {
     const remoteJid = msg.messages[0].key.remoteJid;
     await msg.react("⚠️");
     await totoro.sendMessage(remoteJid, {
-      text: `╭─⬣「 *Aviso* 」⬣\n╰─ ≡◦ *🍭 Totoro te avisa lo siguiente:*\n> *Aviso*: ${warningMessage}`,
+      text:
+        `╭─⬣「 *Advertencia* 」⬣\n` +
+        `│  ≡◦ *⚠️ Totoro te advierte lo siguiente:*\n` +
+        `│  ≡◦ ${warningMessage}\n` +
+        `╰─⬣`,
     });
   } catch (error) {
     totoroLog.error(
@@ -46,7 +52,6 @@ async function sendError(totoro, msg, errorMessage) {
     await totoro.sendMessage(remoteJid, { text: mensaje });
   } catch (error) {
     totoroLog.error(
-      totoroLog.verbose,
       "./logs/functions/messages.log",
       `Error enviando mensaje de error: ${error}`
     );
@@ -193,7 +198,10 @@ async function sendMediaMessage(msg, mediaType, mediaContent) {
 
     await sendMessage(msg.key.remoteJid, waMessage.message);
   } catch (error) {
-    console.error("Error sending media message:", error);
+    totoroLog.error(
+      "./logs/functions/messages.log",
+      `Error enviando mensaje con media: ${error}`
+    );
   }
 }
 

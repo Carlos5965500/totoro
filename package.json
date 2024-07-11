@@ -38,6 +38,7 @@
     "google-play-scraper": "^9.1.1",
     "greetify": "latest",
     "hercai": "^12.2.0",
+    "hori-api": "^1.0.1",
     "kleur": "^4.1.5",
     "libphonenumber-js": "^1.10.57",
     "mime-types": "^2.1.35",

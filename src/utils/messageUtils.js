@@ -1,4 +1,4 @@
-module.exports = async (sock, msg) => {
+module.exports = async (totoro, msg) => {
   msg.reply = async (...args) => {
     let options = {};
 
@@ -10,13 +10,13 @@ module.exports = async (sock, msg) => {
       options = { ...args };
     }
 
-    return await sock.sendMessage(msg.messages[0].key.remoteJid, options, {
+    return await totoro.sendMessage(msg.messages[0].key.remoteJid, options, {
       quoted: msg.messages[0],
     });
   };
 
   msg.react = (reaction = "") => {
-    return sock.sendMessage(msg.messages[0].key.remoteJid, {
+    return totoro.sendMessage(msg.messages[0].key.remoteJid, {
       react: { text: reaction, key: msg.messages[0].key },
     });
   };

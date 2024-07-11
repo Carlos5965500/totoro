@@ -1,4 +1,4 @@
-const Scraper = require("@SumiFX/Scraper"); 
+const Scraper = require("@SumiFX/Scraper");
 
 module.exports = {
   name: "youtube",
@@ -11,7 +11,7 @@ module.exports = {
   userPermissions: [],
   cooldown: 10,
 
-  async execute(sock, msg, args) { 
+  async execute(totoro, msg, args) {
     const from = msg.messages[0]?.key?.remoteJid;
 
     if (!from) {
@@ -20,7 +20,7 @@ module.exports = {
     }
 
     if (!args.length) {
-      return sock.sendMessage(
+      return totoro.sendMessage(
         from,
         {
           text:
@@ -30,8 +30,6 @@ module.exports = {
         { quoted: msg.messages[0] }
       );
     }
- 
-    
 
     const text = args.join(" ");
     let results;
@@ -39,7 +37,7 @@ module.exports = {
       results = await Scraper.ytsearch(text);
     } catch (error) {
       console.error("Error buscando en YouTube:", error);
-      return sock.sendMessage(
+      return totoro.sendMessage(
         from,
         { text: "❌ Error al buscar en YouTube." },
         { quoted: msg.messages[0] }
@@ -47,7 +45,7 @@ module.exports = {
     }
 
     if (!results || results.length === 0) {
-      return sock.sendMessage(
+      return totoro.sendMessage(
         from,
         { text: "❌ No se encontraron resultados." },
         { quoted: msg.messages[0] }
@@ -66,7 +64,7 @@ module.exports = {
       txt += ` ╰──────────⬣\n\n`;
     });
 
-    await sock.sendMessage(
+    await totoro.sendMessage(
       from,
       { image: { url: img }, caption: txt },
       { quoted: msg.messages[0] }

@@ -1,8 +1,8 @@
-// Importación de módulos necesarios
-const axios = require("axios");
-const cheerio = require("cheerio");
+const { instaVideo } = require("hori-api");
 const { help, sendError, sendWarning } = require("../../functions/messages");
 const totoroLog = require("../../functions/totoroLog");
+const { verbose } = require("sqlite3");
+
 module.exports = {
   name: "igdl",
   description: "Descarga un video de Instagram.",
@@ -20,23 +20,22 @@ module.exports = {
       );
 
     try {
-      const response = await axios.get(url);
-      const $ = cheerio.load(response.data);
-      const video = $("meta[property='og:video']").attr("content");
-      if (!video)
-        return sendWarning(
-          totoro,
-          msg,
-          "No se encontró un video en el enlace proporcionado."
-        );
-      msg.reply({ url: video }, { quoted: msg });
+      const video = await instaVideo(url);
+      if (!video || !video.download)
+        return sendWarning(totoro, msg, "No se encontró el video.");
+      msg.reply(
+        {
+          url: video.download,
+        },
+        { quoted: msg }
+      );
     } catch (error) {
       totoroLog.error(
         totoroLog.verbose,
         "./logs/plugins/downloads/instagram.log",
-        `[PLUGINS] Error al descargar el video de Instagram: ${error}`
+        `Error al descargar el video de Instagram: ${error.message}`
       );
-      sendError(totoro, msg, "Error al descargar el video de Instagram");
+      sendError(totoro, msg, "No se pudo descargar el video.");
     }
   },
 };

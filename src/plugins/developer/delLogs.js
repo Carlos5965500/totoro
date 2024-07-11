@@ -1,5 +1,6 @@
 const { exec } = require("child_process");
 const path = require("path");
+const fs = require("fs");
 const totoroLog = require("../../functions/totoroLog");
 const { sendError } = require("../../functions/messages");
 
@@ -13,6 +14,16 @@ module.exports = {
   async execute(totoro, msg, _) {
     try {
       const logsPath = path.join(__dirname, "../../../logs");
+
+      // Verificar si la carpeta de logs existe
+      if (!fs.existsSync(logsPath)) {
+        msg.reply(
+          `╭──⬣「 Logs eliminados 」⬣\n` +
+          `│  ≡◦ 🐥 La carpeta de logs no existe o ya está vacía.\n` +
+          `╰──⬣`
+        );
+        return;
+      }
 
       // Detectar el sistema operativo y construir el comando adecuado
       let command;
@@ -47,14 +58,16 @@ module.exports = {
             "./logs/handlers/plugins.log",
             `[PLUGINS] ${stdout}`
           );
-        }
-
-        totoroLog.info(
-          "./logs/handlers/plugins.log",
-          `[PLUGINS] Todos los archivos y carpetas de logs eliminados.`
-        );
-        msg.reply(`Todos los archivos y carpetas de logs han sido eliminados.`);
+        } else { 
+          msg.reply( 
+            `╭──⬣「 Logs eliminados 」⬣\n` +
+            `│  ≡◦ 🐥 Todos los archivos y carpetas de logs eliminados.\n` +
+            `╰──⬣`
+          );
+        }  
       });
+       
+      await msg.react("🗑️");
     } catch (error) {
       totoroLog.error(
         "./logs/handlers/plugins.log",

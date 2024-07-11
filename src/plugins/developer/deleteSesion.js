@@ -21,11 +21,13 @@ module.exports = {
         { quoted: msg };
 
       totoroLog.info(
+        totoroLog.verbose,
         "./logs/plugins/developer/getSesion.log",
         "Sesión de WhatsApp obtenida con éxito"
       );
     } catch (error) {
       totoroLog.error(
+        totoroLog.verbose,
         "./logs/plugins/developer/getSesion.log",
         `Error al obtener la sesión de WhatsApp: ${error.message}`
       );

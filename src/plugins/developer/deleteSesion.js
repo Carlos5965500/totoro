@@ -3,7 +3,7 @@ const totoroLog = require("../../functions/totoroLog");
 
 module.exports = {
   name: "getSesion",
-  category: "Developer",
+  category: "developer",
   subcategory: "WhatsApp",
   description: "Obtener la sesión de WhatsApp",
   usage: "<getSesion>",

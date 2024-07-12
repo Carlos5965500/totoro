@@ -1,3 +1,5 @@
+const { sendMessage, sendError } = require("../../functions/messages");
+
 module.exports = {
   name: "leave",
   description: "Salir del grupo actual.",
@@ -13,35 +15,33 @@ module.exports = {
       const sender = msg.messages[0].key.participant;
 
       if (!msg.messages[0].key.remoteJid.endsWith("@g.us")) {
-        await totoro.sendMessage(msg.messages[0].key.remoteJid, {
-          text: "Totoro solo puede salir de un grupo.",
-        });
+        await sendMessage(totoro, msg, "Totoro solo puede salir de un grupo.");
         return;
       }
 
       const group = msg.messages[0].key.remoteJid;
-
       const groupInfo = await totoro.groupMetadata(group);
 
       // Validar si el usuario que ejecuta el comando es administrador
       const participant = groupInfo.participants.find((x) => x.id === sender);
       if (!participant || !participant.admin) {
-        await totoro.sendMessage(group, {
-          text: "Totoro no puede salir del grupo si no eres administrador.",
-        });
+        await sendMessage(
+          totoro,
+          msg,
+          "Totoro no puede salir del grupo si no eres administrador."
+        );
         return;
       }
 
-      await totoro.sendMessage(group, {
-        text: "Totoro está saliendo del grupo, ¡adiós!",
-      });
-
+      await sendMessage(totoro, msg, "Totoro está saliendo del grupo, ¡adiós!");
       await totoro.groupLeave(group);
     } catch (error) {
       console.error(error);
-      await totoro.sendMessage(msg.messages[0].key.remoteJid, {
-        text: `Totoro está cansado y no pudo salir del grupo. Error: ${error.message}`,
-      });
+      await sendError(
+        totoro,
+        msg,
+        `Totoro está cansado y no pudo salir del grupo. Error: ${error.message}`
+      );
     }
   },
 };

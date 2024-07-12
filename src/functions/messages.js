@@ -1,157 +1,63 @@
-const totoroLog = require("./totoroLog");
-const path = require("path");
+const totoroLog = require("./totoroLog"); 
+const { prepareWAMessageMedia, generateWAMessageContent, generateWAMessage, sendMessage: sendBaileysMessage } = require("@whiskeysockets/baileys");
 
+const logError = (filePath, error) => {
+  totoroLog.error(filePath, `Error enviando mensaje: ${error}`);
+};
 
-async function sendMessage(totoro, msg, message) {
-  const mensaje =
+const sendFormattedMessage = async (msg, message, emoji) => {
+  try {
+    await msg.react(emoji);
+    await msg.reply(message);
+  } catch (error) {
+    logError("./logs/functions/messages.log", error);
+  }
+};
+
+const templates = {
+  mensaje: (content) =>
     `╭─⬣「 *Mensaje de Totoro* 」⬣\n` +
     `│  ≡◦ *🍭 Totoro dice lo siguiente:*\n` +
-    `│  ≡◦ ${message}\n` +
-    `╰─⬣`;
-  try {
-    const remoteJid = msg.messages[0].key.remoteJid;
-    msg.react("🍭");
-    await totoro.sendMessage(remoteJid, { text: mensaje });
-  } catch (error) {
-    totoroLog.error(
-      path.join(__dirname, "./logs/functions/messages.log"),
-      `Error enviando mensaje: ${error}`
-    );
-  }
-}
+    `╰─⬣\n` +
+    `> *Mensaje*: ${content}`,
 
-async function sendWarning(totoro, msg, warningMessage) {
-  try {
-    const remoteJid = msg.messages[0].key.remoteJid;
-    await msg.react("⚠️");
-    await totoro.sendMessage(remoteJid, {
-      text:
-        `╭─⬣「 *Advertencia* 」⬣\n` +
-        `│  ≡◦ *⚠️ Totoro te advierte lo siguiente:*\n` +
-        `│  ≡◦ ${warningMessage}\n` +
-        `╰─⬣`,
-    });
-  } catch (error) {
-    totoroLog.error(
-      "./logs/functions/messages.log",
-      `Error enviando mensaje de aviso: ${error}`
-    );
-  }
-}
+  advertencia: (content) =>
+    `╭─⬣「 *Advertencia de Totoro* 」⬣\n` +
+    `│  ≡◦ *⚠️ Totoro te advierte lo siguiente:*\n` +
+    `╰─⬣\n` +
+    `> *Advertencia*: ${content}`,
 
-async function sendError(totoro, msg, errorMessage) {
-  const mensaje =
-    `╭─⬣「 *Error* 」⬣\n` +
-    `│  ≡◦ *❌ Totoro ha encontrado un error*\n` +
-    `│  ≡◦ ${errorMessage}\n` +
-    `╰─⬣`;
-  try {
-    const remoteJid = msg.messages[0].key.remoteJid;
-    console.log(remoteJid);
-    msg.react("❌");
-    await totoro.sendMessage(remoteJid, { text: mensaje });
-  } catch (error) {
-    totoroLog.error(
-      "./logs/functions/messages.log",
-      `Error enviando mensaje de error: ${error}`
-    );
-  }
-}
-async function sendReminder(totoro, msg, nombre, userCount) {
-  const remoteJid = msg.messages[0].key.remoteJid;
-  const reminderMessage =
-    `╭─⬣「 *Recordatorio de Toto para ${nombre}* 」⬣\n` +
-    `│  ≡◦  *🍭 ¡${nombre} ya eres un totoUser!*\n` +
-    `│  ≡◦  *🍭 Usa +menu para ver mis comandos*\n` +
+  error: (content) =>
+    `╭─⬣「 *Error de Totoro* 」⬣\n` +
+    `│  ≡◦ *❌ Totoro ha encontrado un error:*\n` +
+    `╰─⬣\n` +
+    `> *Error*: ${content}`,
+
+  recordatorio: (nombre, userCount) =>
+    `╭─⬣「 *Recordatorio de Totoro para ${nombre}* 」⬣\n` +
+    `│  ≡◦ *🍭 ¡${nombre} ya eres un totoUser!*\n` +
+    `│  ≡◦ *🍭 Usa +menu para ver mis comandos*\n` +
     `╰─⬣\n\n` +
-    `> *Contigo somos ${userCount} totoUsers*`;
+    `> *Contigo somos ${userCount} totoUsers*`,
 
-  try {
-    await msg.react("🐥");
-    await totoro.sendMessage(remoteJid, { text: reminderMessage });
-  } catch (error) {
-    totoroLog.error(
-      "./logs/functions/messages.log",
-      `Error enviando mensaje de recordatorio: ${error}`
-    );
-  }
-}
-
-async function help(totoro, msg, titulo, msgAyuda, ejemplo) {
-  const remoteJid = msg.messages[0].key.remoteJid;
-  const helpMessage =
+  ayuda: (titulo, msgAyuda, ejemplo) =>
     `╭─⬣「 *Ayuda de ${titulo}* 」⬣\n` +
     `│  ≡◦ ${msgAyuda}\n` +
     `╰─⬣\n` +
-    `> *Ejemplo*: ${ejemplo}`;
-  try {
-    await msg.react("ℹ️");
-    await totoro.sendMessage(remoteJid, { text: helpMessage });
-  } catch (error) {
-    totoroLog.error(
-      "./logs/functions/messages.log",
-      `Error enviando mensaje de ayuda: ${error}`
-    );
-  }
-}
+    `> *Ejemplo*: ${ejemplo}`,
 
-async function sendSuccess(totoro, msg, mensajeExito) {
-  const remoteJid = msg.messages[0].key.remoteJid;
-  const successMessage =
-    `╭─⬣「 *Éxito* 」⬣\n` +
-    `│  ≡◦ *🍭 Totoro ha completado la acción*\n` +
+  exito: (content) =>
+    `╭─⬣「 *Éxito de Totoro* 」⬣\n` +
+    `│  ≡◦ *🍭 Totoro ha completado la tarea con éxito:*\n` +
     `╰─⬣\n` +
-    `> *Éxito*: ${mensajeExito}`;
-  try {
-    await msg.react("🍭");
-    await totoro.sendMessage(remoteJid, { text: successMessage });
-  } catch (error) {
-    totoroLog.error(
-      "./logs/functions/messages.log",
-      `Error enviando mensaje de éxito: ${error}`
-    );
-  }
-}
+    `> *Éxito*: ${content}`,
 
-async function noCommand(totoro, msg) {
-  const remoteJid = msg.messages[0].key.remoteJid;
-  const noCommandMessage =
-    `╭─⬣「 *Comando no encontrado* 」⬣` +
+  noComando: () =>
+    `╭─⬣「 *Comando no encontrado* 」⬣\n` +
     `╰─ ≡◦ *🍭 Totoro no encontró el comando solicitado*\n` +
-    `> *Ayuda*: Usa +menu para ver mis comandos`;
-  try {
-    await msg.react("❌");
-    await totoro.sendMessage(remoteJid, { text: noCommandMessage });
-  } catch (error) {
-    totoroLog.error(
-      "./logs/functions/messages.log",
-      `Error enviando mensaje de comando no encontrado: ${error}`
-    );
-  }
-}
-
-async function totoreact(msg, emoji) {
-  try {
-    await msg.react(emoji);
-  } catch (error) {
-    totoroLog.error(
-      "./logs/functions/messages.log",
-      `[FUNCTION ERROR] ${error.message} ${error.stack}`
-    );
-  }
-}
-
-async function sendReg(
-  totoro,
-  remoteJid,
-  phone,
-  nombre,
-  edad,
-  serialNumber,
-  country,
-  userCount
-) {
-  const registrationMessage =
+    `> *Ayuda*: Usa +menu para ver mis comandos`,
+  
+  registro: (nombre, edad, phone, country, serialNumber, userCount) =>
     `–  *R E G I S T R O  - T O T O  U S E R*   –\n` +
     `┌  ✩  *Nombre* : ${nombre}\n` +
     `│  ✩  *Edad* : ${edad}\n` +
@@ -160,48 +66,83 @@ async function sendReg(
     `│  ✩  *Número Serial* : ${serialNumber}\n` +
     `│  ✩  *Fecha de Registro* : ${new Date().toLocaleString("es-ES", { timeZone: "UTC", hour12: true })}\n` +
     `└  ✩  *Registrado* : ✅\n` +
-    `> *¡Bienvenido a la comunidad de Totoro contigo ya ${userCount} totoUsers*!`;
+    `> *¡Bienvenido a la comunidad de Totoro contigo ya ${userCount} totoUsers*!`
+};
 
+const emojiMap = {
+  mensaje: "🍭",
+  advertencia: "⚠️",
+  error: "❌",
+  recordatorio: "🐥",
+  ayuda: "ℹ️",
+  exito: "🍭",
+  noComando: "❌",
+};
+
+async function sendMessage(totoro, msg, message) {
+  const mensaje = templates.mensaje(message);
+  await sendFormattedMessage(msg, mensaje, emojiMap.mensaje);
+}
+
+async function sendWarning(totoro, msg, warningMessage) {
+  const mensaje = templates.advertencia(warningMessage);
+  await sendFormattedMessage(msg, mensaje, emojiMap.advertencia);
+}
+
+async function sendError(totoro, msg, errorMessage) {
+  const mensaje = templates.error(errorMessage);
+  await sendFormattedMessage(msg, mensaje, emojiMap.error);
+}
+
+async function sendReminder(totoro, msg, nombre, userCount) {
+  const mensaje = templates.recordatorio(nombre, userCount);
+  await sendFormattedMessage(msg, mensaje, emojiMap.recordatorio);
+}
+
+async function help(totoro, msg, titulo, msgAyuda, ejemplo) {
+  const mensaje = templates.ayuda(titulo, msgAyuda, ejemplo);
+  await sendFormattedMessage(msg, mensaje, emojiMap.ayuda);
+}
+
+async function sendSuccess(totoro, msg, mensajeExito) {
+  const mensaje = templates.exito(mensajeExito);
+  await sendFormattedMessage(msg, mensaje, emojiMap.exito);
+}
+
+async function noCommand(totoro, msg) {
+  const mensaje = templates.noComando();
+  await sendFormattedMessage(msg, mensaje, emojiMap.noComando);
+}
+
+async function totoreact(msg, emoji) {
   try {
-    await totoro.sendMessage(remoteJid, { text: registrationMessage });
+    await msg.react(emoji);
   } catch (error) {
-    totoroLog.error(
-      "./logs/plugins/register/register.js",
-      `Error enviando mensaje de registro: ${error}`
-    );
+    logError("./logs/functions/messages.log", `[FUNCTION ERROR] ${error.message} ${error.stack}`);
   }
 }
 
-// Función para enviar un mensaje con media
-async function sendMediaMessage(msg, mediaType, mediaContent) {
-  const {
-    prepareWAMessageMedia,
-    generateWAMessageContent,
-    generateWAMessage,
-    sendMessage,
-  } = require("@whiskeysockets/baileys");
+async function sendReg(totoro, remoteJid, phone, nombre, edad, serialNumber, country, userCount) {
+  const mensaje = templates.registro(nombre, edad, phone, country, serialNumber, userCount);
   try {
-    // Verifica que el tipo de media sea válido
-    const validMediaTypes = ["image", "video", "audio", "document", "sticker"];
-    if (!validMediaTypes.includes(mediaType)) {
-      throw new Error("Invalid media type");
-    }
+    await totoro.sendMessage(remoteJid, { text: mensaje });
+  } catch (error) {
+    logError("./logs/plugins/register/register.js", error);
+  }
+}
 
-    const preparedMedia = await prepareWAMessageMedia(
-      { [mediaType]: mediaContent },
-      { upload: yourUploadFunction }
-    );
-    const messageContent = generateWAMessageContent(preparedMedia, {
-      quoted: msg,
-    });
+async function sendMediaMessage(msg, mediaType, mediaContent) {
+  try {
+    const validMediaTypes = ["image", "video", "audio", "document", "sticker"];
+    if (!validMediaTypes.includes(mediaType)) throw new Error("Invalid media type");
+
+    const preparedMedia = await prepareWAMessageMedia({ [mediaType]: mediaContent }, { upload: yourUploadFunction });
+    const messageContent = generateWAMessageContent(preparedMedia, { quoted: msg });
     const waMessage = generateWAMessage(msg.key.remoteJid, messageContent);
 
-    await sendMessage(msg.key.remoteJid, waMessage.message);
+    await sendBaileysMessage(msg.key.remoteJid, waMessage.message);
   } catch (error) {
-    totoroLog.error(
-      "./logs/functions/messages.log",
-      `Error enviando mensaje con media: ${error}`
-    );
+    logError("./logs/functions/messages.log", `Error enviando mensaje con media: ${error}`);
   }
 }
 

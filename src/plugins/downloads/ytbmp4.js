@@ -1,5 +1,7 @@
 const Scraper = require("@SumiFX/Scraper");
+const verifyUser = require("../../utils/verifyuser");
 const totoroLog = require("../../functions/totoroLog");
+const { sendWarning, sendError, help } = require("../../functions/messages");
 
 module.exports = {
   name: "ytmp4",
@@ -13,67 +15,84 @@ module.exports = {
   cooldown: 10,
 
   async execute(totoro, msg, args) {
-    const from = msg.messages[0]?.key?.remoteJid;
+    // Aseguramos que el objeto msg y sus propiedades están definidas
+    const participant = msg.messages?.[0]?.key?.participant;
+    const remoteJid = msg.messages?.[0]?.key?.remoteJid;
 
-    if (!from) {
-      console.error("msg.messages[0].key.remoteJid no está definido.");
-      return;
-    }
-
-    if (!args[0]) {
-      return totoro.sendMessage(
-        from,
-        {
-          text:
-            "🍭 Ingresa el enlace del vídeo de YouTube junto al comando.\n\n`Ejemplo:`\n" +
-            `> *${this.usage}* https://youtu.be/QSvaCSt8ixs`,
-        },
-        { quoted: msg.messages[0] }
+    // Verificamos la existencia de ambos participant y remoteJid
+    if (!participant && !remoteJid) {
+      return sendError(
+        totoro,
+        msg,
+        "No se pudo obtener el número del usuario o el chat."
       );
     }
 
-    if (!args[0].match(/youtu/gi)) {
-      return totoro.sendMessage(
-        from,
-        { text: "Verifica que el enlace sea de YouTube." },
-        { quoted: msg.messages[0] }
+    // Verificamos que se ha pasado una URL de YouTube
+    if (!args[0] || !args[0].match(/youtu/gi)) {
+      return help(
+        totoro,
+        msg,
+        "ytmp4",
+        "Descarga videos de YouTube.",
+        "ytmp4 <yt url>"
       );
     }
 
-    // Asegúrate de que global.db.data.users esté definido
-    if (!global.db || !global.db.data || !global.db.data.users) {
-      console.error("La base de datos de usuarios no está definida.");
-      return totoro.sendMessage(
-        from,
-        { text: "Hubo un error con la base de datos de usuarios." },
-        { quoted: msg.messages[0] }
-      );
-    }
-
-    let user = global.db.data.users[msg.messages[0].key.participant] || {};
+    let user;
     try {
-      let { title, size, quality, thumbnail, dl_url } = await Scraper.ytmp4(args[0]);
-      if (size.includes('GB') || size.replace(' MB', '') > 300) {
-        return await totoro.sendMessage(
-          from,
-          { text: "El archivo pesa mas de 300 MB, se canceló la Descarga." },
-          { quoted: msg.messages[0] }
+      user = await verifyUser(participant || remoteJid);
+    } catch (error) {
+      if (
+        error.message ===
+        "No estás registrado. Por favor, regístrate antes de usar este comando."
+      ) {
+        return sendWarning(totoro, msg, error.message);
+      } else {
+        return sendError(totoro, msg, error.message);
+      }
+    }
+
+    try {
+      let { title, size, quality, thumbnail, dl_url } = await Scraper.ytmp4(
+        args[0]
+      );
+      if (size.includes("GB") || parseFloat(size.replace(" MB", "")) > 300) {
+        return sendWarning(
+          totoro,
+          msg,
+          "El archivo pesa más de 300 MB, se canceló la descarga."
         );
       }
+
       let txt = `╭─⬣「 *YouTube Download* 」⬣\n`;
       txt += `│  ≡◦ *🍭 Titulo ∙* ${title}\n`;
       txt += `│  ≡◦ *🪴 Calidad ∙* ${quality}\n`;
       txt += `│  ≡◦ *⚖ Peso ∙* ${size}\n`;
       txt += `╰─⬣`;
-      await totoro.sendMessage(from, { image: { url: thumbnail }, caption: txt }, { quoted: msg.messages[0] });
-      await totoro.sendMessage(from, { document: { url: dl_url }, mimetype: 'video/mp4', fileName: `${title}.mp4` }, { quoted: msg.messages[0], asDocument: user.useDocument });
-    } catch (error) {
-      totoroLog.error("./logs/plugins/downloads/ytmp4.log", `Error al descargar video de YouTube: ${error}`);
+
       await totoro.sendMessage(
-        from,
-        { text: "Hubo un error al intentar descargar el video." },
-        { quoted: msg.messages[0] }
+        remoteJid || participant,
+        {
+          image: { url: thumbnail },
+          document: { url: dl_url },
+          mimetype: "video/mp4",
+          fileName: `${title}.mp4`,
+          caption: txt,
+        },
+        { quoted: msg.messages[0], asDocument: user.useDocument }
+      );
+      await msg.react("🍭");
+    } catch (error) {
+      totoroLog.error(
+        "./logs/ytmp4.log",
+        `Error al descargar video de YouTube: ${error}`
+      );
+      await sendError(
+        totoro,
+        msg,
+        "Hubo un error al intentar descargar el video."
       );
     }
-  }
+  },
 };

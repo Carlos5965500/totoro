@@ -80,10 +80,7 @@ module.exports = {
         msg.react("❌");
       });
 
-      totoroLog.error(
-        "./logs/events/messages.upsert.log",
-        `[COMMAND ERROR] ${error.message} ${error.stack}`
-      );
+      console.error(error);
     });
   },
 };

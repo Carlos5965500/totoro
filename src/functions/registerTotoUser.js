@@ -2,22 +2,32 @@ const totoUser = require("../models/totoUser");
 const totoroLog = require("../functions/totoroLog");
 
 async function registerTotoUser(phone, nombre, edad, serialNumber, country) {
-  try { 
-    const user = new totoUser({
+  try {
+    // Crear un nuevo usuario en la base de datos con los datos proporcionados
+    const user = await totoUser.create({
       phone: phone,
       name: nombre,
       age: edad,
       serialNumber: serialNumber,
       country: country,
-      regTime: new Date(),
     });
-    await user.save();
+
+    // Retornar el usuario creado
     return user;
   } catch (error) {
-    totoroLog.error(
-      './logs/plugins/register/register.js',
-      `Error al registrar usuario: ${error}`
-    );
+    if (error.name === "SequelizeUniqueConstraintError") {
+      // Registrar el error de restricción única
+      totoroLog.error(
+        totoroLog.verbose,
+        "./logs/plugins/register/register.log",
+        `Error de restricción única al registrar usuario: ${error}`
+      );
+      throw new Error("Este número de teléfono ya está registrado.");
+    } else {
+      // Registrar otros errores
+      console.error(error);
+      throw error;
+    }
   }
 }
 

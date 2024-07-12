@@ -1,0 +1,70 @@
+const { sendError, help } = require("../../functions/messages");
+
+module.exports = {
+  name: "delete",
+  description: "Eliminar un mensaje específico mediante respuesta (reply).",
+  category: "utility",
+  subcategory: "message",
+  usage: `delete`,
+  cooldown: 5,
+  dev: true,
+
+  execute: async (totoro, msg, args) => {
+    try {
+      const remoteJid = msg.messages[0].key.remoteJid;
+      const message = msg.messages[0].message;
+
+      // Verifica si el mensaje es una respuesta a otro mensaje
+      if (
+        !message ||
+        !message.extendedTextMessage ||
+        !message.extendedTextMessage.contextInfo
+      ) {
+        help(
+          totoro,
+          msg,
+          "Por favor, responde al mensaje que deseas eliminar."
+        );
+        return;
+      }
+
+      const replyMessageId = message.extendedTextMessage.contextInfo.stanzaId;
+      const fromMeReply =
+        message.extendedTextMessage.contextInfo.participant ===
+        msg.messages[0].key.participant;
+      const originalMessageId = msg.messages[0].key.id;
+      const fromMeOriginal = msg.messages[0].key.fromMe;
+
+      try {
+        await totoro.sendMessage(remoteJid, {
+          delete: {
+            remoteJid: remoteJid,
+            fromMe: fromMeReply,
+            id: replyMessageId,
+          },
+        });
+
+        // Elimina el mensaje original
+        await totoro.sendMessage(remoteJid, {
+          delete: {
+            remoteJid: remoteJid,
+            fromMe: fromMeOriginal,
+            id: originalMessageId,
+          },
+        });
+      } catch (error) {
+        sendError(
+          totoro,
+          remoteJid,
+          "No pude eliminar los mensajes. Asegúrate de que tengo los permisos necesarios."
+        );
+      }
+    } catch (error) {
+      sendError(
+        totoro,
+        remoteJid,
+        "Ocurrió un error al intentar eliminar el mensaje. Por favor, inténtalo de nuevo."
+      );
+    }
+  },
+};

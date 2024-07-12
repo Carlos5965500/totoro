@@ -33,13 +33,6 @@ const totoUser = tDB.sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    regTime: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      validate: {
-        isDate: true,
-      },
-    },
     registered: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
@@ -57,10 +50,6 @@ const totoUser = tDB.sequelize.define(
   },
   {
     tableName: "totousers",
-    createdAt: "regTime",
-    timestamps: true,
-    updatedAt: true,
-    deletedAt: true,
   }
 );
 

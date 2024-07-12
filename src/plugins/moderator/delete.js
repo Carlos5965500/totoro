@@ -20,10 +20,12 @@ module.exports = {
         !message.extendedTextMessage ||
         !message.extendedTextMessage.contextInfo
       ) {
-        help(
+        await help(
           totoro,
           msg,
-          "Por favor, responde al mensaje que deseas eliminar."
+          "Eliminar Mensaje",
+          "Para eliminar un mensaje, responde al mensaje que deseas eliminar y escribe.",
+          "delete"
         );
         return;
       }
@@ -53,16 +55,17 @@ module.exports = {
           },
         });
       } catch (error) {
-        sendError(
+        await sendError(
           totoro,
-          remoteJid,
+          msg,
           "No pude eliminar los mensajes. Asegúrate de que tengo los permisos necesarios."
         );
       }
     } catch (error) {
-      sendError(
+      console.error(error);
+      await sendError(
         totoro,
-        remoteJid,
+        msg,
         "Ocurrió un error al intentar eliminar el mensaje. Por favor, inténtalo de nuevo."
       );
     }

@@ -1,7 +1,9 @@
 const winston = require("winston");
-const path = require("path");
 
 const createLogger = (logFilePath) => {
+  if (typeof logFilePath !== "string") {
+    throw new TypeError("logFilePath must be a string");
+  }
   return winston.createLogger({
     format: winston.format.combine(
       winston.format.timestamp({ format: "DD-MM-YYYY HH:mm:ss" }),
@@ -18,6 +20,9 @@ const createLogger = (logFilePath) => {
 
 const createLogFunction = (logLevel) => {
   return (logFilePath, message) => {
+    if (typeof logFilePath !== "string") {
+      throw new TypeError("logFilePath must be a string");
+    }
     const logger = createLogger(logFilePath);
     logger.log(logLevel, message);
   };
@@ -25,19 +30,25 @@ const createLogFunction = (logLevel) => {
 
 const totoroLog = {
   error: createLogFunction("error"),
-  success: createLogFunction("info"), // El nivel 'success' no existe en winston, usaremos 'info'
+  success: createLogFunction("info"),
   warn: createLogFunction("warn"),
   info: createLogFunction("info"),
   http: createLogFunction("http"),
   verbose: createLogFunction("verbose"),
   debug: createLogFunction("debug"),
   silly: createLogFunction("silly"),
-  react: createLogFunction("info"), // El nivel 'react' no existe en winston, usaremos 'info'
+  react: createLogFunction("info"),
   rejectCallback: (logFilePath, error) => {
+    if (typeof logFilePath !== "string") {
+      throw new TypeError("logFilePath must be a string");
+    }
     const logger = createLogger(logFilePath);
     logger.error(`Error: ${error.message}\nStack: ${error.stack}`);
   },
   resolveCallback: (logFilePath, message) => {
+    if (typeof logFilePath !== "string") {
+      throw new TypeError("logFilePath must be a string");
+    }
     const logger = createLogger(logFilePath);
     logger.info(message);
   },

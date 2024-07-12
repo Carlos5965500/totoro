@@ -1,11 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const totoroLog = require("../../functions/totoroLog");
-const {
-  sendError,
-  sendWarning,
-  sendSuccess,
-} = require("../../functions/messages");
+const { sendSuccess } = require("../../functions/messages");
 
 module.exports = {
   name: "logs",

@@ -1,3 +1,5 @@
+const { sendWarning, help, sendError } = require("../../functions/messages");
+
 module.exports = {
   name: "promote",
   description: "Promueve a un usuario a administrador del grupo.",
@@ -18,9 +20,11 @@ module.exports = {
       // Validar si el usuario que ejecuta el comando es administrador
       const participant = groupInfo.participants.find((x) => x.id === sender);
       if (!participant || !participant.admin) {
-        await totoro.sendMessage(msg.messages[0].key.remoteJid, {
-          text: "Totoro no puede promover a alguien si no eres administrador.",
-        });
+        sendWarning(
+          totoro,
+          msg,
+          "No tienes permisos para ejecutar este comando. Solo los administradores pueden usar este comando."
+        );
         return;
       }
 
@@ -32,9 +36,7 @@ module.exports = {
           !msg.messages[0].message.extendedTextMessage.contextInfo ||
           !msg.messages[0].message.extendedTextMessage.contextInfo.mentionedJid
         ) {
-          await totoro.sendMessage(group, {
-            text: "Totoro necesita saber a quién promover.",
-          });
+          sendWarning(totoro, msg, "Totoro necesita saber a quién promover.");
           return;
         }
 
@@ -43,9 +45,7 @@ module.exports = {
             .mentionedJid[0];
 
         if (!mentioned) {
-          await totoro.sendMessage(group, {
-            text: "Totoro necesita saber a quién promover.",
-          });
+          sendWarning(totoro, msg, "Totoro necesita saber a quién promover.");
           return;
         }
 
@@ -58,15 +58,13 @@ module.exports = {
         );
 
         if (isUserAdmin) {
-          await totoro.sendMessage(group, {
-            text: "Totoro no puede promover a un usuario que ya es administrador.",
-          });
+          sendWarning(
+            totoro,
+            msg,
+            "No puedo promover a un administrador o creador del grupo."
+          );
         } else {
           await totoro.groupParticipantsUpdate(group, [mentioned], "promote");
-          /* await totoro.sendMessage(group, {
-              text: `@${mentioned.split('@')[0]} ha sido promovido a administrador correctamente.`,
-              mentions: [mentioned]
-            }); */
           await totoro.sendMessage(group, {
             video: {
               url: "https://media.tenor.com/wjmUY_58zAMAAAPo/akebi-chan-komichi.mp4",
@@ -76,15 +74,21 @@ module.exports = {
           });
         }
       } else {
-        await totoro.sendMessage(msg.messages[0].key.remoteJid, {
-          text: "Totoro solo puede promover a alguien en un grupo.",
-        });
+        sendWarning(
+          totoro,
+          msg,
+          "Este comando solo puede ser usado en grupos."
+        );
       }
+
+      msg.react("🎉");
     } catch (error) {
       console.error(error);
-      await totoro.sendMessage(msg.messages[0].key.remoteJid, {
-        text: `Totoro está cansado y no pudo promover a este usuario. Error: ${error.message}`,
-      });
+      await sendError(
+        totoro,
+        msg,
+        "Ocurrió un error al intentar promover al usuario. Por favor, inténtalo de nuevo más tarde."
+      );
     }
   },
 };

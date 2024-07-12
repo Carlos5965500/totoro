@@ -1,3 +1,5 @@
+const { sendError, help, sendWarning } = require("../../functions/messages");
+
 module.exports = {
   name: "demote",
   category: "moderator",
@@ -18,9 +20,11 @@ module.exports = {
       // Validar si el usuario que ejecuta el comando es administrador
       const participant = groupInfo.participants.find((x) => x.id === sender);
       if (!participant || !participant.admin) {
-        await totoro.sendMessage(msg.messages[0].key.remoteJid, {
-          text: "No tienes permisos para ejecutar este comando. Solo los administradores pueden usar este comando.",
-        });
+        sendWarning(
+          totoro,
+          msg,
+          "No tienes permisos para ejecutar este comando. Solo los administradores pueden usar este comando."
+        );
         return;
       }
 
@@ -32,9 +36,13 @@ module.exports = {
           !msg.messages[0].message.extendedTextMessage.contextInfo ||
           !msg.messages[0].message.extendedTextMessage.contextInfo.mentionedJid
         ) {
-          await totoro.sendMessage(group, {
-            text: "Totoro necesita saber a quién degradar",
-          });
+          await help(
+            totoro,
+            msg,
+            `promote`,
+            `Totoro necesita saber a quién degradar.`,
+            `demote <@usuario>`
+          );
           return;
         }
 
@@ -43,9 +51,13 @@ module.exports = {
             .mentionedJid[0];
 
         if (!mentioned) {
-          await totoro.sendMessage(group, {
-            text: "Totoro necesita saber a quién degradar.",
-          });
+          await help(
+            totoro,
+            msg,
+            `promote`,
+            `Totoro necesita saber a quién degradar.`,
+            `demote <@usuario>`
+          );
           return;
         }
 
@@ -58,37 +70,46 @@ module.exports = {
         );
 
         if (!isUserAdmin) {
-          await totoro.sendMessage(group, {
-            text: "Totoro no puede degradar a un usuario que no es administrador.",
-          });
+          sendWarning(
+            totoro,
+            msg,
+            "El usuario mencionado no es un administrador."
+          );
         } else {
           try {
             await totoro.groupParticipantsUpdate(group, [mentioned], "demote");
-            
+
             await totoro.sendMessage(group, {
               video: {
                 url: "https://media.tenor.com/H4oO6lqStHYAAAPo/mushoku-tensei-anime.mp4",
               },
-              caption: `@${mentioned.split("@")[0]}  Has sido degradado.`,
+              caption: `@${mentioned.split("@")[0]} ha sido degradado.`,
               mentions: [mentioned],
             });
           } catch (updateError) {
             if (updateError.data === 403) {
-              await totoro.sendMessage(group, {
-                text: "Totoro no tiene permisos para degradar a este usuario.",
-              });
+              await sendError(
+                totoro,
+                msg,
+                "No tengo permisos para degradar a este usuario."
+              );
             } else {
-              await totoro.sendMessage(group, {
-                text: `Totoro no pudo degradar a este usuario. Error: ${updateError.message}`,
-              });
+              await sendError(
+                totoro,
+                msg,
+                `No pude degradar a este usuario. Error: ${updateError.message}`
+              );
             }
           }
         }
       } else {
-        await totoro.sendMessage(msg.messages[0].key.remoteJid, {
-          text: "Totoro solo puede degradar a un usuario en un grupo.",
-        });
+        sendError(
+          totoro,
+          msg,
+          "Este comando solo puede ser ejecutado en grupos."
+        );
       }
+      msg.react("😕");
     } catch (error) {
       console.error(error);
       await totoro.sendMessage(msg.messages[0].key.remoteJid, {

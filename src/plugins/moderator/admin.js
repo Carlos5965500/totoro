@@ -1,3 +1,5 @@
+const { sendMessage, sendError, help } = require("../../functions/messages");
+
 module.exports = {
   name: "admins",
   description: "Lista a todos los administradores del grupo.",
@@ -11,9 +13,7 @@ module.exports = {
   async execute(totoro, msg, args) {
     try {
       if (!msg.messages[0].key.remoteJid.endsWith("@g.us")) {
-        await totoro.sendMessage(msg.messages[0].key.remoteJid, {
-          text: "✨ Momo  solo puede listar administradores en grupos.",
-        });
+        await help(totoro, msg, "Lista de Administradores");
         return;
       }
 
@@ -26,9 +26,7 @@ module.exports = {
       );
 
       if (admins.length === 0) {
-        await totoro.sendMessage(msg.messages[0].key.remoteJid, {
-          text: "🚫 Momo está cans no pudo encontrar a ningún administrador en este grupo.",
-        });
+        await sendMessage(totoro, msg, `No hay administradores en este grupo.`);
         return;
       }
 
@@ -41,17 +39,16 @@ module.exports = {
       });
       adminList += `╰─⬣`;
 
-      await totoro.sendMessage(msg.messages[0].key.remoteJid, {
-        text: adminList,
-        mentions: mentions,
-      });
+      await sendMessage(totoro, msg, adminList, mentions);
 
       msg.react("👑");
     } catch (error) {
       console.error(error);
-      await totoro.sendMessage(msg.messages[0].key.remoteJid, {
-        text: `Momo está cansado y no pudo obtener la lista de administradores. Error: ${error.message}`,
-      });
+      await sendError(
+        totoro,
+        msg,
+        `Totoro está cansado y no pudo obtener la lista de administradores. Error: ${error.message}`
+      );
     }
   },
 };

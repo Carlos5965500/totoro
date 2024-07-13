@@ -1,4 +1,9 @@
-const { sendMessage, sendError, help } = require("../../functions/messages");
+const {
+  sendMessage,
+  sendError,
+  help,
+  sendWarning,
+} = require("../../functions/messages");
 
 module.exports = {
   name: "admins",
@@ -10,10 +15,10 @@ module.exports = {
   botPermissions: ["SEND_MESSAGES", "MENTION_EVERYONE"],
   userPermissions: [],
 
-  async execute(totoro, msg, args) {
+  execute: async (totoro, msg, args) => {
     try {
       if (!msg.messages[0].key.remoteJid.endsWith("@g.us")) {
-        await help(totoro, msg, "Lista de Administradores");
+        sendWarning(totoro, msg, "✨ Este comando solo funciona en grupos. ✨");
         return;
       }
 
@@ -26,29 +31,32 @@ module.exports = {
       );
 
       if (admins.length === 0) {
-        await sendMessage(totoro, msg, `No hay administradores en este grupo.`);
+        sendError(
+          totoro,
+          msg,
+          "Totoro no pudo encontrar a ningún administrador en este grupo."
+        );
         return;
       }
 
-      let adminList = `╭─⬣「 Administradores 」⬣\n`;
+      let adminList = `╭─⬣「 Administradores del Grupo (${admins.length}) 」⬣\n`;
       const mentions = [];
       admins.forEach((admin, index) => {
-        const prefix = index === admins.length - 1 ? "│  ≡◦  🍭" : "│  ≡◦  🍭";
+        const prefix = index === admin.length - 1 ? "│  ≡◦  🍭" : "│  ≡◦  🍭";
         adminList += `${prefix} @${admin.id.split("@")[0]}\n`;
         mentions.push(admin.id);
       });
-      adminList += `╰─⬣`;
+      adminList += "╰─⬣";
 
-      await sendMessage(totoro, msg, adminList, mentions);
-
-      msg.react("👑");
+      await totoro.sendMessage(msg.messages[0].key.remoteJid, {
+        text: adminList,
+        mentions: mentions,
+      });
     } catch (error) {
       console.error(error);
-      await sendError(
-        totoro,
-        msg,
-        `Totoro está cansado y no pudo obtener la lista de administradores. Error: ${error.message}`
-      );
+      await totoro.sendMessage(msg.messages[0].key.remoteJid, {
+        text: `Momo está cansado y no pudo obtener la lista de administradores. Error: ${error.message}`,
+      });
     }
   },
 };

@@ -33,6 +33,14 @@ const totoUser = tDB.sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    premium: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      validate: {
+        isBoolean: true,
+      },
+    },
     registered: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
@@ -50,6 +58,7 @@ const totoUser = tDB.sequelize.define(
   },
   {
     tableName: "totousers",
+    timestamps: false,
   }
 );
 

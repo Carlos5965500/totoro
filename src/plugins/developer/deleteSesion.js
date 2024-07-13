@@ -1,37 +1,57 @@
-const { fs } = require("fs/promises");
+const { promises: fs } = require("fs");
 const totoroLog = require("../../functions/totoroLog");
 
 module.exports = {
-  name: "getSesion",
+  name: "dsesion",
   category: "developer",
   subcategory: "WhatsApp",
-  description: "Obtener la sesión de WhatsApp",
-  usage: "<getSesion>",
+  description: "Eliminar la sesión de WhatsApp",
+  usage: "<deleteSesion>",
   dev: true,
 
   async execute(totoro, msg, args) {
+    // Borrar todo el contenido de la carpeta de sesiones de WhatsApp menos el archivo creds.json
     try {
-      const session = await fs.readFile("auth/momo-auth/creds.json", "utf-8");
-      msg.chat,
-        {
-          document: Buffer.from(auth),
-          mimetype: "application/json",
-          filename: "creds.json",
-        },
-        { quoted: msg };
+      // Leer el contenido del directorio de autenticación
+      const auth = await fs.readdir("auth/momo-auth");
+      for (const file of auth) {
+        // Comprobar si el archivo no es creds.json
+        if (file !== "creds.json") {
+          // Eliminar el archivo
+          await fs.unlink(`auth/momo-auth/${file}`);
+        }
+      }
 
+      // Registrar la acción en el log
       totoroLog.info(
-        totoroLog.verbose,
-        "./logs/plugins/developer/getSesion.log",
-        "Sesión de WhatsApp obtenida con éxito"
+        "./logs/plugins/developer/deleteSesion.log",
+        "Sesión de WhatsApp eliminada con éxito"
       );
+
+      // Informar al usuario del éxito
+      msg.reply(
+        "╭──⬣「 Sesión eliminada 」⬣\n" +
+        "│  ≡◦ 🐥 ¿Me ves?\n" +
+        "╰──⬣\n" +
+        `> *Total: ${auth.length} sesión(es) de WhatsApp*`
+      );
+
+      // Reaccionar al mensaje
+      await msg.react("🗑️");
     } catch (error) {
+      console.error(error);
+
+      // Informar al usuario del error
       totoroLog.error(
-        totoroLog.verbose,
-        "./logs/plugins/developer/getSesion.log",
-        `Error al obtener la sesión de WhatsApp: ${error.message}`
+        "./logs/plugins/developer/deleteSesion.log",
+        `Error al eliminar la sesión de WhatsApp: ${error.message}`
       );
-      msg.reply("No se pudo obtener la sesión de WhatsApp");
+
+      msg.reply(
+        "╭──⬣「 Sesión no eliminada 」⬣\n" +
+        "│  ≡◦ 🐥 No se pudo eliminar la sesión de WhatsApp.\n" +
+        "╰──⬣"
+      )
     }
   },
 };

@@ -3,13 +3,16 @@ const path = require("path");
 const fs = require("fs");
 const totoroLog = require("../../functions/totoroLog");
 const { sendError } = require("../../functions/messages");
+const { dev } = require("./bash");
 
 module.exports = {
   name: "deletelogs",
   category: "developer",
   subcategory: "owner",
   usage: "<deletelogs>",
-  description: "Elimina todos los archivos de logs generados en la carpeta logs",
+  description:
+    "Elimina todos los archivos de logs generados en la carpeta logs",
+  dev: dev,
 
   async execute(totoro, msg, _) {
     try {
@@ -40,40 +43,49 @@ module.exports = {
             "./logs/handlers/plugins.log",
             `[PLUGINS] Error al eliminar los archivos y carpetas de logs: ${error.message}`
           );
-          sendError(totoro, msg, `Error al eliminar los archivos y carpetas de logs: ${error.message}`);
+          sendError(
+            totoro,
+            msg,
+            `Error al eliminar los archivos y carpetas de logs: ${error.message}`
+          );
           return;
         }
-        
+
         if (stderr) {
           totoroLog.error(
             "./logs/handlers/plugins.log",
             `[PLUGINS] Error al eliminar los archivos y carpetas de logs: ${stderr}`
           );
-          sendError(totoro, msg, `Error al eliminar los archivos y carpetas de logs: ${stderr}`);
+          sendError(
+            totoro,
+            msg,
+            `Error al eliminar los archivos y carpetas de logs: ${stderr}`
+          );
           return;
         }
 
         if (stdout) {
-          totoroLog.info(
-            "./logs/handlers/plugins.log",
-            `[PLUGINS] ${stdout}`
-          );
-        } else { 
-          msg.reply( 
+          totoroLog.info("./logs/handlers/plugins.log", `[PLUGINS] ${stdout}`);
+        } else {
+          msg.reply(
             `╭──⬣「 Logs eliminados 」⬣\n` +
-            `│  ≡◦ 🐥 Todos los archivos y carpetas de logs eliminados.\n` +
-            `╰──⬣`
+              `│  ≡◦ 🐥 Todos los archivos y carpetas de logs eliminados.\n` +
+              `╰──⬣`
           );
-        }  
+        }
       });
-       
+
       await msg.react("🗑️");
     } catch (error) {
       totoroLog.error(
         "./logs/handlers/plugins.log",
         `[PLUGINS] Error al eliminar los archivos y carpetas de logs: ${error.message}`
       );
-      sendError(totoro, msg, `Error al eliminar los archivos y carpetas de logs: ${error.message}`);
+      sendError(
+        totoro,
+        msg,
+        `Error al eliminar los archivos y carpetas de logs: ${error.message}`
+      );
     }
-  }
+  },
 };

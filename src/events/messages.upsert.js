@@ -1,5 +1,5 @@
 const totoroLog = require("../functions/totoroLog");
-const { sendError } = require("../functions/messages");
+const { sendError, sendWarning } = require("../functions/messages");
 module.exports = {
   name: "messages.upsert",
 
@@ -72,6 +72,15 @@ module.exports = {
     let user = key.remoteJid;
 
     if (user.includes("@g.us")) user = key.participant;
+
+    // Verificación del propietario
+    if (command.dev && !totoro.config.dev.includes(user)) {
+      return sendWarning(
+        totoro,
+        msg,
+        "Este comando es solo para el propietario del bot."
+      );
+    }
 
     if (command.dev && !totoro.config.dev.includes(user)) return;
 

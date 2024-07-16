@@ -7,6 +7,7 @@ module.exports = {
   category: "developer",
   subcategory: "owner",
   usage: "<reload>",
+  aliases: ["recargar", "recarga", "rl", "r"],
   description: "Recarga los plugins",
   dev: true,
 
@@ -16,24 +17,23 @@ module.exports = {
     await loadplugins(totoro);
 
     if (!totoro.plugins.size) {
-
       totoroLog.error(
         totoroLog.verbose,
         "./logs/plugins/developer/reload.log",
         "[PLUGINS] No se encontraron plugins."
-      )
+      );
       msg.reply(
         `╭──⬣「 Recargado 」⬣\n` +
-        `│  ≡◦ 🍭 Plugins\n` +
-        `╰──⬣` +
-        `> No se encontraron plugins.`
+          `│  ≡◦ 🍭 Plugins\n` +
+          `╰──⬣` +
+          `> No se encontraron plugins.`
       );
     }
     msg.reply(
       `╭──⬣「 Totoro recargando 」⬣\n` +
-      `│  ≡◦ 🍭  Plugins\n` +
-      `╰──⬣\n` +
-      `> ${totoro.plugins.size} plugins recargados.`
+        `│  ≡◦ 🍭  Plugins\n` +
+        `╰──⬣\n` +
+        `> ${totoro.plugins.size} plugins recargados.`
     );
   },
 };

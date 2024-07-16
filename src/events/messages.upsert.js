@@ -125,6 +125,7 @@ module.exports = {
     if (
       !isVerified &&
       plugin.name !== "register" &&
+      plugin.name !== "reg" &&
       !totoro.config.dev.includes(user)
     ) {
       return infoRegister(

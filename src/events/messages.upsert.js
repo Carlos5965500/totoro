@@ -2,6 +2,7 @@ const {
   sendWarning,
   noCommand,
   infoRegister,
+  infoPremium,
 } = require("../functions/messages");
 const { matcher } = require("../functions/matcher");
 module.exports = {
@@ -55,9 +56,16 @@ module.exports = {
     ) {
       if (key.remoteJid.endsWith("@g.us")) return;
 
-      const verifyPremium = require("../utils/verifypremium");
-      const premium = await verifyPremium(key.remoteJid, totoro, msg);
-      if (!premium) return;
+      let user = key.remoteJid;
+      const Tprefix = totoro.config.prefix;
+      const verifypremium = require("../utils/verifypremium");
+      const ispremium = await verifypremium(user, totoro, msg);
+      if (!ispremium && !totoro.config.dev.includes(user)) {
+        return infoPremium(
+          msg,
+          `Te invitamos a Totorolandia Premium con el comando ${Tprefix}regprem <serial>`
+        );
+      }
 
       const { chatAI } = require("../utils/chatAI");
 
@@ -70,7 +78,6 @@ module.exports = {
 
     const args = body.slice(1).trim().split(/\s+/);
     const pluginName = args.shift().toLowerCase();
-    const Tprefix = totoro.config.prefix;
 
     const plugin =
       totoro.plugins.get(pluginName) ||
@@ -95,11 +102,12 @@ module.exports = {
             .join("\n")} `
         );
       }
+    }
+    if (!plugin) {
       return;
     }
 
     let user = key.remoteJid;
-
     if (user.includes("@g.us")) user = key.participant;
 
     // Verificación del propietario
@@ -113,7 +121,7 @@ module.exports = {
 
     const verifyuser = require("../utils/verifyuser");
     const isVerified = await verifyuser(user, totoro, msg);
-
+    const Tprefix = totoro.config.prefix;
     if (
       !isVerified &&
       plugin.name !== "register" &&
@@ -121,14 +129,18 @@ module.exports = {
     ) {
       return infoRegister(
         msg,
-        "Para usar los comandos de Totoro, primero debes registrarte con el comando +register"
+        `Te invitamos Totorolandia con ${Tprefix}register <nombre>.<edad>`
       );
     }
 
     plugin.execute(totoro, msg, args)?.catch((error) => {
-      msg.reply(totoro.config.msg.error).then(() => {
-        msg.react("❌");
-      });
+      msg
+        .reply(
+          `🐥 Ocurrió un error al ejecutar el comando ${pluginName} 🐥\n\n${error.message}`
+        )
+        .then((msg) => {
+          msg.react("❌");
+        });
 
       console.error(error);
     });

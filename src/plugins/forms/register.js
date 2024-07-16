@@ -101,16 +101,7 @@ module.exports = {
 
       // Registrar nuevo usuario
       await registerNewUser(phone, nombre, edadInt, serialNumber, country);
-      await sendReg(
-        totoro,
-        remoteJid,
-        phone,
-        nombre,
-        edadInt,
-        serialNumber,
-        country,
-        userCount + 1
-      );
+      await sendReg(totoro, msg, nombre, userCount);
       await msg.react("🍭");
     } catch (error) {
       if (error.message === "Este número de teléfono ya está registrado.") {

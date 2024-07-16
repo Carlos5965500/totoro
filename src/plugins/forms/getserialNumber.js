@@ -1,10 +1,11 @@
-const { sendError, sendSuccess, help } = require("../../functions/messages");
-const { totoUser, totoPremium } = require("../../models");
+const { v4: uuidv4 } = require("uuid");
+const { sendError, sendSerial } = require("../../functions/messages");
+const { totoUser } = require("../../models");
 
 module.exports = {
   name: "getSerialNumber",
   category: "user",
-  description: "Obtener el número de serie de un usuario premium",
+  description: "Generar un número de serie para un usuario",
   usage: "getSerialNumber",
   aliases: ["getserial", "serialnumber", "serial"],
 
@@ -26,50 +27,37 @@ module.exports = {
         return;
       }
 
-      try {
-        const user = await totoUser.findOne({ where: { phone } });
+      const user = await totoUser.findOne({ where: { phone } });
 
-        if (!user) {
-          await sendError(
-            totoro,
-            msg,
-            `Usuario con el número ${phone} no encontrado.`
-          );
-          return;
-        }
-
-        if (!user.premium) {
-          await sendError(
-            totoro,
-            msg,
-            `El usuario ${user.name} no es un usuario premium.`
-          );
-          return;
-        }
-
-        const premiumRecord = await totoPremium.findOne({
-          where: { totoUserId: user.id },
-        });
-
-        if (!premiumRecord) {
-          await sendError(
-            totoro,
-            msg,
-            `No se encontró un registro premium para el usuario ${user.name}.`
-          );
-          return;
-        }
-
-        await sendSuccess(
+      if (!user) {
+        await sendError(
           totoro,
           msg,
-          `El número de serie de ${user.name} es ${premiumRecord.serialNumber}.`
+          `Usuario con el número ${phone} no encontrado.`
         );
-        await msg.react("✅");
-      } catch (error) {
-        console.error("Error al obtener el número de serie:", error);
-        await sendError(totoro, msg, "Error al obtener el número de serie.");
+        return;
       }
+
+      // Verificación de roles
+      const userRoles = user.roles || []; // Asumiendo que los roles se guardan en un array
+      if (
+        userRoles.includes(totoro.config.dev) ||
+        userRoles.includes(totoro.config.admin)
+      ) {
+        await sendError(
+          totoro,
+          msg,
+          `El usuario ${phone} es un desarrollador o administrador y no puede generar un número de serie.`
+        );
+        return;
+      }
+
+      const serialNumber = uuidv4();
+
+      await sendSerial(msg, user.name, serialNumber);
+      msg.reply(`${serialNumber}`);
+
+      await msg.react("✅");
     } catch (error) {
       console.error("Error al procesar el comando:", error);
       await sendError(totoro, msg, "Error al procesar el comando.");

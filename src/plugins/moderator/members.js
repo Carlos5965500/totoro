@@ -10,6 +10,7 @@ module.exports = {
   description: "Lista a todos los miembros del grupo.",
   category: "moderator",
   subcategory: "admin",
+  aliases: ["miembros", "listmembers", "lm"],
   usage: "<members>",
   cooldown: 5,
   botPermissions: ["SEND_MESSAGES", "MENTION_EVERYONE"],

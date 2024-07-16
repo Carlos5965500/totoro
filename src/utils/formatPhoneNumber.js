@@ -1,4 +1,3 @@
-// utils/formatPhoneNumber.js
 const { parsePhoneNumberFromString } = require("libphonenumber-js");
 
 module.exports = function formatPhoneNumber(phone) {

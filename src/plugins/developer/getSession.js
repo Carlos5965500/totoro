@@ -18,8 +18,8 @@ module.exports = {
       if (auth.length === 0) {
         msg.reply(
           "╭──⬣「 Sesión no encontrada 」⬣\n" +
-          "│  ≡◦ 🐥 No se encontró una sesión de WhatsApp.\n" +
-          "╰──⬣"
+            "│  ≡◦ 🐥 No se encontró una sesión de WhatsApp.\n" +
+            "╰──⬣"
         );
         return;
       }
@@ -28,16 +28,14 @@ module.exports = {
       const sessionFiles = auth.filter((file) => file !== "creds.json");
 
       // Construir la lista de archivos de sesión
-      const files = sessionFiles
-        .map((file) => `│  ≡◦ 📄 ${file}`)
-        .join("\n");
+      const files = sessionFiles.map((file) => `│  ≡◦ 📄 ${file}`).join("\n");
 
       // Informar al usuario de los archivos de sesión y el total
       msg.reply(
-        "╭──⬣「 Sesión encontrada 」⬣\n" +
-        `${files}\n` + 
-        `╰──⬣\n` +
-        `> Total: ${sessionFiles.length} sesión(es) de WhatsApp`
+        `> Total: ${sessionFiles.length} sesión(es) de WhatsApp\n\n` +
+          "╭──⬣「 Sesión encontrada 」⬣\n" +
+          `${files}\n` +
+          `╰──⬣\n`
       );
 
       await msg.react("📄");
@@ -52,9 +50,9 @@ module.exports = {
 
       msg.reply(
         "╭──⬣「 Sesión no encontrada 」⬣\n" +
-        "│  ≡◦ 🐥 No se pudo obtener la sesión de WhatsApp.\n" +
-        "╰──⬣"
+          "│  ≡◦ 🐥 No se pudo obtener la sesión de WhatsApp.\n" +
+          "╰──⬣"
       );
     }
-  }
+  },
 };

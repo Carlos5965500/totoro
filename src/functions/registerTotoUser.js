@@ -19,7 +19,7 @@ async function registerTotoUser(phone, nombre, edad, serialNumber, country) {
       // Registrar el error de restricción única
       totoroLog.error(
         totoroLog.verbose,
-        "./logs/plugins/register/register.log",
+        "./logs/functions/registerTotoUser.log",
         `Error de restricción única al registrar usuario: ${error}`
       );
       throw new Error("Este número de teléfono ya está registrado.");

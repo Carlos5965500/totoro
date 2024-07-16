@@ -8,6 +8,8 @@ const {
 
 module.exports = {
   name: "unregister",
+  category: "forms",
+  subcategory: "user",
   description: "Desregistra un totoUser de la base de datos",
   usage: "unregister",
   aliases: ["unreg"],
@@ -31,8 +33,9 @@ module.exports = {
         return;
       }
 
-      console.log(
-        `Desregistrando usuario con el número de teléfono ${phone}...`
+      totoroLog.info(
+        "./logs/plugins/forms/unregister.log",
+        `Usuario desregistrado: ${phone}`
       );
 
       // Eliminar el usuario de la base de datos
@@ -44,7 +47,8 @@ module.exports = {
           msg,
           "Error al desregistrar usuario. Inténtalo de nuevo."
         );
-        console.log(
+        totoroLog.error(
+          "./logs/plugins/forms/unregister.log",
           `Error al desregistrar usuario: El usuario con el número de teléfono ${phone} no fue eliminado.`
         );
       } else {
@@ -56,7 +60,8 @@ module.exports = {
             msg,
             "Error al desregistrar usuario. Inténtalo de nuevo."
           );
-          console.log(
+          totoroLog.error(
+            "./logs/plugins/forms/unregister.log",
             `Error al desregistrar usuario: El usuario con el número de teléfono ${phone} no fue eliminado.`
           );
         } else {
@@ -69,7 +74,10 @@ module.exports = {
         }
       }
     } catch (error) {
-      console.error(error);
+      totoroLog.error(
+        "./logs/plugins/forms/unregister.log",
+        `Error al desregistrar usuario: ${error}`
+      );
       await sendError(totoro, msg, "Error al desregistrar usuario.");
     }
   },

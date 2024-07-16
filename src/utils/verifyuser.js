@@ -1,10 +1,12 @@
 const totoUser = require("../models/totoUser");
 const totoroLog = require("../functions/totoroLog");
 const { infoRegister, sendError } = require("../functions/messages");
-const config = require("../../settings.json").prefix;
+const config = require("../../settings.json");
+const dev = config.dev;
+
 async function verifyUser(participant, totoro, msg) {
   try {
-    const totoroPrefix = config;
+    const totoroPrefix = config.prefix;
     const phone = participant.split("@")[0];
     const user = await totoUser.findOne({ where: { phone } });
 

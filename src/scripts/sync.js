@@ -1,6 +1,7 @@
 const TotoDB = require("../libs/db/totoDB");
 const totoUser = require("../models/totoUser");
 const totoPremium = require("../models/totoPremium");
+const totoCommands = require("../models/totoCommands"); // Importa el modelo
 const { Sequelize } = require("sequelize");
 const totoroLog = require("../functions/totoroLog");
 
@@ -26,6 +27,12 @@ class totoDBSync {
       totoPremium.rawAttributes,
       totoPremium.options
     );
+    this.backupTotoCommands = this.backupDB.define(
+      // Define el modelo totoCommands
+      "totoCommands",
+      totoCommands.rawAttributes,
+      totoCommands.options
+    );
   }
 
   async sync() {
@@ -43,9 +50,10 @@ class totoDBSync {
       await Promise.all([
         totoUser.sync({ force: false }),
         totoPremium.sync({ force: false }),
+        totoCommands.sync({ force: false }), // Sincroniza el modelo totoCommands
       ]);
       syncMessage += `
-│ 🔄  Tablas sincronizadas: ${totoUser.getTableName()}, ${totoPremium.getTableName()}`;
+│ 🔄  Tablas sincronizadas: ${totoUser.getTableName()}, ${totoPremium.getTableName()}, ${totoCommands.getTableName()}`;
 
       await this.tDB.sequelize.sync({ force: false });
       syncMessage += `
@@ -70,9 +78,10 @@ class totoDBSync {
         await Promise.all([
           this.backupTotoUser.sync({ force: false }),
           this.backupTotoPremium.sync({ force: false }),
+          this.backupTotoCommands.sync({ force: false }), // Sincroniza el modelo en la base de datos de respaldo
         ]);
         syncMessage += `
-│ 🔄  Tablas sincronizadas: ${this.backupTotoUser.getTableName()}, ${this.backupTotoPremium.getTableName()}`;
+│ 🔄  Tablas sincronizadas: ${this.backupTotoUser.getTableName()}, ${this.backupTotoPremium.getTableName()}, ${this.backupTotoCommands.getTableName()}`;
 
         await this.backupDB.sync({ force: false });
         syncMessage += `

@@ -1,8 +1,7 @@
 const { DisconnectReason } = require("@whiskeysockets/baileys");
-const { connectToWA } = require("../index.js");
+const { connectToWA } = require("../index");
 const { Boom } = require("@hapi/boom");
 const totoroLog = require("../functions/totoroLog");
-
 
 module.exports = {
   name: "connection.update",
@@ -26,7 +25,6 @@ module.exports = {
         await connectToWA();
       }
     } else if (connection === "open") {
-      
       totoroLog.info(
         "./logs/handlers/connection.log",
         `[CONNECTION] ${connection}`

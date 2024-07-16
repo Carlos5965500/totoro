@@ -20,6 +20,8 @@ const getCountryFromPhoneNumber = require("../../functions/countryNumber");
 
 module.exports = {
   name: "register",
+  category: "forms",
+  subcategory: "user",
   description: "Registra un totoUser en la base de datos",
   usage: "register <nombre>.<edad>",
   aliases: ["reg"],
@@ -120,7 +122,7 @@ module.exports = {
       } else {
         totoroLog.error(
           totoroLog.verbose,
-          "./logs/plugins/register.log",
+          "./logs/plugins/forms/register.log",
           `Error al registrar usuario: ${error}`
         );
         await sendError(totoro, msg, "Error al registrar usuario.");

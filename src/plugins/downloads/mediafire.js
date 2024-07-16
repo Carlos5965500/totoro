@@ -1,5 +1,4 @@
 const { scrapeMediafire } = require("../../modules/scrapeMediaFire");
-const verifyUser = require("../../utils/verifyuser");
 const totoroLog = require("../../functions/totoroLog");
 const { sendWarning, sendError, help } = require("../../functions/messages");
 const axios = require("axios");
@@ -20,14 +19,6 @@ module.exports = {
     const participant = msg.messages?.[0]?.key?.participant;
     const remoteJid = msg.messages?.[0]?.key?.remoteJid;
 
-    if (!participant && !remoteJid) {
-      return sendError(
-        totoro,
-        msg,
-        "No se pudo obtener el número del usuario o el chat."
-      );
-    }
-
     if (!args[0] || !args[0].match(/mediafire/gi)) {
       return help(
         totoro,
@@ -36,20 +27,6 @@ module.exports = {
         "Descarga archivos de Mediafire.",
         "mediafire <mediafire url>"
       );
-    }
-
-    let user;
-    try {
-      user = await verifyUser(participant || remoteJid);
-    } catch (error) {
-      if (
-        error.message ===
-        "No estás registrado. Por favor, regístrate antes de usar este comando."
-      ) {
-        return sendWarning(totoro, msg, error.message);
-      } else {
-        return sendError(totoro, msg, error.message);
-      }
     }
 
     try {
@@ -106,7 +83,7 @@ module.exports = {
           fileName: `${title}.zip`,
           caption: txt,
         },
-        { quoted: msg.messages[0], asDocument: user.useDocument }
+        { quoted: msg.messages[0], asDocument: true } // Supuse que `user.useDocument` era `true`
       );
 
       await msg.react("🍭"); // Reacción al finalizar la descarga

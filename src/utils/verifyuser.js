@@ -1,54 +1,41 @@
 const totoUser = require("../models/totoUser");
 const totoroLog = require("../functions/totoroLog");
-const { sendError } = require("../functions/messages");
+const { infoRegister, sendError } = require("../functions/messages");
+const config = require("../../settings.json").prefix;
+async function verifyUser(participant, totoro, msg) {
+  try {
+    const totoroPrefix = config;
+    const phone = participant.split("@")[0];
+    const user = await totoUser.findOne({ where: { phone } });
 
-async function verifyUser(participant) {
-  if (!totoUser) {
+    if (!user) {
+      await infoRegister(
+        totoro,
+        msg,
+        `Por favor, regístrate con el siguiente comando: ${totoroPrefix}reg nombre.edad`
+      );
+
+      totoroLog.info(
+        "./logs/utils/verifyuser.log",
+        `Usuario no registrado: ${phone}`
+      );
+      return null;
+    }
+    return user;
+  } catch (error) {
+    console.error("Error verificando usuario:", error);
+    await sendError(
+      totoro,
+      msg,
+      `> Hubo un error al verificar tu registro. Por favor, inténtalo de nuevo más tarde.`
+    );
+
     totoroLog.error(
-      "./logs/verifyUser.log",
-      "La base de datos de usuarios no está definida."
+      "./logs/utils/verifyuser.log",
+      `Error verificando usuario: ${error}`
     );
-    sendError(
-      totoro,
-      msg,
-      "No se pudo verificar tu usuario. Por favor, intenta de nuevo más tarde."
-    );
+    return null;
   }
-
-  const phone = participant.split("@")[0];
-
-  const user = await totoUser.findOne({ where: { phone: phone } });
-  if (!user) {
-    totoroLog.warn(
-      "./logs/verifyUser.log",
-      "Usuario no encontrado en la base de datos."
-    );
-    sendError(
-      totoro,
-      msg,
-      "No estás registrado. Por favor, regístrate antes de usar este comando."
-    );
-  }
-
-  if (!user.registered) {
-    totoroLog.warn("./logs/verifyUser.log", "Usuario no está registrado.");
-    sendError(
-      totoro,
-      msg,
-      "No estás registrado. Por favor, regístrate antes de usar este comando."
-    );
-  }
-
-  if (!user.premium) {
-    totoroLog.warn("./logs/verifyUser.log", "Usuario no es premium.");
-    sendError(
-      totoro,
-      msg,
-      "No tienes acceso a esta función. Por favor, adquiere una suscripción premium para usarla."
-    );
-  }
-
-  return user;
 }
 
 module.exports = verifyUser;

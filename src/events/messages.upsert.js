@@ -1,5 +1,9 @@
-const totoroLog = require("../functions/totoroLog");
-const { sendError, sendWarning } = require("../functions/messages");
+const {
+  sendWarning,
+  noCommand,
+  infoRegister,
+} = require("../functions/messages");
+const { matcher } = require("../functions/matcher");
 module.exports = {
   name: "messages.upsert",
 
@@ -14,11 +18,12 @@ module.exports = {
       return;
     }
 
-    const { message: ctx, key } = msg.messages[0];
+    const { message: toto, key } = msg.messages[0];
 
     require("../utils/messageUtils")(totoro, msg);
 
-    const btn = ctx?.templateButtonReplyMessage || ctx?.buttonsResponseMessage;
+    const btn =
+      toto?.templateButtonReplyMessage || toto?.buttonsResponseMessage;
 
     if (btn && typeof btn === "object") {
       const selected = btn?.selectedId || btn?.selectedButtonId;
@@ -31,13 +36,13 @@ module.exports = {
     }
 
     const body =
-      ctx?.extendedTextMessage?.text ||
-      ctx?.ephemeralMessage?.message?.extendedTextMessage?.text ||
-      ctx?.conversation ||
-      ctx?.imageMessage?.caption ||
-      ctx?.videoMessage?.caption ||
-      ctx?.templateButtonReplyMessage?.selectedId ||
-      ctx?.buttonsResponseMessage?.selectedButtonId;
+      toto?.extendedTextMessage?.text ||
+      toto?.ephemeralMessage?.message?.extendedTextMessage?.text ||
+      toto?.conversation ||
+      toto?.imageMessage?.caption ||
+      toto?.videoMessage?.caption ||
+      toto?.templateButtonReplyMessage?.selectedId ||
+      toto?.buttonsResponseMessage?.selectedButtonId;
 
     if (!body) return;
 
@@ -50,6 +55,10 @@ module.exports = {
     ) {
       if (key.remoteJid.endsWith("@g.us")) return;
 
+      const verifyPremium = require("../utils/verifypremium");
+      const premium = await verifyPremium(key.remoteJid, totoro, msg);
+      if (!premium) return;
+
       const { chatAI } = require("../utils/chatAI");
 
       await totoro.sendPresenceUpdate("composing", key.remoteJid);
@@ -60,13 +69,33 @@ module.exports = {
     }
 
     const args = body.slice(1).trim().split(/\s+/);
-    const label = args.shift().toLowerCase();
+    const pluginName = args.shift().toLowerCase();
+    const Tprefix = totoro.config.prefix;
 
-    const command = totoro.plugins.get(label);
+    const plugin =
+      totoro.plugins.get(pluginName) ||
+      totoro.plugins.find((v) => v.aliases && v.aliases.includes(pluginName));
 
-    if (!command) {
-      const suggest = require("../utils/suggestCommand");
-      return msg.reply(suggest(totoro, label));
+    if (!plugin) {
+      const pluginEntry = [
+        ...(totoro.plugins ? totoro.plugins.keys() : []),
+        ...(totoro.aliases ? totoro.aliases.keys() : []),
+      ];
+
+      const matcherx = matcher(pluginName, pluginEntry).filter(
+        (v) => v.distance >= 20
+      );
+
+      if (matcherx.lentgh) {
+        return noCommand(
+          totoro,
+          msg,
+          `Totoro no encontró el comando ${pluginName}\n\n Te mostra las siguientes sugerencias:\n\n${matcherx
+            .map((v) => "🐥" + Tprefix + v.string + " (" + v.accuracy + "%)")
+            .join("\n")} `
+        );
+      }
+      return;
     }
 
     let user = key.remoteJid;
@@ -74,7 +103,7 @@ module.exports = {
     if (user.includes("@g.us")) user = key.participant;
 
     // Verificación del propietario
-    if (command.dev && !totoro.config.dev.includes(user)) {
+    if (plugin.dev && !totoro.config.dev.includes(user)) {
       return sendWarning(
         totoro,
         msg,
@@ -82,9 +111,23 @@ module.exports = {
       );
     }
 
-    if (command.dev && !totoro.config.dev.includes(user)) return;
+    const verifyuser = require("../utils/verifyuser");
+    const isVerified = await verifyuser(user, totoro, msg);
 
-    command.execute(totoro, msg, args)?.catch((error) => {
+    if (
+      !isVerified &&
+      plugin.name !== "register" &&
+      !totoro.config.dev.includes(user)
+    ) {
+      infoRegister(
+        totoro,
+        msg,
+        `Para usar comandos, primero debes registrarte con el siguiente comando: ${Tprefix}register nombre.edad`
+      );
+      return;
+    }
+
+    plugin.execute(totoro, msg, args)?.catch((error) => {
       msg.reply(totoro.config.msg.error).then(() => {
         msg.react("❌");
       });

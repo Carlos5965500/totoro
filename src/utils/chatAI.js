@@ -1,27 +1,47 @@
-const totoroLog = require("../functions/totoroLog");
-const { sendError } = require("../functions/messages");
-const openai = require("openai");
+const { OpenAI } = require("openai");
 require("dotenv").config();
 
-openai.apiKey = process.env.OPENAI_API_KEY;
+const apiKey = process.env.OPENAI_API_KEY;
 
-async function chatAI(totoro, message, msg) {
-  const remoteJid = msg.messages[0].key.remoteJid;
+const openai = new OpenAI({
+  apiKey,
+});
 
+async function chatAI(totoro, message) {
   try {
-    const response = await openai.ChatCompletion.create({
-      model: "gpt-4", // Especifica el modelo de OpenAI que deseas usar
-      messages: [{ role: "user", content: message }],
+    const assistantContent =
+      "Eres Totoro y fuiste creado por Nia para ayudar a los usuarios de este grupo.";
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4", // Cambia a "gpt-3.5-turbo" si es necesario
+      messages: [
+        { role: "system", content: assistantContent },
+        { role: "user", content: message },
+      ],
     });
 
-    const reply = response.choices[0].message.content;
-    return reply;
+    if (!response || !response.choices || response.choices.length === 0) {
+      console.error(
+        "Empty or invalid response structure from OpenAI:",
+        response
+      );
+      throw new Error("Empty or invalid response from OpenAI");
+    }
+
+    const assistantMessage = response.choices[0]?.message?.content;
+
+    if (!assistantMessage || assistantMessage.trim() === "") {
+      console.error(
+        "Invalid assistant message content in OpenAI response:",
+        response.choices[0]?.message
+      );
+      throw new Error("Invalid assistant message content in OpenAI response");
+    }
+
+    return assistantMessage;
   } catch (error) {
-    totoroLog.error(
-      "./logs/functions/chatAI.log",
-      `Error generando respuesta: ${error}`
-    );
-    sendError(totoro, remoteJid, `Error generando respuesta: ${error}`);
+    console.error("Error in chatAI:", error);
+    throw error; // Asegúrate de propagar el error para manejarlo adecuadamente en el contexto que llama a `chatAI`.
   }
 }
 

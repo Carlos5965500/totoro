@@ -86,7 +86,7 @@ module.exports = {
         (v) => v.distance >= 20
       );
 
-      if (matcherx.lentgh) {
+      if (matcherx.length) {
         return noCommand(
           totoro,
           msg,
@@ -119,12 +119,10 @@ module.exports = {
       plugin.name !== "register" &&
       !totoro.config.dev.includes(user)
     ) {
-      infoRegister(
-        totoro,
+      return infoRegister(
         msg,
-        `Para usar comandos, primero debes registrarte con el siguiente comando: ${Tprefix}register nombre.edad`
+        "Para usar los comandos de Totoro, primero debes registrarte con el comando +register"
       );
-      return;
     }
 
     plugin.execute(totoro, msg, args)?.catch((error) => {

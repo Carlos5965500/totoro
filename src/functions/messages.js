@@ -1,3 +1,4 @@
+const { text } = require("express");
 const totoroLog = require("./totoroLog");
 const path = require("path");
 
@@ -42,8 +43,8 @@ async function sendError(totoro, msg, errorMessage) {
   const mensaje =
     `╭─⬣「 *Error* 」⬣\n` +
     `│  ≡◦ *❌ Totoro ha encontrado un error*\n` +
-    `│  ≡◦ ${errorMessage}\n` +
-    `╰─⬣`;
+    `╰─⬣\n` +
+    `> ${errorMessage}`;
   try {
     const remoteJid = msg.messages[0].key.remoteJid;
     console.log(remoteJid);
@@ -112,14 +113,16 @@ async function sendSuccess(totoro, msg, mensajeExito) {
   }
 }
 
-async function noCommand(totoro, msg) {
+async function noCommand(totoro, msg, suggestCommand) {
   const remoteJid = msg.messages[0].key.remoteJid;
   const noCommandMessage =
-    `╭─⬣「 *Comando no encontrado* 」⬣` +
-    `╰─ ≡◦ *🍭 Totoro no encontró el comando solicitado*\n` +
-    `> *Ayuda*: Usa +menu para ver mis comandos`;
+    `╭─⬣「 *Comando no encontrado* 」⬣\n` +
+    `│  ≡◦ *🍭 Totoro no encontró el comando solicitado*\n` +
+    `│  ≡◦ *🍭 Usa +menu para ver mis comandos*\n` +
+    `╰─⬣\n` +
+    `> ${suggestCommand}`;
   try {
-    await msg.react("❌");
+    await msg.react("🔍");
     await totoro.sendMessage(remoteJid, { text: noCommandMessage });
   } catch (error) {
     totoroLog.error(
@@ -129,13 +132,38 @@ async function noCommand(totoro, msg) {
   }
 }
 
-async function totoreact(msg, emoji) {
+// Función para verficar que no estas registrado
+async function infoRegister(msg, warningMessage) {
   try {
-    await msg.react(emoji);
+    await msg.react("⚠️");
+    msg.reply(
+      `╭─⬣「 *TotoUser* 」⬣\n` +
+        `│  ≡◦ *ℹ️  No registrado*\n` +
+        `╰─⬣\n` +
+        `>  ${warningMessage}`
+    );
   } catch (error) {
     totoroLog.error(
       "./logs/functions/messages.log",
-      `[FUNCTION ERROR] ${error.message} ${error.stack}`
+      `Error enviando mensaje de aviso: ${error}`
+    );
+  }
+}
+
+// Función para verficar que no eres premium
+async function infoPremium(msg, warningMessage) {
+  try {
+    await msg.react("ℹ️");
+    await msg.reply(
+      `╭─⬣「 *TotoPremium* 」⬣\n` +
+        `│  ≡◦ *⚠️ No eres Premium*\n` +
+        `╰─⬣\n` +
+        `>  ${warningMessage}`
+    );
+  } catch (error) {
+    totoroLog.error(
+      "./logs/functions/messages.log",
+      `Error enviando mensaje de aviso: ${error}`
     );
   }
 }
@@ -159,13 +187,43 @@ async function sendReg(
     `│  ✩  *Número Serial* : ${serialNumber}\n` +
     `│  ✩  *Fecha de Registro* : ${new Date().toLocaleString("es-ES", { timeZone: "UTC", hour12: true })}\n` +
     `└  ✩  *Registrado* : ✅\n` +
-    `> *¡Bienvenido a la comunidad de Totoro contigo ya ${userCount} totoUsers*!`;
+    `> *¡Bienvenido a la comunidad de Totorolandia contigo ya ${userCount} totoUsers*!`;
 
   try {
     await totoro.sendMessage(remoteJid, { text: registrationMessage });
   } catch (error) {
     totoroLog.error(
-      "./logs/plugins/register/register.js",
+      "./logs/functions/messages.log",
+      `Error enviando mensaje de registro: ${error}`
+    );
+  }
+}
+
+async function sendPrem(
+  totoro,
+  remoteJid,
+  phone,
+  nombre,
+  edad,
+  serialNumber,
+  country,
+  userCount
+) {
+  const registrationPremiumMessage =
+    `–  *R E G I S T R O  - T O T O  P R E M I U M  U S E R*   –\n` +
+    `┌  ✩  *Nombre* : ${nombre}\n` +
+    `├  ✩  *Edad* : ${edad}\n` +
+    `├  ✩  *Teléfono* : ${phone}\n` +
+    `├  ✩  *País* : ${country}\n` +
+    `├  ✩  *Serial* : ${serialNumber}\n` +
+    `│  ✩  *Fecha de Registro* : ${new Date().toLocaleString("es-ES", { timeZone: "UTC", hour12: true })}\n` +
+    `└  ✩  *Premium* : ✅\n` +
+    `> *¡Bienvenido a la Membresía Premiun de Totoro contigo ya ${userCount} totoPremium*!`;
+  try {
+    await totoro.sendMessage(remoteJid, { text: registrationPremiumMessage });
+  } catch (error) {
+    totoroLog.error(
+      "./logs/functions/messages.log",
       `Error enviando mensaje de registro: ${error}`
     );
   }
@@ -206,13 +264,15 @@ async function sendMediaMessage(msg, mediaType, mediaContent) {
 
 module.exports = {
   sendMediaMessage,
+  infoRegister,
   sendReminder,
   sendWarning,
   sendSuccess,
   sendMessage,
+  infoPremium,
   noCommand,
-  totoreact,
   sendError,
+  sendPrem,
   sendReg,
   help,
 };

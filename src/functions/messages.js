@@ -1,6 +1,7 @@
 const { text } = require("express");
 const totoroLog = require("./totoroLog");
 const path = require("path");
+const { info } = require("console");
 
 async function sendMessage(totoro, msg, message) {
   const mensaje =
@@ -140,7 +141,7 @@ async function infoRegister(msg, warningMessage) {
       `╭─⬣「 *TotoUser* 」⬣\n` +
         `│  ≡◦ *ℹ️  No registrado*\n` +
         `╰─⬣\n` +
-        `>  ${warningMessage}`
+        `> ${warningMessage}`
     );
   } catch (error) {
     totoroLog.error(
@@ -158,13 +159,45 @@ async function infoPremium(msg, warningMessage) {
       `╭─⬣「 *TotoPremium* 」⬣\n` +
         `│  ≡◦ *⚠️ No eres Premium*\n` +
         `╰─⬣\n` +
-        `>  ${warningMessage}`
+        `> ${warningMessage}`
     );
   } catch (error) {
     totoroLog.error(
       "./logs/functions/messages.log",
       `Error enviando mensaje de aviso: ${error}`
     );
+  }
+}
+
+async function infoSerial(msg, warningMessage) {
+  try {
+    await msg.react("ℹ️");
+    await msg.reply(
+      `╭─⬣「 *Número de Serie* 」⬣\n` +
+        `│  ≡◦ *⚠️ No tienes número de serie*\n` +
+        `╰─⬣\n` +
+        `> ${warningMessage}`
+    );
+  } catch (error) {
+    totoroLog.error(
+      "./logs/functions/messages.log",
+      `Error enviando mensaje de aviso: ${error}`
+    );
+  }
+}
+
+async function sendSerial(msg, userName, serialNumber) {
+  try {
+    await msg.react("🔍");
+    await msg.reply(
+      `╭─⬣「 *Número de Serie* 」⬣\n` +
+        `│  ≡◦ *ℹ️ Totoro generó una licencia para ${userName}*\n` +
+        `│  ≡◦ *ℹ️ Tu número de serie es*\n` +
+        `╰─⬣\n` +
+        `> ${serialNumber}`
+    );
+  } catch (error) {
+    console.error(`Error enviando mensaje de aviso: ${error}`);
   }
 }
 
@@ -270,6 +303,8 @@ module.exports = {
   sendSuccess,
   sendMessage,
   infoPremium,
+  infoSerial,
+  sendSerial,
   noCommand,
   sendError,
   sendPrem,

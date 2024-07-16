@@ -33,9 +33,7 @@ module.exports = {
           `[PLUGINS] Error al ejecutar el comando bash: ${error.message}`
         );
 
-        await msg.reply(
-          `╭──⬣「 Output 」⬣\n` + `│  ≡◦ ${stdout.trim()}\n` + `╰──⬣`
-        );
+        await msg.reply(`${stdout.trim()}`);
         return totoro.sendMessage(msg.messages[0].key.remoteJid, {
           text: stdout,
         });
@@ -51,7 +49,7 @@ module.exports = {
         return;
       }
 
-      msg.reply(`╭──⬣「 Output 」⬣\n` + `│  ≡◦ ${stdout.trim()}\n` + `╰──⬣`);
+      msg.reply(`${stdout.trim()}`);
     });
   },
 };

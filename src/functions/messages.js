@@ -30,7 +30,7 @@ async function sendWarning(totoro, msg, warningMessage) {
         `╭─⬣「 *Advertencia* 」⬣\n` +
         `│  ≡◦ *⚠️ Totoro te advierte lo siguiente:*\n` +
         `╰─⬣\n` +
-        `> *Advertencia*: ${warningMessage}`,
+        `> ${warningMessage}`,
     });
   } catch (error) {
     totoroLog.error(
@@ -114,17 +114,19 @@ async function sendSuccess(totoro, msg, mensajeExito) {
   }
 }
 
-async function noCommand(totoro, msg, suggestCommand) {
-  const remoteJid = msg.messages[0].key.remoteJid;
-  const noCommandMessage =
-    `╭─⬣「 *Comando no encontrado* 」⬣\n` +
-    `│  ≡◦ *🍭 Totoro no encontró el comando solicitado*\n` +
-    `│  ≡◦ *🍭 Usa +menu para ver mis comandos*\n` +
-    `╰─⬣\n` +
-    `> ${suggestCommand}`;
+async function noCommand(msg, prefix, pluginName, suggestCommand) {
+  msg.reply(
+    `╭─⬣「 *Comando* \`${prefix}${pluginName}\` *no encontrado* 」⬣\n`+
+    `│  ≡◦ *🍭 Sugerencias semejantes* \`${prefix}${pluginName}\`\n`+
+    `│  ≡◦ *🍭 Puedes* \`${prefix}menu\` *para ver mis comandos*\n`+
+    `╰─⬣\n\n` +
+    
+    `╭─⬣「 *Sugerencia de Comandos para* \`${prefix}${pluginName}\` 」⬣\n` + 
+    `${suggestCommand}`+
+    `╰─⬣`
+  );
   try {
     await msg.react("🔍");
-    await totoro.sendMessage(remoteJid, { text: noCommandMessage });
   } catch (error) {
     totoroLog.error(
       "./logs/functions/messages.log",

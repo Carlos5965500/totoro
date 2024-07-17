@@ -22,6 +22,15 @@ module.exports = {
       const remoteJid = msg.messages[0].key.remoteJid;
       const participant = msg.messages[0].key.participant || remoteJid;
 
+      if (remoteJid.endsWith("@g.us")) {
+        await sendWarning(
+          totoro,
+          msg,
+          "Este comando no está permitido en grupos."
+        );
+        return;
+      }
+
       // Verificar si el mensaje es de un grupo
       if (remoteJid.includes("-g.us")) {
         await sendError(

@@ -1,14 +1,17 @@
 function matcher(string, array) {
-    // Filtrar elementos que no son cadenas de texto
-    const filteredArray = array.filter(item => typeof item === 'string');
-    
-    return filteredArray.map((item) => {
-      const accuracy = Math.round(
-        ((string.length - levenshteinDistance(string.toLowerCase(), item.toLowerCase())) / string.length) * 100);
-      return { string: item, accuracy };
-    });
-  }
-  
+  // Filtrar elementos que no son cadenas de texto
+  const filteredArray = array.filter((item) => typeof item === "string");
+
+  return filteredArray.map((item) => {
+    const accuracy = Math.round(
+      ((string.length -
+        levenshteinDistance(string.toLowerCase(), item.toLowerCase())) /
+        string.length) *
+        100
+    );
+    return { string: item, accuracy };
+  });
+}
 
 function levenshteinDistance(a, b) {
   const matrix = Array.from({ length: a.length + 1 }, (_, i) =>

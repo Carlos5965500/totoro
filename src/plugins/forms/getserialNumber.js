@@ -1,5 +1,9 @@
 const { v4: uuidv4 } = require("uuid");
-const { sendError, sendSerial } = require("../../functions/messages");
+const {
+  sendError,
+  sendSerial,
+  sendWarning,
+} = require("../../functions/messages");
 const { totoUser } = require("../../models");
 
 module.exports = {
@@ -14,6 +18,14 @@ module.exports = {
       const remoteJid = msg.messages[0].key.remoteJid;
       const participant = msg.messages[0].key.participant;
 
+      if (remoteJid.endsWith("@g.us")) {
+        await sendWarning(
+          totoro,
+          msg,
+          "Este comando no está permitido en grupos."
+        );
+        return;
+      }
       const telf = participant || remoteJid;
       const phone = telf.split("@")[0];
 
@@ -34,20 +46,6 @@ module.exports = {
           totoro,
           msg,
           `Usuario con el número ${phone} no encontrado.`
-        );
-        return;
-      }
-
-      // Verificación de roles
-      const userRoles = user.roles || []; // Asumiendo que los roles se guardan en un array
-      if (
-        userRoles.includes(totoro.config.dev) ||
-        userRoles.includes(totoro.config.admin)
-      ) {
-        await sendError(
-          totoro,
-          msg,
-          `El usuario ${phone} es un desarrollador o administrador y no puede generar un número de serie.`
         );
         return;
       }

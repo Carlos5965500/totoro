@@ -3,6 +3,7 @@ const {
   noCommand,
   infoRegister,
   infoPremium,
+  dev,
 } = require("../functions/messages");
 const { matcher } = require("../functions/matcher");
 module.exports = {
@@ -119,10 +120,10 @@ module.exports = {
 
     // Verificación del propietario
     if (plugin.dev && !totoro.config.dev.includes(user)) {
-      return sendWarning(
-        totoro,
+      return dev(
         msg,
-        "Este comando es solo para el propietario del bot."
+        pluginName,
+        `Este comando es exclusivo para el propietario del bot.`
       );
     }
 
@@ -131,7 +132,6 @@ module.exports = {
     if (
       !isVerified &&
       plugin.name !== "register" &&
-      plugin.name !== "reg" &&
       !totoro.config.dev.includes(user)
     ) {
       return infoRegister(

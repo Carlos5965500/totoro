@@ -1,9 +1,8 @@
-const { v4: uuidv4 } = require("uuid");
 const {
   sendError,
-  sendSuccess,
   help,
   sendPrem,
+  sendWarning,
 } = require("../../functions/messages");
 const { totoUser, totoPremium } = require("../../models");
 
@@ -19,6 +18,16 @@ module.exports = {
       const remoteJid = msg.messages[0].key.remoteJid;
       const participant = msg.messages[0].key.participant;
       const [serial] = args;
+
+      // que no esté permitido en grupos
+      if (remoteJid.endsWith("@g.us")) {
+        await sendWarning(
+          totoro,
+          msg,
+          "Este comando no está permitido en grupos."
+        );
+        return;
+      }
 
       if (!serial) {
         await help(

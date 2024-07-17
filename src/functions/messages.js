@@ -1,7 +1,6 @@
-const { text } = require("express");
 const totoroLog = require("./totoroLog");
 const path = require("path");
-const { info } = require("console");
+
 
 async function sendMessage(totoro, msg, message) {
   const mensaje =
@@ -17,6 +16,23 @@ async function sendMessage(totoro, msg, message) {
     totoroLog.error(
       path.join(__dirname, "./logs/functions/messages.log"),
       `Error enviando mensaje: ${error}`
+    );
+  }
+}
+
+async function infoGroup(msg, pluginName, message) {
+  msg.reply(
+    `╭─⬣「 \`${pluginName}\` *en Grupos* 」⬣\n` +
+      `│  ≡◦ *🍭 \`${pluginName}\` *no permitido en grupos*\n` +
+      `╰─⬣\n` +
+      `> ${message}`
+  );
+  try {
+    await msg.react("ℹ️");
+  } catch (error) {
+    totoroLog.error(
+      "./logs/functions/messages.log",
+      `Error enviando mensaje de grupos: ${error}`
     );
   }
 }
@@ -116,14 +132,13 @@ async function sendSuccess(totoro, msg, mensajeExito) {
 
 async function noCommand(msg, prefix, pluginName, suggestCommand) {
   msg.reply(
-    `╭─⬣「 *Comando* \`${prefix}${pluginName}\` *no encontrado* 」⬣\n`+
-    `│  ≡◦ *🍭 Sugerencias semejantes* \`${prefix}${pluginName}\`\n`+
-    `│  ≡◦ *🍭 Puedes* \`${prefix}menu\` *para ver mis comandos*\n`+
-    `╰─⬣\n\n` +
-    
-    `╭─⬣「 *Sugerencia de Comandos para* \`${prefix}${pluginName}\` 」⬣\n` + 
-    `${suggestCommand}`+
-    `╰─⬣`
+    `╭─⬣「 *Comando* \`${prefix}${pluginName}\` *no encontrado* 」⬣\n` +
+      `│  ≡◦ *🍭 Sugerencias semejantes* \`${prefix}${pluginName}\`\n` +
+      `│  ≡◦ *🍭 Puedes* \`${prefix}menu\` *para ver mis comandos*\n` +
+      `╰─⬣\n\n` +
+      `╭─⬣「 *Sugerencia de Comandos para* \`${prefix}${pluginName}\` 」⬣\n` +
+      `${suggestCommand}` +
+      `╰─⬣`
   );
   try {
     await msg.react("🔍");
@@ -205,7 +220,7 @@ async function sendSerial(msg, userName, serialNumber) {
 
 async function sendReg(
   totoro,
-  remoteJid,
+  msg,
   phone,
   nombre,
   edad,
@@ -225,6 +240,7 @@ async function sendReg(
     `> *¡Bienvenido a la comunidad de Totorolandia contigo ya ${userCount} totoUsers*!`;
 
   try {
+    const remoteJid = msg.messages[0].key.remoteJid;
     await totoro.sendMessage(remoteJid, { text: registrationMessage });
   } catch (error) {
     totoroLog.error(
@@ -236,7 +252,7 @@ async function sendReg(
 
 async function sendPrem(
   totoro,
-  remoteJid,
+  msg,
   phone,
   nombre,
   edad,
@@ -255,6 +271,7 @@ async function sendPrem(
     `└  ✩  *Premium* : ✅\n` +
     `> *¡Bienvenido a la Membresía Premiun de Totoro contigo ya ${userCount} totoPremium*!`;
   try {
+    const remoteJid = msg.messages[0].key.remoteJid;
     await totoro.sendMessage(remoteJid, { text: registrationPremiumMessage });
   } catch (error) {
     totoroLog.error(
@@ -297,7 +314,26 @@ async function sendMediaMessage(msg, mediaType, mediaContent) {
   }
 }
 
+async function dev(msg, pluginName, devMessage) {
+  const dev = require("../../settings.json").dev;
+  try { 
+    await msg.react("👑");
+    await msg.reply(
+      `╭─⬣「 \`${pluginName}\`」⬣\n` +
+      `│  ≡◦ *🔒 Este comando es solo para* ${dev}\n` +
+      `╰─⬣\n` +
+      `> ${devMessage}`
+    );
+  } catch (error) {
+    totoroLog.error(
+      "./logs/functions/messages.log",
+      `Error enviando mensaje de aviso: ${error}`
+    );
+  }
+}
+
 module.exports = {
+  dev,
   sendMediaMessage,
   infoRegister,
   sendReminder,
@@ -306,6 +342,7 @@ module.exports = {
   sendMessage,
   infoPremium,
   infoSerial,
+  infoGroup,
   sendSerial,
   noCommand,
   sendError,

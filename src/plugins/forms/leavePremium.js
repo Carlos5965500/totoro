@@ -1,4 +1,10 @@
-const { sendError, sendSuccess, help } = require("../../functions/messages");
+const {
+  sendError,
+  sendSuccess,
+  help,
+  sendWarning,
+  infoGroup,
+} = require("../../functions/messages");
 const { totoUser, totoPremium } = require("../../models");
 
 module.exports = {
@@ -10,6 +16,15 @@ module.exports = {
 
   async execute(totoro, msg, args) {
     try {
+      const remoteJid = msg.messages[0].key.remoteJid;
+      if (remoteJid.endsWith("@g.us")) {
+        await infoGroup(
+          msg,
+          this.name, 
+          "Este comando no está permitido en grupos."
+        );
+        return;
+      }
       const [serialNumber] = args;
       if (!serialNumber) {
         await help(

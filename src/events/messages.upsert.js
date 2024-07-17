@@ -78,31 +78,38 @@ module.exports = {
 
     const args = body.slice(1).trim().split(/\s+/);
     const pluginName = args.shift().toLowerCase();
-
+    const Tprefix = totoro.config.prefix;
     const plugin =
       totoro.plugins.get(pluginName) ||
       totoro.plugins.find((v) => v.aliases && v.aliases.includes(pluginName));
 
     if (!plugin) {
+      // Asegúrate de que totoro.aliases está definido
+      if (!totoro.aliases) {
+        totoro.aliases = new Map();
+      }
+
       const pluginEntry = [
-        ...(totoro.plugins ? totoro.plugins.keys() : []),
-        ...(totoro.aliases ? totoro.aliases.keys() : []),
+        ...Array.from(totoro.plugins.keys()),
+        ...Array.from(totoro.aliases.keys()),
       ];
 
       const matcherx = matcher(pluginName, pluginEntry).filter(
-        (v) => v.distance >= 20
+        (v) => v.accuracy >= 20
       );
 
-      if (matcherx.length) {
+      if (matcherx.length > 0) {
         return noCommand(
-          totoro,
           msg,
-          `Totoro no encontró el comando ${pluginName}\n\n Te mostra las siguientes sugerencias:\n\n${matcherx
-            .map((v) => "🐥" + Tprefix + v.string + " (" + v.accuracy + "%)")
-            .join("\n")} `
+          Tprefix,
+          pluginName,
+          `${matcherx
+            .map((v) => `│  ≡◦ \`🐥 ${Tprefix}${v.string} (${v.accuracy}%)\``)
+            .join("\n")}\n`
         );
       }
     }
+
     if (!plugin) {
       return;
     }
@@ -121,7 +128,6 @@ module.exports = {
 
     const verifyuser = require("../utils/verifyuser");
     const isVerified = await verifyuser(user, totoro, msg);
-    const Tprefix = totoro.config.prefix;
     if (
       !isVerified &&
       plugin.name !== "register" &&

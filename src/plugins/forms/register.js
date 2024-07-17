@@ -24,7 +24,6 @@ module.exports = {
   subcategory: "user",
   description: "Registra un totoUser en la base de datos",
   usage: "register <nombre>.<edad>",
-  aliases: ["reg"],
 
   async execute(totoro, msg, args) {
     try {
@@ -101,7 +100,16 @@ module.exports = {
 
       // Registrar nuevo usuario
       await registerNewUser(phone, nombre, edadInt, serialNumber, country);
-      await sendReg(totoro, msg, nombre, userCount);
+      await sendReg(
+        totoro,
+        msg,
+        phone,
+        nombre,
+        edadInt,
+        serialNumber,
+        country,
+        userCount
+      );
       await msg.react("🍭");
     } catch (error) {
       if (error.message === "Este número de teléfono ya está registrado.") {

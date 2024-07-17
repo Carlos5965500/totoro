@@ -4,6 +4,7 @@ const totoroLog = require("../functions/totoroLog");
 module.exports = async (totoro) => {
   try {
     const directory = await readdir("./src/plugins");
+    let pluginCount = 0;
 
     for (const folder of directory) {
       const files = await readdir(`./src/plugins/${folder}`);
@@ -12,17 +13,30 @@ module.exports = async (totoro) => {
         const pluginPath = `../plugins/${folder}/${file}`;
         delete require.cache[require.resolve(pluginPath)];
 
-        // Cargar el módulo del plugin
-        const plugin = require(pluginPath);
+        try {
+          const plugin = require(pluginPath);
+          if (plugin && plugin.name) {
+            // Añadir el plugin al mapa de plugins
+            if (!totoro.plugins) {
+              totoro.plugins = new Map();
+            }
+            totoro.plugins.set(plugin.name.toLowerCase(), plugin);
+            pluginCount++;
 
-        // Añadir el nombre principal del plugin al mapa de plugins
-        totoro.plugins.set(plugin.name.toLowerCase(), plugin);
-
-        // Añadir aliases (si existen) al mapa de plugins
-        if (plugin.aliases && Array.isArray(plugin.aliases)) {
-          for (const alias of plugin.aliases) {
-            totoro.plugins.set(alias.toLowerCase(), plugin);
+            // Añadir aliases (si existen) al mapa de plugins
+            if (plugin.aliases && Array.isArray(plugin.aliases)) {
+              if (!totoro.aliases) {
+                totoro.aliases = new Map();
+              }
+              for (const alias of plugin.aliases) {
+                totoro.aliases.set(alias.toLowerCase(), plugin);
+              }
+            }
+          } else {
+            console.log(`Plugin no válido en ${pluginPath}`);
           }
+        } catch (error) {
+          console.error(`Error al cargar plugin en ${pluginPath}:`, error);
         }
       }
     }
@@ -30,7 +44,7 @@ module.exports = async (totoro) => {
     // Registrar en el log la cantidad de plugins cargados
     totoroLog.info(
       "./logs/handlers/plugins.log",
-      `[PLUGINS] ${totoro.plugins.size} cargados.`
+      `[PLUGINS] ${pluginCount} cargados.`
     );
   } catch (error) {
     console.error("Error al cargar plugins:", error);

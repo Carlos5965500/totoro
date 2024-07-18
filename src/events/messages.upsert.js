@@ -6,6 +6,7 @@ const {
   dev,
 } = require("../functions/messages");
 const { matcher } = require("../functions/matcher");
+const totoroLog = require("../functions/totoroLog");
 module.exports = {
   name: "messages.upsert",
 
@@ -149,6 +150,7 @@ module.exports = {
           msg.react("❌");
         });
 
+      totoroLog.error(`Error ejecutando ${pluginName}: ${error.message}`);
       console.error(error);
     });
   },

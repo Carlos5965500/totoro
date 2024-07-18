@@ -16,13 +16,12 @@ const totoPremium = tDB.sequelize.define(
         key: "id",
       },
     },
-    serialNumber: {
+    totoLicense: {
       type: DataTypes.UUID,
       allowNull: false,
       unique: true,
       defaultValue: DataTypes.UUIDV4,
-    },
-    // Puedes agregar más campos específicos de usuarios premium si los necesitas
+    }, 
   },
   {
     tableName: "totoPremiumUsers",

@@ -18,7 +18,6 @@ module.exports = {
 
     if (!totoro.plugins.size) {
       totoroLog.error(
-        totoroLog.verbose,
         "./logs/plugins/developer/reload.log",
         "[PLUGINS] No se encontraron plugins."
       );

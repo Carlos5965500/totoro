@@ -10,6 +10,7 @@ async function registerTotoUser(phone, nombre, edad, serialNumber, country) {
       age: edad,
       serialNumber: serialNumber,
       country: country,
+      status: "whitelist", // Añadir a la lista blanca por defecto
     });
 
     // Retornar el usuario creado
@@ -18,7 +19,6 @@ async function registerTotoUser(phone, nombre, edad, serialNumber, country) {
     if (error.name === "SequelizeUniqueConstraintError") {
       // Registrar el error de restricción única
       totoroLog.error(
-        totoroLog.verbose,
         "./logs/functions/registerTotoUser.log",
         `Error de restricción única al registrar usuario: ${error}`
       );

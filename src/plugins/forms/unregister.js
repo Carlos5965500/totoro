@@ -4,6 +4,7 @@ const {
   sendWarning,
   sendError,
   sendSuccess,
+  infoRegister,
 } = require("../../functions/messages");
 
 module.exports = {
@@ -26,59 +27,63 @@ module.exports = {
 
       const phone = telf.split("@")[0];
 
-      // Buscar el usuario
+      // Buscar el ${user}
       let user = await totoUser.findOne({ where: { phone: phone } });
       if (!user) {
-        await sendWarning(totoro, msg, "No estás registrado en Totorolandia.");
+        await infoRegister(
+          totoro,
+          msg,
+          `Por favor, ${user} regístrate con el siguiente comando: ${totoroPrefix}register nombre.edad`
+        );
         return;
       }
 
       totoroLog.info(
         "./logs/plugins/forms/unregister.log",
-        `Usuario desregistrado: ${phone}`
+        `${user.name}(${phone}) abandonón Totorolandia.`
       );
 
-      // Eliminar el usuario de la base de datos
+      // Eliminar el ${user} de la base de datos
       const result = await totoUser.destroy({ where: { phone: phone } });
 
       if (result === 0) {
         await sendError(
           totoro,
           msg,
-          "Error al desregistrar usuario. Inténtalo de nuevo."
+          "Error al remover al ${user}. Inténtalo de nuevo."
         );
         totoroLog.error(
           "./logs/plugins/forms/unregister.log",
-          `Error al desregistrar usuario: El usuario con el número de teléfono ${phone} no fue eliminado.`
+          `Error al remover al ${user}: El ${user} con el número de teléfono ${phone} no fue eliminado.`
         );
       } else {
-        // Verificar si el usuario realmente fue eliminado
+        // Verificar si el ${user} realmente fue eliminado
         user = await totoUser.findOne({ where: { phone: phone } });
         if (user) {
           await sendError(
             totoro,
             msg,
-            "Error al desregistrar usuario. Inténtalo de nuevo."
+            `Error al remover al ${user}. Totoro no pudo eliminarte en la totoBD.`
           );
           totoroLog.error(
             "./logs/plugins/forms/unregister.log",
-            `Error al desregistrar usuario: El usuario con el número de teléfono ${phone} no fue eliminado.`
+            `Error al remover al ${user} con el número de teléfono ${phone}. No fue eliminado.`
           );
         } else {
-          await sendSuccess(
-            totoro,
-            msg,
-            "Te has desregistrado exitosamente en Totorolandia."
-          );
+          await sendSuccess(totoro, msg, "Has abandonado Totorolandia.");
           await msg.react("🗑️");
         }
       }
     } catch (error) {
       totoroLog.error(
         "./logs/plugins/forms/unregister.log",
-        `Error al desregistrar usuario: ${error}`
+        `Error al remover al ${user}: ${error.message || error}`
       );
-      await sendError(totoro, msg, "Error al desregistrar usuario.");
+      await sendError(
+        totoro,
+        msg,
+        `Error al remover al ${user}. Inténtalo de nuevo. \n${error}`
+      );
     }
   },
 };

@@ -1,4 +1,4 @@
-const { v4: uuidv4 } = require("uuid");
+const axios = require("axios");
 const {
   sendError,
   sendSerial,
@@ -50,10 +50,31 @@ module.exports = {
         return;
       }
 
-      const serialNumber = uuidv4();
+      // Realiza una solicitud a la API para generar el número de serie
+      try {
+        const response = await axios.get(
+          `https://cinammon.es/totoro/totoLicense.php?phone=${phone}`
+        );
 
-      await sendSerial(msg, user.name, serialNumber);
-      msg.reply(`${serialNumber}`);
+        // Verificar la estructura de la respuesta
+        if (response.data && response.data.totoLicense) {
+          const serialNumber = response.data.totoLicense;
+
+          await sendSerial(msg, user.name, serialNumber);
+          msg.reply(`${serialNumber}`);
+        } else {
+          console.error("Respuesta inesperada de la API:", response.data);
+          await sendError(
+            totoro,
+            msg,
+            "Error al generar el número de serie. Respuesta inesperada de la API."
+          );
+        }
+      } catch (apiError) {
+        console.error("Error al generar el número de serie:", apiError);
+        await sendError(totoro, msg, "Error al generar el número de serie.");
+        return;
+      }
 
       await msg.react("✅");
     } catch (error) {

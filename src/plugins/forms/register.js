@@ -1,5 +1,6 @@
 const { createHash } = require("crypto");
 const totoUser = require("../../models/totoUser");
+const totoWhitelist = require("../../models/totoWhiteList");
 const countTotoUsers = require("../../functions/countTotoUsers");
 const forbiddenWords = require("../../../settings.json").forbiddenWords;
 const urlRegex = /https?:\/\/[^\s]+/;
@@ -99,7 +100,20 @@ module.exports = {
       }
 
       // Registrar nuevo usuario
-      await registerNewUser(phone, nombre, edadInt, serialNumber, country);
+      user = await registerNewUser(
+        phone,
+        nombre,
+        edadInt,
+        serialNumber,
+        country
+      );
+
+      // Agregar el usuario a la tabla de whitelist
+      await totoWhitelist.create({
+        userId: user.id,
+        userPhone: user.phone,
+      });
+
       await sendReg(
         totoro,
         msg,

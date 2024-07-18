@@ -18,7 +18,6 @@ module.exports = {
     exec(plugins, async (error, stdout, stderr) => {
       if (error) {
         totoroLog.error(
-          totoroLog.verbose,
           ".logs/plugins/developer/bash.log",
           `[PLUGINS] Error al ejecutar el comando bash: ${error.message}`
         );
@@ -28,7 +27,6 @@ module.exports = {
 
       if (stdout.trim() && stderr.trim()) {
         totoroLog.error(
-          totoroLog.verbose,
           ".logs/plugins/developer/bash.log",
           `[PLUGINS] Error al ejecutar el comando bash: ${error.message}`
         );
@@ -41,7 +39,6 @@ module.exports = {
 
       if (stderr.trim()) {
         totoroLog.error(
-          totoroLog.verbose,
           ".logs/plugins/developer/bash.log",
           `[PLUGINS] Error al ejecutar el comando bash: ${stderr}`
         );

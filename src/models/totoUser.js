@@ -57,7 +57,7 @@ const totoUser = tDB.sequelize.define(
     },
   },
   {
-    tableName: "totousers",
+    tableName: "totoUsers",
     timestamps: false,
   }
 );

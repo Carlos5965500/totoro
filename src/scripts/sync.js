@@ -2,8 +2,8 @@ const TotoDB = require("../libs/db/totoDB");
 const totoUser = require("../models/totoUser");
 const totoPremium = require("../models/totoPremium");
 const totoCommands = require("../models/totoCommands");
-const Blacklist = require("../models/totoBlackList");
-const Whitelist = require("../models/totoWhiteList"); 
+const totoWhitelist = require("../models/totoWhiteList");
+const totoBlacklist = require("../models/totoBlackList");
 const { Sequelize } = require("sequelize");
 const totoroLog = require("../functions/totoroLog");
 
@@ -34,15 +34,15 @@ class totoDBSync {
       totoCommands.rawAttributes,
       totoCommands.options
     );
-    this.backupBlacklist = this.backupDB.define(
-      "Blacklist",
-      Blacklist.rawAttributes,
-      Blacklist.options
-    );
     this.backupWhitelist = this.backupDB.define(
-      "Whitelist",
-      Whitelist.rawAttributes,
-      Whitelist.options
+      "totoWhitelist",
+      totoWhitelist.rawAttributes,
+      totoWhitelist.options
+    );
+    this.backupBlacklist = this.backupDB.define(
+      "totoBlacklist",
+      totoBlacklist.rawAttributes,
+      totoBlacklist.options
     );
   }
 
@@ -58,15 +58,16 @@ class totoDBSync {
       syncMessage += `
 │ 🚀  Conexión exitosa a la base de datos principal: ${this.tDB.sequelize.getDatabaseName()}`;
 
+      // Sincronizar en orden correcto
+      await totoUser.sync({ force: false });
       await Promise.all([
-        totoUser.sync({ force: false }),
         totoPremium.sync({ force: false }),
         totoCommands.sync({ force: false }),
-        Blacklist.sync({ force: false }),
-        Whitelist.sync({ force: false }),
+        totoWhitelist.sync({ force: false }),
+        totoBlacklist.sync({ force: false }),
       ]);
       syncMessage += `
-│ 🔄  Tablas sincronizadas: ${totoUser.getTableName()}, ${totoPremium.getTableName()}, ${totoCommands.getTableName()}, ${Blacklist.getTableName()}, ${Whitelist.getTableName()}`;
+│ 🔄  Tablas sincronizadas: ${totoUser.getTableName()}, ${totoPremium.getTableName()}, ${totoCommands.getTableName()}, ${totoWhitelist.getTableName()}, ${totoBlacklist.getTableName()}`;
 
       await this.tDB.sequelize.sync({ force: false });
       syncMessage += `
@@ -88,15 +89,15 @@ class totoDBSync {
         syncMessage += `
 │ 🚀  Conexión exitosa a la base de datos de respaldo: ${this.backupDB.options.storage}`;
 
+        await this.backupTotoUser.sync({ force: false });
         await Promise.all([
-          this.backupTotoUser.sync({ force: false }),
           this.backupTotoPremium.sync({ force: false }),
           this.backupTotoCommands.sync({ force: false }),
-          this.backupBlacklist.sync({ force: false }),
           this.backupWhitelist.sync({ force: false }),
+          this.backupBlacklist.sync({ force: false }),
         ]);
         syncMessage += `
-│ 🔄  Tablas sincronizadas: ${this.backupTotoUser.getTableName()}, ${this.backupTotoPremium.getTableName()}, ${this.backupTotoCommands.getTableName()}, ${this.backupBlacklist.getTableName()}, ${this.backupWhitelist.getTableName()}`;
+│ 🔄  Tablas sincronizadas: ${this.backupTotoUser.getTableName()}, ${this.backupTotoPremium.getTableName()}, ${this.backupTotoCommands.getTableName()}, ${this.backupWhitelist.getTableName()}, ${this.backupBlacklist.getTableName()}`;
 
         await this.backupDB.sync({ force: false });
         syncMessage += `

@@ -1,6 +1,5 @@
 const { DataTypes } = require("sequelize");
 const TotoDB = require("../libs/db/totoDB");
-const { parsePhoneNumberFromString } = require("libphonenumber-js");
 const totoroLog = require("../functions/totoroLog");
 
 const tDB = new TotoDB();
@@ -8,6 +7,11 @@ const tDB = new TotoDB();
 const totoUser = tDB.sequelize.define(
   "totoUser",
   {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
     phone: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -55,6 +59,14 @@ const totoUser = tDB.sequelize.define(
       unique: true,
       defaultValue: DataTypes.UUIDV4,
     },
+    status: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: 'whitelist', // Por defecto, los usuarios están en la lista blanca
+      validate: {
+        isIn: [['whitelist', 'blacklist']],
+      },
+    },
   },
   {
     tableName: "totoUsers",
@@ -66,10 +78,5 @@ totoroLog.info(
   "./logs/models/totoUser.log",
   `[MODELS] Modelo ${totoUser.name} creado.`
 );
-
-totoUser.getCountryFromPhone = function (phone) {
-  const phoneNumber = parsePhoneNumberFromString(phone);
-  return phoneNumber.country;
-};
 
 module.exports = totoUser;

@@ -1,6 +1,4 @@
 const totoroLog = require("./totoroLog");
-const path = require("path");
-
 
 async function sendMessage(totoro, msg, message) {
   const mensaje =
@@ -14,7 +12,7 @@ async function sendMessage(totoro, msg, message) {
     await totoro.sendMessage(remoteJid, { text: mensaje });
   } catch (error) {
     totoroLog.error(
-      path.join(__dirname, "./logs/functions/messages.log"),
+      "./logs/functions/messages.log",
       `Error enviando mensaje: ${error}`
     );
   }
@@ -161,9 +159,9 @@ async function infoRegister(msg, warningMessage) {
         `> ${warningMessage}`
     );
   } catch (error) {
-    totoroLog.error(
-      "./logs/functions/messages.log",
-      `Error enviando mensaje de aviso: ${error}`
+    totoroLog.verbose(
+      `./logs/functions/messages.log`,
+      `Error enviando mensaje de infoRegister: ${error}`
     );
   }
 }
@@ -181,7 +179,7 @@ async function infoPremium(msg, warningMessage) {
   } catch (error) {
     totoroLog.error(
       "./logs/functions/messages.log",
-      `Error enviando mensaje de aviso: ${error}`
+      `Error enviando mensaje de infoPremium: ${error}`
     );
   }
 }
@@ -214,7 +212,10 @@ async function sendSerial(msg, userName, serialNumber) {
         `> ${serialNumber}`
     );
   } catch (error) {
-    console.error(`Error enviando mensaje de aviso: ${error}`);
+    totoroLog.error(
+      "./logs/functions/messages.log",
+      `Error enviando mensaje de número de serie: ${error}`
+    );
   }
 }
 
@@ -316,13 +317,13 @@ async function sendMediaMessage(msg, mediaType, mediaContent) {
 
 async function dev(msg, pluginName, devMessage) {
   const dev = require("../../settings.json").dev;
-  try { 
+  try {
     await msg.react("👑");
     await msg.reply(
       `╭─⬣「 \`${pluginName}\`」⬣\n` +
-      `│  ≡◦ *🔒 Este comando es solo para* ${dev}\n` +
-      `╰─⬣\n` +
-      `> ${devMessage}`
+        `│  ≡◦ *🔒 Este comando es solo para* ${dev}\n` +
+        `╰─⬣\n` +
+        `> ${devMessage}`
     );
   } catch (error) {
     totoroLog.error(

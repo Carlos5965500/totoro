@@ -1,7 +1,9 @@
 const TotoDB = require("../libs/db/totoDB");
 const totoUser = require("../models/totoUser");
 const totoPremium = require("../models/totoPremium");
-const totoCommands = require("../models/totoCommands"); // Importa el modelo
+const totoCommands = require("../models/totoCommands");
+const Blacklist = require("../models/totoBlackList");
+const Whitelist = require("../models/totoWhiteList"); 
 const { Sequelize } = require("sequelize");
 const totoroLog = require("../functions/totoroLog");
 
@@ -28,10 +30,19 @@ class totoDBSync {
       totoPremium.options
     );
     this.backupTotoCommands = this.backupDB.define(
-      // Define el modelo totoCommands
       "totoCommands",
       totoCommands.rawAttributes,
       totoCommands.options
+    );
+    this.backupBlacklist = this.backupDB.define(
+      "Blacklist",
+      Blacklist.rawAttributes,
+      Blacklist.options
+    );
+    this.backupWhitelist = this.backupDB.define(
+      "Whitelist",
+      Whitelist.rawAttributes,
+      Whitelist.options
     );
   }
 
@@ -50,10 +61,12 @@ class totoDBSync {
       await Promise.all([
         totoUser.sync({ force: false }),
         totoPremium.sync({ force: false }),
-        totoCommands.sync({ force: false }), // Sincroniza el modelo totoCommands
+        totoCommands.sync({ force: false }),
+        Blacklist.sync({ force: false }),
+        Whitelist.sync({ force: false }),
       ]);
       syncMessage += `
-│ 🔄  Tablas sincronizadas: ${totoUser.getTableName()}, ${totoPremium.getTableName()}, ${totoCommands.getTableName()}`;
+│ 🔄  Tablas sincronizadas: ${totoUser.getTableName()}, ${totoPremium.getTableName()}, ${totoCommands.getTableName()}, ${Blacklist.getTableName()}, ${Whitelist.getTableName()}`;
 
       await this.tDB.sequelize.sync({ force: false });
       syncMessage += `
@@ -78,10 +91,12 @@ class totoDBSync {
         await Promise.all([
           this.backupTotoUser.sync({ force: false }),
           this.backupTotoPremium.sync({ force: false }),
-          this.backupTotoCommands.sync({ force: false }), // Sincroniza el modelo en la base de datos de respaldo
+          this.backupTotoCommands.sync({ force: false }),
+          this.backupBlacklist.sync({ force: false }),
+          this.backupWhitelist.sync({ force: false }),
         ]);
         syncMessage += `
-│ 🔄  Tablas sincronizadas: ${this.backupTotoUser.getTableName()}, ${this.backupTotoPremium.getTableName()}, ${this.backupTotoCommands.getTableName()}`;
+│ 🔄  Tablas sincronizadas: ${this.backupTotoUser.getTableName()}, ${this.backupTotoPremium.getTableName()}, ${this.backupTotoCommands.getTableName()}, ${this.backupBlacklist.getTableName()}, ${this.backupWhitelist.getTableName()}`;
 
         await this.backupDB.sync({ force: false });
         syncMessage += `

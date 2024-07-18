@@ -2,7 +2,9 @@ const winston = require("winston");
 
 const createLogger = (logFilePath) => {
   if (typeof logFilePath !== "string") {
-    throw new TypeError("logFilePath must be a string");
+    throw new TypeError(
+      `LogFilePath tiene que ser un string pero es ${typeof logFilePath}`
+    );
   }
   return winston.createLogger({
     format: winston.format.combine(
@@ -21,7 +23,9 @@ const createLogger = (logFilePath) => {
 const createLogFunction = (logLevel) => {
   return (logFilePath, message) => {
     if (typeof logFilePath !== "string") {
-      throw new TypeError("logFilePath must be a string");
+      throw new TypeError(
+        `LogFilePath tiene que ser un string pero es ${typeof logFilePath}`
+      );
     }
     const logger = createLogger(logFilePath);
     logger.log(logLevel, message);
@@ -40,14 +44,18 @@ const totoroLog = {
   react: createLogFunction("info"),
   rejectCallback: (logFilePath, error) => {
     if (typeof logFilePath !== "string") {
-      throw new TypeError("logFilePath must be a string");
+      throw new TypeError(
+        `LogFilePath tiene que ser un string pero es ${typeof logFilePath}`
+      );
     }
     const logger = createLogger(logFilePath);
     logger.error(`Error: ${error.message}\nStack: ${error.stack}`);
   },
   resolveCallback: (logFilePath, message) => {
     if (typeof logFilePath !== "string") {
-      throw new TypeError("logFilePath must be a string");
+      throw new TypeError(
+        `LogFilePath tiene que ser un string pero es ${typeof logFilePath}`
+      );
     }
     const logger = createLogger(logFilePath);
     logger.info(message);

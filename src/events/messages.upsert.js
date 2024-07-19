@@ -50,6 +50,7 @@ module.exports = {
     if (!body) return;
 
     if (
+      !body.startsWith("/") &&
       !body.startsWith("!") &&
       !body.startsWith("#") &&
       !body.startsWith("$") &&

@@ -3,14 +3,21 @@ const { prepareWAMessageMedia } = require("@whiskeysockets/baileys");
 module.exports = {
   name: "review",
   category: "utilities",
-  subcategory: "c",
-  usage: "c",
-  description: "c",
+  subcategory: "review",
+  usage: "review <review>",
+  description: "Envía una sugerencia a Totoro Reviews",
 
   async execute(totoro, msg, args) {
     const review = args.join(" ");
 
-    if (!review) return msg.reply("Totoro Reviews");
+    if (!review)
+      return help(
+        totoro,
+        msg,
+        "review",
+        "Envía una sugerencia a Totoro Reviews",
+        "review <review>"
+      );
 
     const user = msg.messages[0]?.pushName || ".";
 

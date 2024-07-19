@@ -3,14 +3,21 @@ const { prepareWAMessageMedia } = require("@whiskeysockets/baileys");
 module.exports = {
   name: "report",
   category: "utilities",
-  subcategory: "c",
-  usage: "c",
-  description: "c",
+  subcategory: "report",
+  usage: "report <report>",
+  description: "Envía un reporte a Totoro Reports",
 
   async execute(totoro, msg, args) {
     const report = args.join(" ");
 
-    if (!report) return msg.reply("Totoro Reports");
+    if (!report)
+      return help(
+        totoro,
+        msg,
+        "report",
+        "Envía un reporte a Totoro Reports",
+        "report <report>"
+      );
 
     const user = msg.messages[0]?.pushName || ".";
 

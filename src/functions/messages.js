@@ -96,7 +96,7 @@ async function help(totoro, msg, titulo, msgAyuda, ejemplo) {
   const remoteJid = msg.messages[0].key.remoteJid;
   const helpMessage =
     `╭─⬣「 *Ayuda de ${titulo}* 」⬣\n` +
-    `│  ≡◦ ${msgAyuda}\n` +
+    `│  ≡◦ 🪧 ${msgAyuda}\n` +
     `╰─⬣\n` +
     `> *Ejemplo*: ${ejemplo}`;
   try {

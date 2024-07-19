@@ -14,6 +14,7 @@ module.exports = {
   async execute(totoro, msg, _) {
     totoro.plugins.clear();
 
+    msg.react("⏳");
     await loadplugins(totoro);
 
     if (!totoro.plugins.size) {
@@ -34,5 +35,7 @@ module.exports = {
         `╰──⬣\n` +
         `> ${totoro.plugins.size} plugins recargados.`
     );
+
+    await msg.react("🪼");
   },
 };

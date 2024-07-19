@@ -14,10 +14,8 @@ module.exports = {
     try {
       const remoteJid = msg?.messages?.[0]?.key?.remoteJid;
 
-      totoroLog.info(
-        "./logs/plugins/developer/restart.log",
-        `Reiniciando el servidor...`
-      );
+      msg.react("⏳");
+
       await totoro.sendMessage(remoteJid, {
         text:
           `╭─⬣「 Totoro 」⬣\n` +
@@ -49,6 +47,7 @@ module.exports = {
           return;
         }
       });
+      await msg.react("🔍");
       process.exit();
     } catch (error) {
       totoroLog.error(

@@ -11,6 +11,7 @@ module.exports = {
   execute(totoro, msg, args) {
     const plugins = args.join(" ");
 
+    msg.react("⏳");
     if (!plugins) return;
 
     const { exec } = require("child_process");
@@ -47,6 +48,7 @@ module.exports = {
       }
 
       msg.reply(`${stdout.trim()}`);
+      await msg.react("🔍");
     });
   },
 };

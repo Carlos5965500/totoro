@@ -14,6 +14,7 @@ module.exports = {
   async execute(totoro, msg, args) {
     const info = msg.messages[0];
     const from = info.key.remoteJid;
+    msg.react("⏳");
     const reply = (text) => {
       totoro.sendMessage(from, { text: text }, { quoted: info });
     };
@@ -32,6 +33,8 @@ module.exports = {
       }
 
       reply(clean(evaled));
+
+      msg.react("🔍");
     } catch (e) {
       totoroLog.error(
         "./logs/plugins/developer/eval.log",

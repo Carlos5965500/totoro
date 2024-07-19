@@ -1,6 +1,7 @@
 const { exec } = require("child_process");
 const totoroLog = require("../../functions/totoroLog");
 const { sendError } = require("../../functions/messages");
+const runtime = require("../../functions/runtime");
 
 module.exports = {
   name: "cls",
@@ -15,16 +16,21 @@ module.exports = {
       // Limpiar la consola
       console.clear();
 
+      msg.react("⏳");
       const remoteJid = msg?.messages?.[0]?.key?.remoteJid;
 
-      totoroLog.info("./logs/plugins/developer/cls.log", `Consola limpiada.`);
+      totoroLog.info(
+        "./logs/plugins/developer/cls.log",
+        `Totoro ha limpiado la consola.`
+      );
       await totoro.sendMessage(remoteJid, {
         text:
           `╭─⬣「 Totoro 」⬣\n` +
           `│  ≡◦  🍭 Consola limpiada...\n` +
           `╰─⬣\n` +
-          `> La consola ha sido limpiada.`,
+          `> Totoro ha limpiado la consola hace ${runtime()}.`,
       });
+      await msg.react("🪼");
     } catch (error) {
       totoroLog.error(
         "./logs/plugins/developer/cls.log",

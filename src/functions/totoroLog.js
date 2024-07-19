@@ -1,4 +1,5 @@
 const winston = require("winston");
+const moment = require("moment-timezone");
 
 const createLogger = (logFilePath) => {
   if (typeof logFilePath !== "string") {
@@ -8,7 +9,10 @@ const createLogger = (logFilePath) => {
   }
   return winston.createLogger({
     format: winston.format.combine(
-      winston.format.timestamp({ format: "DD-MM-YYYY HH:mm:ss" }),
+      winston.format.timestamp({
+        format: () =>
+          moment().tz("Europe/Madrid").format("DD-MM-YYYY HH:mm:ss"),
+      }),
       winston.format.printf(
         ({ timestamp, level, message }) => `${timestamp} ${level}: ${message}`
       )

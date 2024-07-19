@@ -28,7 +28,7 @@ module.exports = {
           `╭─⬣「 Totoro 」⬣\n` +
           `│  ≡◦  🍭 Consola limpiada...\n` +
           `╰─⬣\n` +
-          `> Totoro ha limpiado la consola hace ${runtime()}.`,
+          `> Totoro ha limpiado la consola.`,
       });
       await msg.react("🪼");
     } catch (error) {

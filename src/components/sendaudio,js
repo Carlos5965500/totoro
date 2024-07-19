@@ -1,0 +1,16 @@
+module.exports = {
+  id: "sendaudio",
+
+  async execute(totoro, msg, args) {
+    await totoro.sendMessage(
+      remoteJid || participant,
+      {
+        audio: { url: dl_url },
+        mimetype: "audio/mpeg",
+        ptt: true, // Para indicar que es un audio reproducible
+        caption: metadata,
+      },
+      { quoted: msg.messages[0], asDocument: user.useDocument }
+    );
+  },
+};

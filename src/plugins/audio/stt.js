@@ -13,7 +13,7 @@ const ASSEMBLYAI_API_KEY = "eb21d4224c83470db38beacebe821f81";
 module.exports = {
   name: "stt",
   description: "🎙️ Transcribe un mensaje de audio.",
-  category: "Audio",
+  category: "*Audio*",
   subcategory: "Voz",
   usage: `+stt`,
   aliases: ["stt"],

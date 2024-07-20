@@ -10,7 +10,7 @@ module.exports = {
   name: "textToSpeech",
   usage: "tts <texto>",
   aliases: ["tts"],
-  category: "Audio",
+  category: "*Audio*",
   subcategory: "Voz",
   description: "Convierte texto a voz y envía un audio",
 

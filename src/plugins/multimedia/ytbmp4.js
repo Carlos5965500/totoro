@@ -45,10 +45,12 @@ module.exports = {
         // Si no es una URL, realizar una búsqueda
         const searchResults = await Scraper.ytsearch(args.join(" "));
         if (searchResults.length === 0) {
-          return sendWarning(
+          return help(
             totoro,
             msg,
-            "No se encontraron resultados para la búsqueda."
+            "ytmp4",
+            "Descarga videos de YouTube.",
+            "ytmp4 <yt url o nombre>"
           );
         }
         videoUrl = searchResults[0].url; // Tomamos la primera URL de los resultados

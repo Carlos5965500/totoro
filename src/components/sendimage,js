@@ -1,0 +1,46 @@
+const { sendWarning, sendError, help } = require("../functions/messages");
+const totoroLog = require("../functions/totoroLog");
+
+module.exports = {
+  id: "sendImage",
+
+  async execute(totoro, msg, args) {
+    try {
+      msg.react("⏳");
+      const url = args[0];
+      const message = msg.messages[0];
+      const remoteJid = message.key.remoteJid;
+      const fromMe = message.key.fromMe;
+      const participant = message.key.participant;
+      const messageTimestamp = message.messageTimestamp;
+      if (
+        remoteJid &&
+        typeof fromMe !== "undefined" &&
+        participant &&
+        messageTimestamp
+      ) {
+        // Enviar el mensaje de imagen
+        await totoro.sendMessage(
+          remoteJid,
+          {
+            image: { url: url },
+          },
+          { quoted: message }
+        );
+
+        await msg.react("🖼️");
+      }
+    } catch (error) {
+      // Log del error con más detalles
+      totoroLog.error(
+        "./logs/plugins/multimedia/sendImage.log",
+        `Error al descargar la imagen de Instagram: ${error.message}, Stack: ${error.stack}`
+      );
+      sendError(
+        totoro,
+        msg,
+        "Error al descargar la imagen de Instagram. Por favor, vuelve a intentarlo."
+      );
+    }
+  },
+};

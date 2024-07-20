@@ -44,37 +44,8 @@ module.exports = {
         return sendWarning(totoro, msg, `Solo se pueden descargar imágenes.`);
       }
 
-      if (!msg.messages || msg.messages.length === 0) {
-        sendWarning(
-          totoro,
-          msg,
-          "No se pudo obtener el mensaje citado. Por favor, vuelve a intentarlo."
-        );
-
-        totoroLog.info(
-          "./logs/plugins/multimedia/igimage.log",
-          `No se pudo obtener el mensaje citado.
-          msg.messages: ${JSON.stringify(msg.messages)}`
-        );
-      }
-
       const message = msg.messages[0];
       const remoteJid = message.key.remoteJid;
-
-      if (!message.key || !remoteJid) {
-        sendError(
-          totoro,
-          msg,
-          `No se pudo obtener el número de usuario o el chat.
-            message.key: ${JSON.stringify(message.key)}`
-        );
-
-        totoroLog.info(
-          "./logs/plugins/multimedia/igimage.js",
-          `No se pudo obtener el número de usuario o el chat.
-          message.key: ${JSON.stringify(message.key)}`
-        );
-      }
 
       let txt = `╭─⬣「 *Instagram Image Download* 」⬣\n`;
       txt += `│  ≡◦ *🍭 Enlace ∙* ${args[0]}\n`;

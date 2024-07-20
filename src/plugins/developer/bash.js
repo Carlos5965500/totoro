@@ -22,7 +22,7 @@ module.exports = {
           ".logs/plugins/developer/bash.log",
           `[PLUGINS] Error al ejecutar el comando bash: ${error.message}`
         );
-        msg.reply(`╭──⬣「 Error 」⬣\n` + `│  ≡◦ ${error.message}\n` + `╰──⬣`);
+        msg.reply(`${error.message}`);
         return;
       }
 
@@ -43,7 +43,7 @@ module.exports = {
           ".logs/plugins/developer/bash.log",
           `[PLUGINS] Error al ejecutar el comando bash: ${stderr}`
         );
-        msg.reply(`╭──⬣「 Error 」⬣\n` + `│  ≡◦ ${stderr.trim()}\n` + `╰──⬣`);
+        msg.reply(`${stderr.trim()}`);
         return;
       }
 

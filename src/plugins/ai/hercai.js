@@ -1,9 +1,11 @@
 const { Hercai } = require("hercai");
 const { help, sendError } = require("../../functions/messages");
+const { subcategory } = require("../multimedia/igimage");
 
 module.exports = {
   name: "hercai",
-  category: "ai",
+  category: "*Inteligencia Artificial*",
+  subcategory: "ai",
   description: "Hercai AI",
   usage: "hercai <message>",
   aliases: ["hercai", "hercai"],

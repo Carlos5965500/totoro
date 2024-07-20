@@ -21,7 +21,7 @@ module.exports = {
     }
 
     try {
-      let { dl_url } = await Scraper.igdl(args[0]);
+      let { dl_url } = await Scraper.igdl(args[0]); 
       if (!dl_url) {
         totoroLog.info(
           "./logs/plugins/multimedia/igmp4.log",
@@ -49,39 +49,8 @@ module.exports = {
         );
       }
 
-      // Asegurarse de que msg.messages existe y tiene al menos un mensaje
-      if (!msg.messages || msg.messages.length === 0) {
-        sendWarning(
-          totoro,
-          msg,
-          "No se pudo obtener el mensaje citado. Por favor, vuelve a intentarlo."
-        );
-
-        totoroLog.info(
-          "./logs/plugins/multimedia/igmp4.log",
-          `No se pudo obtener el mensaje citado.
-          msg.messages: ${JSON.stringify(msg.messages)}`
-        );
-      }
-
       const message = msg.messages[0];
       const remoteJid = message.key.remoteJid;
-
-      // Asegurarse de que el mensaje y remoteJid son válidos
-      if (!message.key || !remoteJid) {
-        sendError(
-          totoro,
-          msg,
-          `No se pudo obtener el número de usuario o el chat.
-            message.key: ${JSON.stringify(message.key)}`
-        );
-
-        totoroLog.info(
-          "./logs/plugins/multimedia/igmp4.js",
-          `No se pudo obtener el número de usuario o el chat.
-          message.key: ${JSON.stringify(message.key)}`
-        );
-      }
 
       let txt = `╭─⬣「 *Instagram Video Download* 」⬣\n`;
       txt += `│  ≡◦ *🍭 Enlace ∙* ${args[0]}\n`;

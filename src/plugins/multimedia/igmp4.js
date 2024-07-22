@@ -21,7 +21,7 @@ module.exports = {
     }
 
     try {
-      let { dl_url } = await Scraper.igdl(args[0]); 
+      let { dl_url } = await Scraper.igdl(args[0]);
       if (!dl_url) {
         totoroLog.info(
           "./logs/plugins/multimedia/igmp4.log",

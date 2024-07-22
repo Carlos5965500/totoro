@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Totoro Bot</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        @keyframes slideIn {
+            0% {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            0% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+        }
+
+        :root {
+            --background-color: #1a1a2e;
+            --text-color: #e94560;
+            --container-bg-color: #0f3460;
+            --container-text-color: #f8f3f9;
+            --header-bg-color: rgba(11, 14, 26, 0.8);
+            --message-bg-color: rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center; 
+            overflow-y: hidden;
+            overflow-x: hidden;
+        }
+
+        .bot-container {
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: var(--container-bg-color);
+            padding: 2rem;
+            border-radius: 1rem;
+            width: 80%;
+            max-width: 600px;
+            color: var(--container-text-color);
+            transition: background-image 0.5s;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bot-container.show {
+            animation: slideIn 1s forwards;
+        }
+
+        .bot-container.hide {
+            animation: slideOut 1s forwards;
+        }
+
+        h1 {
+            margin: 0;
+            padding: 1rem;
+            background-color: var(--header-bg-color);
+            border-radius: 1rem;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            transition: background-image 0.5s;
+            opacity: 0;
+            animation: slideIn 1s forwards;
+        }
+
+        .message-container {
+            margin-top: 1rem;
+        }
+
+        .message {
+            font-size: 1.2rem;
+            background-color: var(--message-bg-color);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            opacity: 0;
+            animation: slideIn 1s forwards;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bot-container show" id="bot-container">
+        <h1 id="bot-header">¡Hola! Soy Totoro</h1>
+        <div class="message-container" id="message-container">
+            <p class="message" id="message">Como Totoro, fui creado por Nia con el propósito de hacer su experiencia de usuario más fluida, intuitiva y eficiente.</p>
+        </div>
+    </div>
+
+    <script>
+        let currentMessage = 0;
+        const messages = [
+            { header: "¡Hola! Soy Totoro", text: "Como Totoro, fui creado por Nia con el propósito de hacer su experiencia de usuario más fluida, intuitiva y eficiente." },
+            { header: "Eficiencia", text: "Fui programado para responder rápido y eficientemente a un amplio rango de comandos, lo cual significa que puedo ayudarles a ahorrar tiempo y esfuerzo en su interacción con el sistema." },
+            { header: "Fácil Interacción", text: "Mi diseño está basado en el simpático y amistoso personaje de Totoro, lo cual hace las interacciones conmigo más amenas y agradables." },
+            { header: "Versatilidad", text: "Fui creado con la habilidad de manejar diversas tareas, desde responder cuestiones básicas hasta realizar funciones más complejas." },
+            { header: "Panel de Control", text: "El panel al que tienen acceso les permite un control detallado de mis funciones, y la forma en que interactúo con ustedes." },
+            { header: "APIs", text: "Haciendo uso de las APIs, pueden personalizar e incluso ampliar mis capacidades, lo cual me permite adaptarme mejor a sus necesidades específicas." },
+            { header: "Soporte Continuo", text: "Con el respaldo de Nia, reciben actualizaciones y soporte constantemente, garantizando que siempre estoy a la vanguardia." },
+            { header: "Confianza", text: "Confío en que estas razones les den suficientes motivos para elegirme como su bot de confianza. Mi principal objetivo es hacer su experiencia de usuario lo más eficiente y agradable posible." }
+        ];
+
+        function showNextMessage() {
+            const botContainer = document.getElementById('bot-container');
+            const botHeader = document.getElementById('bot-header');
+            const messageElement = document.getElementById('message');
+            
+            botContainer.classList.remove('show');
+            botContainer.classList.add('hide');
+
+            setTimeout(() => {
+                currentMessage = (currentMessage + 1) % messages.length;
+                botHeader.innerText = messages[currentMessage].header;
+                messageElement.innerText = messages[currentMessage].text;
+
+                botContainer.classList.remove('hide');
+                botContainer.classList.add('show');
+            }, 1000); // Esperar a que la animación de salida termine
+        }
+
+        setInterval(showNextMessage, 3000);
+    </script>
+</body>
+
+</html>

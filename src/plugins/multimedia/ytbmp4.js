@@ -1,5 +1,4 @@
 const Scraper = require("@SumiFX/Scraper");
-const verifyUser = require("../../utils/verifyuser");
 const totoroLog = require("../../functions/totoroLog");
 const { sendWarning, sendError, help } = require("../../functions/messages");
 
@@ -56,7 +55,7 @@ module.exports = {
         videoUrl = searchResults[0].url; // Tomamos la primera URL de los resultados
       }
 
-      let { title, size, quality, dl_url } = await Scraper.ytmp4(videoUrl);
+      let { title, size, quality, dl_url } = await Scraper.ytdl(videoUrl);
       if (size.includes("GB") || parseFloat(size.replace(" MB", "")) > 300) {
         return sendWarning(
           totoro,

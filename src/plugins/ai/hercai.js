@@ -1,6 +1,5 @@
 const { Hercai } = require("hercai");
 const { help, sendError } = require("../../functions/messages");
-const { subcategory } = require("../multimedia/igimage");
 
 module.exports = {
   name: "hercai",

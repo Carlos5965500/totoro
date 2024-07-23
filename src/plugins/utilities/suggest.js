@@ -1,5 +1,5 @@
 const { prepareWAMessageMedia } = require("@whiskeysockets/baileys");
-
+const { help } = require("../../functions/messages");
 module.exports = {
   name: "suggest",
   category: "utilities",

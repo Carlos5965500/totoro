@@ -1,5 +1,4 @@
 const Scraper = require("@SumiFX/Scraper");
-const verifyUser = require("../../utils/verifyuser");
 const totoroLog = require("../../functions/totoroLog");
 const { sendWarning, sendError, help } = require("../../functions/messages");
 

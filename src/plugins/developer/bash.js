@@ -18,36 +18,25 @@ module.exports = {
 
     exec(plugins, async (error, stdout, stderr) => {
       if (error) {
-        totoroLog.error(
-          ".logs/plugins/developer/bash.log",
-          `[PLUGINS] Error al ejecutar el comando bash: ${error.message}`
+        msg.reply(
+          "```\n" + JSON.stringify({ error: error.message }, null, 2) + "\n```"
         );
-        msg.reply(`${error.message}`);
         return;
       }
 
-      if (stdout.trim() && stderr.trim()) {
-        totoroLog.error(
-          ".logs/plugins/developer/bash.log",
-          `[PLUGINS] Error al ejecutar el comando bash: ${error.message}`
-        );
-
-        await msg.reply(`${stdout.trim()}`);
-        return totoro.sendMessage(msg.messages[0].key.remoteJid, {
-          text: stdout,
-        });
+      if (stdout) {
+        try {
+          const parsedStdout = JSON.parse(stdout);
+          msg.reply("```\n" + JSON.stringify(parsedStdout, null, 2) + "\n```");
+        } catch (e) {
+          msg.reply("```\n" + stdout + "\n```");
+        }
       }
 
-      if (stderr.trim()) {
-        totoroLog.error(
-          ".logs/plugins/developer/bash.log",
-          `[PLUGINS] Error al ejecutar el comando bash: ${stderr}`
-        );
-        msg.reply(`${stderr.trim()}`);
-        return;
+      if (stderr) {
+        msg.reply("```" + stderr + "```");
       }
 
-      msg.reply(`${stdout.trim()}`);
       await msg.react("🔍");
     });
   },

@@ -1,6 +1,5 @@
 const loadcomponents = require("../../handlers/components");
 const loadplugins = require("../../handlers/plugins");
-const loadevents = require("../../handlers/events");
 const totoroLog = require("../../functions/totoroLog");
 
 module.exports = {

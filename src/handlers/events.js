@@ -6,7 +6,6 @@ module.exports = async (totoro) => {
 
   for (const file of folder) {
     const event = require(`../events/${file}`);
-
     totoro.ev.on(event.name, (...args) => {
       event.load(...args, totoro);
     });

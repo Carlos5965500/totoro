@@ -52,6 +52,7 @@
     "rimraf": "^6.0.0",
     "scrape-websitee": "^1.0.76",
     "sequelize": "^6.37.3",
+    "soundcloud-downloader": "^1.0.0",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
     "wa-sticker-formatter": "^4.4.4",

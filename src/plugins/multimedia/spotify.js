@@ -1,105 +1,150 @@
-const puppeteer = require("puppeteer");
-const { sendWarning, sendError, help } = require("../../functions/messages");
+const { downloadTrack } = require("@nechlophomeriaa/spotifydl");
+const { prepareWAMessageMedia } = require("@whiskeysockets/baileys");
+const { sendWarning } = require("../../functions/messages");
 
 module.exports = {
   name: "spotify",
-  aliases: ["asp", "spa", "spmp3", "sp", "spaudio", "totorosp", "tsp"],
-  category: "multimedia",
-  subcategory: "spotify",
-  description: "Obtiene información de audios de Spotify.",
-  usage: "spmp3 <spotify url o nombre>",
-  botPermissions: ["SEND_MESSAGES", "ATTACH_FILES"],
-  userPermissions: [],
-  cooldown: 10,
+  aliases: ["spotifydl", "spot", "spdl", "sdl", "music", "song"],
+  category: "Download 📥",
+  subcategory: "Music 🎵",
+  usage: "<url>",
+  example:
+    "spotify https://open.spotify.com/track/2spJ8VgV43N4NzosKAYARt?si=9gfCWO2GSUmOU74M0lZrvg",
+  description: "Descarga música con metadatos de Spotify",
 
   async execute(totoro, msg, args) {
-    const participant = msg.messages?.[0]?.key?.participant;
-    const remoteJid = msg.messages?.[0]?.key?.remoteJid;
+    msg.react("⏳");
 
-    if (!participant && !remoteJid) {
-      return sendError(
+    if (!args.length) {
+      return sendWarning(
         totoro,
         msg,
-        "No se pudo obtener el número del usuario o el chat."
+        "🚩 Ingresa una URL o nombre para descargar."
       );
     }
 
-    if (!args[0]) {
-      return help(
-        totoro,
-        msg,
-        "spmp3",
-        "Obtiene información de audios de Spotify.",
-        "spmp3 <spotify url o nombre>"
-      );
-    }
+    const tkurl = args.join(" ");
+    let spotify;
 
     try {
-      let trackQuery = args.join(" ");
-      await msg.react("⏳");
+      spotify = await downloadTrack(tkurl);
+    } catch (error) {
+      console.error("Error al descargar la canción:", error);
+      return sendWarning(
+        totoro,
+        msg,
+        `No se pudo descargar la canción. Inténtalo de nuevo más tarde.`
+      );
+    }
 
-      const browser = await puppeteer.launch({
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
-        headless: 'new'
-      });
-      const page = await browser.newPage();
-      await page.goto('https://open.spotify.com/search', { waitUntil: 'networkidle2' });
-
-      // Esperar el input de búsqueda y escribir la consulta
-      await page.waitForSelector('input[data-testid="search-input"]', { timeout: 10000 });
-      await page.type('input[data-testid="search-input"]', trackQuery);
-      await page.keyboard.press('Enter');
-      await page.waitForTimeout(5000); // Esperar a que cargue la búsqueda
-
-      // Comprobar si hay resultados
-      const resultsExist = await page.$('[data-testid="tracklist-row"]');
-      if (!resultsExist) {
-        throw new Error("No se encontraron resultados para la búsqueda.");
+    if (!spotify.status) {
+      if (
+        spotify.message?.includes("400") ||
+        spotify.message?.includes("external_urls")
+      ) {
+        return sendWarning(totoro, msg, `La URL de Spotify no es válida.`);
+      } else {
+        return sendWarning(
+          totoro,
+          msg,
+          `${spotify.message || "No se pudo descargar la canción."}`
+        );
       }
+    }
 
-      // Obtener resultados de la búsqueda
-      const tracks = await page.evaluate(() => {
-        const trackElements = document.querySelectorAll('[data-testid="tracklist-row"]');
-        let trackInfo = [];
+    const songInfo = ` ╭─⬣「 *Spotify Download* 」⬣
+    │  ≡◦ *🍭 Nombre ∙* ${spotify.title}
+    │  ≡◦ *🪴 Artista ∙* ${spotify.artists}
+    │  ≡◦ *📀 Álbum ∙* ${spotify.album} 
+    │  ≡◦ *🕰 *Duración*: ${spotify.duration}
+    │  ≡◦ *📅 Publicado ∙* ${spotify.release_date} 
+    │  ≡◦ *📊 Popularidad ∙* ${spotify.popularity} 
+    ╰─⬣
+`;
 
-        trackElements.forEach(track => {
-          const titleElement = track.querySelector('[data-testid="track-name"]');
-          const artistElement = track.querySelector('[data-testid="artists"]');
-          const linkElement = track.querySelector('a');
+    const imageUrl = spotify.imageUrl;
+    const audioBuffer = spotify.audioBuffer;
 
-          if (titleElement && artistElement && linkElement) {
-            const title = titleElement.textContent;
-            const artist = artistElement.textContent;
-            const url = linkElement.href;
+    if (!audioBuffer || !(audioBuffer instanceof Buffer)) {
+      console.error("audioBuffer no válido o ausente:", audioBuffer);
+      return sendWarning(
+        totoro,
+        msg,
+        `No se pudo descargar la canción. Inténtalo de nuevo más tarde.`
+      );
+    }
 
-            trackInfo.push({ title, artist, url });
-          }
-        });
-
-        return trackInfo;
-      });
-
-      await browser.close();
-
-      if (tracks.length === 0) {
-        throw new Error("No se encontraron resultados para la búsqueda.");
-      }
-
-      const track = tracks[0];
-      const metadata = `Título: ${track.title}\nArtista: ${track.artist}\nURL: ${track.url}`;
-
-      await totoro.sendMessage(
-        remoteJid || participant,
+    let media;
+    try {
+      media = await prepareWAMessageMedia(
         {
-          text: metadata,
+          image: { url: imageUrl },
         },
+        { upload: totoro.waUploadToServer }
+      );
+    } catch (mediaError) {
+      console.error("Error al preparar media:", mediaError);
+      return sendWarning(totoro, msg, `Error al preparar la imagen del álbum.`);
+    }
+
+    const songName = spotify.title.toLowerCase();
+
+    const message = {
+      interactiveMessage: {
+        header: {
+          hasMediaAttachment: true,
+          imageMessage: media.imageMessage,
+        },
+        body: { text: songInfo },
+        footer: { text: "Descargado por totoro 🎶" },
+        nativeFlowMessage: {
+          buttons: [
+            {
+              name: "quick_reply",
+              buttonParamsJson: JSON.stringify({
+                display_text: `Reproducir mp3 🎵`,
+                id: `spotmp3+${songName}`,
+              }),
+            },
+            {
+              name: "quick_reply",
+              buttonParamsJson: JSON.stringify({
+                display_text: `Reproducir audio 🎵`,
+                id: `spotaudio+${songName}`,
+              }),
+            },
+            {
+              name: "cta_url",
+              buttonParamsJson: JSON.stringify({
+                display_text: `Ver en Spotify 🎧`,
+                url: tkurl,
+              }),
+            },
+          ],
+          messageParamsJson: "",
+        },
+      },
+    };
+
+    try {
+      await totoro.relayMessage(
+        msg.messages[0].key.remoteJid,
+        { viewOnceMessage: { message } },
         { quoted: msg.messages[0] }
       );
-
-      await msg.react("🔊");
-    } catch (error) {
-      console.error("Error durante la búsqueda en Spotify:", error); // Agregar log para errores
-      await sendError(totoro, msg, `${error.message}`);
+    } catch (relayError) {
+      console.error("Error al enviar el mensaje interactivo:", relayError);
+      return sendWarning(
+        totoro,
+        msg,
+        `Error al enviar el mensaje interactivo.`
+      );
     }
+
+    // Guardamos el audioBuffer en algún almacenamiento temporal usando el nombre de la canción
+    totoro.audioBuffers = totoro.audioBuffers || {};
+    totoro.audioBuffers[songName] = audioBuffer;
+
+    await msg.react("🎶");
   },
 };

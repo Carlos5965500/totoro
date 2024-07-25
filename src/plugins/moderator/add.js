@@ -65,7 +65,7 @@ module.exports = {
         await totoro.sendMessage(group, {
           text:
             `╭─⬣「 Mensaje de Bienvenida 」⬣\n` +
-            `│  ≡◦ 🍭 Bienvenido/a al grupo` +
+            `│  ≡◦ 🍭 Bienvenido/a al grupo\n` +
             `╰─⬣\n` +
             `> ¡Bienvenido/a @${quotedUser.split("@")[0]}! @${sender.split("@")[0]} te ha agregado al grupo ${groupName}.\n`,
           mentions: [quotedUser, sender],

@@ -2,17 +2,15 @@ const {
   sendWarning,
   help,
   sendError,
-  sendMediaMessage,
   sendMessage,
 } = require("../../functions/messages");
-const totoroLog = require("../../functions/totoroLog");
 
 module.exports = {
   name: "kick",
   description: "Expulsa a un usuario del grupo.",
   category: "moderator",
   subcategory: "admin",
-  usage: `kick <@usuario>`,
+  usage: `kick <usuario>`,
   cooldown: 5,
   botPermissions: ["SEND_MESSAGES", "REMOVE_PARTICIPANTS"],
   userPermissions: ["ADMINISTRATOR"],
@@ -23,11 +21,12 @@ module.exports = {
       const groupInfo = await totoro.groupMetadata(
         msg.messages[0].key.remoteJid
       );
+      const groupName = groupInfo.subject;
 
       // Validar si el usuario que ejecuta el comando es administrador
       const participant = groupInfo.participants.find((x) => x.id === sender);
       if (!participant || !participant.admin) {
-        await sendWarning(
+        sendWarning(
           totoro,
           msg,
           "No tienes permisos para ejecutar este comando. Solo los administradores pueden usar este comando."
@@ -38,59 +37,44 @@ module.exports = {
       if (msg.messages[0].key.remoteJid.endsWith("@g.us")) {
         const group = msg.messages[0].key.remoteJid;
 
-        if (
-          !msg.messages[0].message.extendedTextMessage ||
-          !msg.messages[0].message.extendedTextMessage.contextInfo ||
-          !msg.messages[0].message.extendedTextMessage.contextInfo.mentionedJid
-        ) {
+        // Validar si hay un mensaje citado
+        const quotedMessage =
+          msg.messages[0].message.extendedTextMessage?.contextInfo
+            ?.quotedMessage;
+        if (!quotedMessage) {
           await sendMessage(
             totoro,
             msg,
-            `Totoro necesita saber a quién expulsar.`
+            `Por favor, cita el mensaje del usuario que deseas expulsar.`
           );
           return;
         }
 
-        const mentioned =
-          msg.messages[0].message.extendedTextMessage.contextInfo
-            .mentionedJid[0];
+        const quotedUser =
+          msg.messages[0].message.extendedTextMessage.contextInfo.participant;
 
-        if (!mentioned) {
+        if (!quotedUser) {
           await help(
             totoro,
             msg,
             "Expulsar Usuario",
-            "Totoro necesita saber a quién expulsar.",
-            "kick <@usuario>"
+            "No se pudo determinar el usuario a expulsar. Asegúrate de citar el mensaje correctamente.",
+            "kick <usuario>"
           );
           return;
         }
 
-        const isUserAdmin = groupInfo.participants.some(
-          (participant) =>
-            participant.id === mentioned &&
-            (participant.admin ||
-              participant.superAdmin ||
-              participant.isCreator)
-        );
+        await totoro.groupParticipantsUpdate(group, [quotedUser], "remove");
 
-        if (isUserAdmin) {
-          await sendWarning(
-            totoro,
-            msg,
-            "No puedo expulsar a un administrador o creador del grupo."
-          );
-        } else {
-          await totoro.groupParticipantsUpdate(group, [mentioned], "remove");
-          await totoro.sendMessage(group, {
-            text:
-              `╭─⬣「 Mensaje de Totoro 」⬣` +
-              `│  ≡◦ 🍭 Totoro dice lo siguiente:\n` +
-              `╰─⬣\n` +
-              `> @${sender.split("@")[0]} ha expulsado a @${mentioned.split("@")[0]} del grupo.`,
-            mentions: [mentioned],
-          });
-        }
+        // Enviar mensaje de expulsión
+        await totoro.sendMessage(group, {
+          text:
+            `╭─⬣「 Mensaje de Expulsión 」⬣\n` +
+            `│  ≡◦ 🍭 Totoro te expulsó` +
+            `╰─⬣\n` +
+            `> Hasta luego @${quotedUser.split("@")[0]}, @${sender.split("@")[0]} lo ha expulsado del grupo ${groupName}.\n`,
+          mentions: [quotedUser, sender],
+        });
       } else {
         await sendWarning(
           totoro,

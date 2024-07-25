@@ -13,23 +13,41 @@ module.exports = {
 
   async execute(totoro, msg, args) {
     try {
-      // Verifica si se proporcionó un argumento
-      if (!args.length) {
+      // Extrae la información del contexto para obtener el teléfono del participante
+      const quotedUser =
+        msg.messages[0].message.extendedTextMessage?.contextInfo?.participant ||
+        "";
+
+      // Si hay un mensaje citado, también podemos usar el texto del mensaje
+      const quotedMessage =
+        msg.messages[0].message.extendedTextMessage?.contextInfo?.quotedMessage;
+
+      // Usa el número de teléfono del participant citado si está presente
+      let devValue = "";
+      if (quotedUser) {
+        devValue = quotedUser.replace("@s.whatsapp.net", ""); // Elimina la parte "@s.whatsapp.net"
+      } else if (quotedMessage) {
+        devValue = quotedMessage.extendedTextMessage?.text || "";
+      } else {
+        // Si no hay mensaje citado ni participant, usa el primer argumento del comando
+        devValue = args.join(" ");
+      }
+
+      // Verifica si el valor es válido
+      if (!devValue.trim()) {
         return help(
           totoro,
           msg,
           "addDev",
           "Falta el valor de dev",
-          "+addDev <dev>"
+          '+addDev "<dev>"'
         );
       }
 
-      let devValue = args[0]; // Obtenemos el valor de dev del primer argumento
-
       // Asegúrate de que el valor incluye '@s.whatsapp.net'
-      if (!devValue.endsWith("@s.whatsapp.net")) {
-        devValue += "@s.whatsapp.net";
-      }
+      const fullDevValue = devValue.endsWith("@s.whatsapp.net")
+        ? devValue
+        : `${devValue}@s.whatsapp.net`;
 
       const settingsPath = path.join(__dirname, "../../../settings.json");
 
@@ -38,8 +56,11 @@ module.exports = {
       const settings = JSON.parse(settingsData);
 
       // Agregar el nuevo valor a dev
-      if (!settings.dev.includes(devValue)) {
-        settings.dev.push(devValue);
+      if (!settings.dev.includes(fullDevValue)) {
+        settings.dev.push(fullDevValue);
+      } else {
+        // Notificar si el dev ya está en la lista
+        return msg.reply("El dev ya está en la lista.");
       }
 
       // Escribimos los cambios de vuelta en settings.json

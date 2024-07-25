@@ -13,23 +13,39 @@ module.exports = {
 
   async execute(totoro, msg, args) {
     try {
-      // Verifica si se proporcionó un argumento
-      if (!args.length) {
+      // Extrae la información del contexto para obtener el teléfono del participante
+      const quotedUser =
+        msg.messages[0].message.extendedTextMessage?.contextInfo?.participant ||
+        "";
+
+      // Si hay un mensaje citado, también podemos usar el texto del mensaje
+      const quotedMessage =
+        msg.messages[0].message.extendedTextMessage?.contextInfo?.quotedMessage;
+
+      // Usa el número de teléfono del participant citado si está presente
+      let devValue = "";
+      if (quotedUser) {
+        devValue = quotedUser.replace("@s.whatsapp.net", ""); // Elimina la parte "@s.whatsapp.net"
+      } else if (quotedMessage) {
+        devValue = quotedMessage.extendedTextMessage?.text || "";
+      } else {
+        // Si no hay mensaje citado ni participant, usa el primer argumento del comando
+        devValue = args.join(" ");
+      }
+
+      // Verifica si el valor es válido
+      if (!devValue.trim()) {
         return help(
           totoro,
           msg,
           "removeDev",
           "Falta el valor de dev",
-          "+removeDev <dev>"
+          '+removeDev "<dev>"'
         );
       }
 
-      let devValue = args[0]; // Obtenemos el valor de dev del primer argumento
-
       // Asegúrate de que el valor incluye '@s.whatsapp.net'
-      if (!devValue.endsWith("@s.whatsapp.net")) {
-        devValue += "@s.whatsapp.net";
-      }
+      const fullDevValue = `${devValue.trim()}@s.whatsapp.net`;
 
       const settingsPath = path.join(__dirname, "../../../settings.json");
 
@@ -37,13 +53,19 @@ module.exports = {
       const settingsData = await fs.promises.readFile(settingsPath, "utf8");
       const settings = JSON.parse(settingsData);
 
-      // Eliminar el valor de dev
-      const index = settings.dev.indexOf(devValue);
-      if (index !== -1) {
-        settings.dev.splice(index, 1);
-      } else {
-        return msg.reply("El valor especificado no existe en la lista de dev.");
+      // Depuración: muestra los valores en settings.json
+      console.log(`Valores en settings.json: ${JSON.stringify(settings.dev)}`);
+
+      // Filtramos el nuevo array de devs para eliminar el valor
+      const newDevArray = settings.dev.filter((dev) => dev !== fullDevValue);
+
+      // Si el array no ha cambiado, notificamos al usuario
+      if (settings.dev.length === newDevArray.length) {
+        return msg.reply("El dev especificado no se encuentra en la lista.");
       }
+
+      // Actualizamos el array de devs en settings.json
+      settings.dev = newDevArray;
 
       // Escribimos los cambios de vuelta en settings.json
       await fs.promises.writeFile(

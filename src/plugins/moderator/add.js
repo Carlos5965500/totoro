@@ -1,17 +1,11 @@
-const {
-  sendWarning,
-  help,
-  sendError,
-  sendMessage,
-} = require("../../functions/messages");
-const totoroLog = require("../../functions/totoroLog");
+const { sendWarning, help, sendError, sendMessage } = require("../../functions/messages");
 
 module.exports = {
   name: "add",
-  description: "Añade a un usuario al grupo.",
+  description: "Agrega a un usuario al grupo.",
   category: "moderator",
   subcategory: "admin",
-  usage: `add <número de teléfono>`,
+  usage: `add`,
   cooldown: 5,
   botPermissions: ["SEND_MESSAGES", "ADD_PARTICIPANTS"],
   userPermissions: ["ADMINISTRATOR"],
@@ -22,6 +16,7 @@ module.exports = {
       const groupInfo = await totoro.groupMetadata(
         msg.messages[0].key.remoteJid
       );
+      const groupName = groupInfo.subject;
 
       // Validar si el usuario que ejecuta el comando es administrador
       const participant = groupInfo.participants.find((x) => x.id === sender);
@@ -37,37 +32,43 @@ module.exports = {
       if (msg.messages[0].key.remoteJid.endsWith("@g.us")) {
         const group = msg.messages[0].key.remoteJid;
 
-        if (!args[0]) {
+        // Validar si hay un mensaje citado
+        const quotedMessage =
+          msg.messages[0].message.extendedTextMessage?.contextInfo
+            ?.quotedMessage;
+        if (!quotedMessage) {
           await sendMessage(
             totoro,
             msg,
-            `Totoro necesita saber a quién añadir.`
+            `Por favor, cita el mensaje del usuario que deseas agregar.`
           );
           return;
         }
 
-        const phoneNumber = args[0].replace(/\D/g, "");
-        const addJid = `${phoneNumber}@s.whatsapp.net`;
+        const quotedUser =
+          msg.messages[0].message.extendedTextMessage.contextInfo.participant;
 
-        if (!phoneNumber) {
+        if (!quotedUser) {
           await help(
             totoro,
             msg,
-            "Añadir Usuario",
-            "Totoro necesita saber a quién añadir.",
-            "add <número de teléfono>"
+            "Agregar Usuario",
+            "No se pudo determinar el usuario a agregar. Asegúrate de citar el mensaje correctamente.",
+            "add"
           );
           return;
         }
 
-        await totoro.groupParticipantsUpdate(group, [addJid], "add");
+        await totoro.groupParticipantsUpdate(group, [quotedUser], "add");
+
+        // Enviar mensaje de bienvenida
         await totoro.sendMessage(group, {
           text:
-            `╭─⬣「 Mensaje de Totoro 」⬣` +
-            `│  ≡◦ 🍭 Totoro dice lo siguiente:\n` +
+            `╭─⬣「 Mensaje de Bienvenida 」⬣\n` +
+            `│  ≡◦ 🍭 Bienvenido/a al grupo` +
             `╰─⬣\n` +
-            `> @${sender.split("@")[0]} ha añadido a @${addJid.split("@")[0]} al grupo.`,
-          mentions: [addJid],
+            `> ¡Bienvenido/a @${quotedUser.split("@")[0]}! @${sender.split("@")[0]} te ha agregado al grupo ${groupName}.\n`,
+          mentions: [quotedUser, sender],
         });
       } else {
         await sendWarning(
@@ -77,10 +78,11 @@ module.exports = {
         );
       }
     } catch (error) {
+      console.error("Error during execution:", error);
       await sendError(
         totoro,
         msg,
-        `No pude añadir a este usuario. Error: ${error.message}`
+        `No pude agregar a este usuario. Error: ${error.message}`
       );
     }
   },

@@ -17,7 +17,7 @@ module.exports = {
           msg,
           "No tienes permisos para ejecutar este comando. Solo los administradores pueden usar este comando."
         );
-        return;
+        return; 
       }
 
       if (groupId.endsWith("@g.us")) {

@@ -6,11 +6,11 @@ const {
 } = require("../../functions/messages");
 
 module.exports = {
-  name: "kick",
+  name: "expulsar",
   description: "Expulsa a un usuario del grupo.",
   category: "moderator",
   subcategory: "admin",
-  usage: `kick <usuario>`,
+  usage: `expulsar <usuario>`,
   cooldown: 5,
   botPermissions: ["SEND_MESSAGES", "REMOVE_PARTICIPANTS"],
   userPermissions: ["ADMINISTRATOR"],
@@ -37,6 +37,19 @@ module.exports = {
       if (msg.messages[0].key.remoteJid.endsWith("@g.us")) {
         const group = msg.messages[0].key.remoteJid;
 
+        // Validar si hay un mensaje citado
+        const quotedMessage =
+          msg.messages[0].message.extendedTextMessage?.contextInfo
+            ?.quotedMessage;
+        if (!quotedMessage) {
+          await sendMessage(
+            totoro,
+            msg,
+            `Por favor, cita el mensaje del usuario que deseas expulsar.`
+          );
+          return;
+        }
+
         const quotedUser =
           msg.messages[0].message.extendedTextMessage.contextInfo.participant;
 
@@ -53,58 +66,15 @@ module.exports = {
 
         await totoro.groupParticipantsUpdate(group, [quotedUser], "remove");
 
-        // Enviar mensaje de expulsión interactivo
-        const message = {
-          interactiveMessage: {
-            header: {
-              hasMediaAttachment: false,
-            },
-            body: {
-              text:
-                `╭─⬣「 Mensaje de Expulsión 」⬣\n` +
-                `│  ≡◦ 🍭 Totoro te expulsó\n` +
-                `╰─⬣\n` +
-                `> Hasta luego @${quotedUser.split("@")[0]}, @${sender.split("@")[0]} lo ha expulsado del grupo ${groupName}.\n`,
-              mentions: [quotedUser, sender],
-            },
-            footer: { text: "Expulsado por Totoro" },
-            nativeFlowMessage: {
-              buttons: [
-                {
-                  name: "quick_reply",
-                  buttonParamsJson: JSON.stringify({
-                    display_text: `Añadir Usuario`,
-                    id: `add+${quotedUser.split("@")[0]}`,
-                  }),
-                },
-                {
-                  name: "cta_url",
-                  buttonParamsJson: JSON.stringify({
-                    display_text: `Ver Política del Grupo`,
-                    url: "https://example.com/group-policy", // Reemplaza con la URL de la política del grupo
-                  }),
-                },
-              ],
-              messageParamsJson: "",
-            },
-          },
+        // Enviar mensaje de expulsión
+        await totoro.sendMessage(group, {
+          text:
+            `╭─⬣「 Mensaje de Expulsión 」⬣\n` +
+            `│  ≡◦ 🍭 Totoro te expulsó` +
+            `╰─⬣\n` +
+            `> Hasta luego @${quotedUser.split("@")[0]}, @${sender.split("@")[0]} lo ha expulsado del grupo ${groupName}.\n`,
           mentions: [quotedUser, sender],
-        };
-
-        try {
-          await totoro.relayMessage(
-            group,
-            { viewOnceMessage: { message } },
-            { quoted: msg.messages[0] }
-          );
-        } catch (relayError) {
-          console.error("Error al enviar el mensaje interactivo:", relayError);
-          return sendWarning(
-            totoro,
-            msg,
-            `Error al enviar el mensaje interactivo.`
-          );
-        }
+        });
       } else {
         await sendWarning(
           totoro,

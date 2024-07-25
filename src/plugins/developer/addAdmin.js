@@ -7,29 +7,47 @@ module.exports = {
   category: "developer",
   subcategory: "owner",
   aliases: ["adminadd"],
-  usage: "<adminadd>",
+  usage: "<admin>",
   description: "Agrega un nuevo admin a settings.json",
   dev: true,
 
   async execute(totoro, msg, args) {
     try {
-      // Verifica si se proporcionó un argumento
-      if (!args.length) {
+      // Extrae la información del contexto para obtener el teléfono del participante
+      const quotedUser =
+        msg.messages[0].message.extendedTextMessage?.contextInfo?.participant ||
+        "";
+
+      // Si hay un mensaje citado, también podemos usar el texto del mensaje
+      const quotedMessage =
+        msg.messages[0].message.extendedTextMessage?.contextInfo?.quotedMessage;
+
+      // Usa el número de teléfono del participant citado si está presente
+      let adminValue = "";
+      if (quotedUser) {
+        adminValue = quotedUser.replace("@s.whatsapp.net", ""); // Elimina la parte "@s.whatsapp.net"
+      } else if (quotedMessage) {
+        adminValue = quotedMessage.extendedTextMessage?.text || "";
+      } else {
+        // Si no hay mensaje citado ni participant, usa el primer argumento del comando
+        adminValue = args.join(" ");
+      }
+
+      // Verifica si el valor es válido
+      if (!adminValue.trim()) {
         return help(
           totoro,
           msg,
           "addAdmin",
           "Falta el valor de admin",
-          "+addAdmin <admin>"
+          '+addAdmin "<admin>"'
         );
       }
 
-      let adminValue = args[0]; // Obtenemos el valor de admin del primer argumento
-
       // Asegúrate de que el valor incluye '@s.whatsapp.net'
-      if (!adminValue.endsWith("@s.whatsapp.net")) {
-        adminValue += "@s.whatsapp.net";
-      }
+      const fullAdminValue = adminValue.endsWith("@s.whatsapp.net")
+        ? adminValue
+        : `${adminValue}@s.whatsapp.net`;
 
       const settingsPath = path.join(__dirname, "../../../settings.json");
 
@@ -38,8 +56,11 @@ module.exports = {
       const settings = JSON.parse(settingsData);
 
       // Agregar el nuevo valor a admin
-      if (!settings.admin.includes(adminValue)) {
-        settings.admin.push(adminValue);
+      if (!settings.admin.includes(fullAdminValue)) {
+        settings.admin.push(fullAdminValue);
+      } else {
+        // Notificar si el admin ya está en la lista
+        return msg.reply("El admin ya está en la lista.");
       }
 
       // Escribimos los cambios de vuelta en settings.json

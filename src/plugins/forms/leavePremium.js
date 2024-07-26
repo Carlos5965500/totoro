@@ -9,7 +9,8 @@ const { totoUser, totoPremium } = require("../../models");
 
 module.exports = {
   name: "leavePremium",
-  category: "user",
+  category: "forms",
+  subcategory: "unregister",
   description: "Desregistrar un usuario premium por número de serie",
   usage: "leavePremium <serialNumber>",
   aliases: ["leaveprem", "leavepremium", "leavep"],
@@ -20,7 +21,7 @@ module.exports = {
       if (remoteJid.endsWith("@g.us")) {
         await infoGroup(
           msg,
-          this.name, 
+          this.name,
           "Este comando no está permitido en grupos."
         );
         return;

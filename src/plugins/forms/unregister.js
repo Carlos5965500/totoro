@@ -10,7 +10,7 @@ const {
 module.exports = {
   name: "unregister",
   category: "forms",
-  subcategory: "user",
+  subcategory: "unregister",
   description: "Desregistra un totoUser de la base de datos",
   usage: "unregister",
   aliases: ["unreg"],

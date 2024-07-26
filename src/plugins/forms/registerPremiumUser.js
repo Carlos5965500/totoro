@@ -8,7 +8,8 @@ const { totoUser, totoPremium } = require("../../models");
 
 module.exports = {
   name: "registerPremium",
-  category: "user",
+  category: "forms",
+  subcategory: "register",
   description: "Registra un usuario premium",
   usage: "premium <serial>",
   aliases: ["premium"],

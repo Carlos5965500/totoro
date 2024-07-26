@@ -8,7 +8,8 @@ const { totoUser } = require("../../models");
 
 module.exports = {
   name: "getSerialNumber",
-  category: "user",
+  category: "forms",
+  subcategory: "register",
   description: "Generar un número de serie para un usuario",
   usage: "getSerialNumber",
   aliases: ["getserial", "serialnumber", "serial"],

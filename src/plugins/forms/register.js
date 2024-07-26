@@ -22,7 +22,7 @@ const getCountryFromPhoneNumber = require("../../functions/countryNumber");
 module.exports = {
   name: "register",
   category: "forms",
-  subcategory: "user",
+  subcategory: "register",
   description: "Registra un totoUser en la base de datos",
   usage: "register <nombre>.<edad>",
 

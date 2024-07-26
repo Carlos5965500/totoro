@@ -6,7 +6,8 @@ module.exports = {
   subcategory: "tools",
   usage: "suggest <sugerencia>",
   description: "Envía una sugerencia a Totoro Suggests",
-
+  dev: false,
+  blockcmd: true,
   async execute(totoro, msg, args) {
     const suggest = args.join(" ");
 

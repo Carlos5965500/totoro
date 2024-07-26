@@ -23,7 +23,8 @@ module.exports = {
   cooldown: 5,
   botPermissions: ["SEND_MESSAGES"],
   userPermissions: [],
-
+  dev: false,
+  blockcmd: true,
   execute: async (totoro, msg, args) => {
     try {
       if (args.length < 1) {

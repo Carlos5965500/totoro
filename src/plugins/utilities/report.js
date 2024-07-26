@@ -6,7 +6,8 @@ module.exports = {
   subcategory: "tools",
   usage: "report <report>",
   description: "Envía un reporte a Totoro Reports",
-
+  dev: false,
+  blockcmd: true,
   async execute(totoro, msg, args) {
     const report = args.join(" ");
 

@@ -6,7 +6,8 @@ module.exports = {
   subcategory: "audio",
   usage: "!transcribir <URL de YouTube>",
   description: "Transcribe audio de YouTube a texto.",
-
+  dev: false,
+  blockcmd: true,
   async execute(totoro, msg, args) {
     const message = msg.messages && msg.messages[0];
     console.log("Mensaje recibido:", JSON.stringify(msg, null, 2));

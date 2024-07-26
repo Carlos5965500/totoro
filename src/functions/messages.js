@@ -4,8 +4,8 @@ async function sendMessage(totoro, msg, message) {
   const mensaje =
     `╭─⬣「 *Mensaje de Totoro* 」⬣\n` +
     `│  ≡◦ *🍭 Totoro dice lo siguiente:*\n` +
-    `│  ≡◦ ${message}\n` +
-    `╰─⬣`;
+    `╰─⬣\n` +
+    `> ${message}`;
   try {
     const remoteJid = msg.messages[0].key.remoteJid;
     msg.react("🍭");

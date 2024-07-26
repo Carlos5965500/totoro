@@ -1,11 +1,8 @@
-const https = require('https');
-const {
-  sendWarning,
-  sendError,
-  sendMessage,
-} = require("../../functions/messages");
+require("dotenv").config();
+const https = require("https");
+const { sendError, sendMessage } = require("../../functions/messages");
 
-const apiKey = 'cde46e32-ab27-411d-859f-af7a43d3085d:fx';
+const apiKey = process.env.DEEPL_API_KEY;
 const costPerCharacterEUR = 0.000018; // Costo por carácter traducido en euros
 const budgetEUR = 50; // Presupuesto en euros
 
@@ -19,6 +16,7 @@ module.exports = {
   cooldown: 5,
   botPermissions: ["SEND_MESSAGES"],
   userPermissions: [],
+  dev: true,
 
   execute: async (totoro, msg, args) => {
     try {
@@ -26,7 +24,9 @@ module.exports = {
 
       const characterCount = usageInfo.character_count;
       const characterLimit = usageInfo.character_limit;
-      const usagePercentage = ((characterCount / characterLimit) * 100).toFixed(2);
+      const usagePercentage = ((characterCount / characterLimit) * 100).toFixed(
+        2
+      );
       const cost = (characterCount * costPerCharacterEUR).toFixed(2);
 
       let responseMessage = `Uso actual de la API de DeepL:\n\n`;
@@ -50,21 +50,21 @@ module.exports = {
 function getUsageInfo() {
   return new Promise((resolve, reject) => {
     const options = {
-      hostname: 'api-free.deepl.com',
-      path: '/v2/usage',
-      method: 'GET',
+      hostname: "api-free.deepl.com",
+      path: "/v2/usage",
+      method: "GET",
       headers: {
-        'Authorization': `DeepL-Auth-Key ${apiKey}`
+        Authorization: `DeepL-Auth-Key ${apiKey}`,
       },
     };
 
     const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', (chunk) => {
+      let data = "";
+      res.on("data", (chunk) => {
         data += chunk;
       });
 
-      res.on('end', () => {
+      res.on("end", () => {
         if (res.statusCode === 200) {
           const result = JSON.parse(data);
           resolve(result);
@@ -74,7 +74,7 @@ function getUsageInfo() {
       });
     });
 
-    req.on('error', (e) => {
+    req.on("error", (e) => {
       reject(e);
     });
 

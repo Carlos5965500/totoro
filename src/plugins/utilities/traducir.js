@@ -1,5 +1,6 @@
-const https = require('https');
-const querystring = require('querystring');
+require("dotenv").config();
+const https = require("https");
+const querystring = require("querystring");
 const {
   sendWarning,
   sendError,
@@ -9,8 +10,8 @@ const idiomas = require("../../../data/languages");
 
 const cache = new Map();
 
-// Tu clave de API de DeepL
-const apiKey = 'cde46e32-ab27-411d-859f-af7a43d3085d:fx';
+// Tu clave de API de DeepL ahora se carga desde el archivo .env
+const apiKey = process.env.DEEPL_API_KEY;
 
 module.exports = {
   name: "translate",
@@ -135,22 +136,22 @@ function translateText(text, targetLang) {
     });
 
     const options = {
-      hostname: 'api-free.deepl.com',
-      path: '/v2/translate',
-      method: 'POST',
+      hostname: "api-free.deepl.com",
+      path: "/v2/translate",
+      method: "POST",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Content-Length': Buffer.byteLength(postData),
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Length": Buffer.byteLength(postData),
       },
     };
 
     const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', (chunk) => {
+      let data = "";
+      res.on("data", (chunk) => {
         data += chunk;
       });
 
-      res.on('end', () => {
+      res.on("end", () => {
         if (res.statusCode === 200) {
           const result = JSON.parse(data);
           resolve(result.translations[0].text);
@@ -160,7 +161,7 @@ function translateText(text, targetLang) {
       });
     });
 
-    req.on('error', (e) => {
+    req.on("error", (e) => {
       reject(e);
     });
 

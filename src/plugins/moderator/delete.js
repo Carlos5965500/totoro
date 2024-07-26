@@ -8,7 +8,8 @@ module.exports = {
   usage: `delete`,
   cooldown: 5,
   dev: true,
-
+  dev: false,
+  blockcmd: true,
   execute: async (totoro, msg, args) => {
     try {
       const remoteJid = msg.messages[0].key.remoteJid;

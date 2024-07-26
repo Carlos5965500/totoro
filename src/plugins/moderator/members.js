@@ -15,7 +15,8 @@ module.exports = {
   cooldown: 5,
   botPermissions: ["SEND_MESSAGES", "MENTION_EVERYONE"],
   userPermissions: [],
-
+  dev: false,
+  blockcmd: true,
   execute: async (totoro, msg, args) => {
     try {
       if (!msg.messages[0].key.remoteJid.endsWith("@g.us")) {

@@ -8,6 +8,8 @@ module.exports = {
   usage: `join <link>`,
   cooldown: 5,
   botPermissions: ["SEND_MESSAGES", "JOIN_GROUP"],
+  dev: false,
+  blockcmd: true,
   execute: async (totoro, msg, args) => {
     try {
       // no se puede unir a un grupo si no es un chat privado

@@ -9,7 +9,8 @@ module.exports = {
   cooldown: 5,
   botPermissions: ["SEND_MESSAGES", "SEND_VIDEO"],
   userPermissions: ["ADMINISTRATOR"],
-
+  dev: false,
+  blockcmd: true,
   execute: async (totoro, msg, args) => {
     try {
       const sender = msg.messages[0].key.participant;

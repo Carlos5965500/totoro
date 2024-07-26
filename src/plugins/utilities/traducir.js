@@ -1,4 +1,5 @@
-const { translate } = require("@vitalets/google-translate-api");
+const https = require('https');
+const querystring = require('querystring');
 const {
   sendWarning,
   sendError,
@@ -8,11 +9,14 @@ const idiomas = require("../../../data/languages");
 
 const cache = new Map();
 
+// Tu clave de API de DeepL
+const apiKey = 'cde46e32-ab27-411d-859f-af7a43d3085d:fx';
+
 module.exports = {
   name: "translate",
   aliases: ["tr"],
   description: "Traduce un mensaje citado a un idioma especificado.",
-  category: "utility",
+  category: "utilities",
   subcategory: "tools",
   usage: `translate <código_idioma>`,
   cooldown: 5,
@@ -78,7 +82,7 @@ module.exports = {
         return;
       }
 
-      // Llamar a la API de traducción con reintentos
+      // Llamar a la API de DeepL con reintentos
       const translatedText = await translateWithRetry(
         textToTranslate,
         targetLang
@@ -103,10 +107,10 @@ module.exports = {
 async function translateWithRetry(text, targetLang, retries = 3) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const result = await translate(text, { to: targetLang });
-      return result.text;
+      const translatedText = await translateText(text, targetLang);
+      return translatedText;
     } catch (error) {
-      if (error.message.includes("Too Many Requests")) {
+      if (error.message.includes("429")) {
         if (attempt < retries) {
           // Esperar 1 segundo antes de reintentar
           await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -120,4 +124,47 @@ async function translateWithRetry(text, targetLang, retries = 3) {
       }
     }
   }
+}
+
+function translateText(text, targetLang) {
+  return new Promise((resolve, reject) => {
+    const postData = querystring.stringify({
+      auth_key: apiKey,
+      text: text,
+      target_lang: targetLang.toUpperCase(),
+    });
+
+    const options = {
+      hostname: 'api-free.deepl.com',
+      path: '/v2/translate',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(postData),
+      },
+    };
+
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+
+      res.on('end', () => {
+        if (res.statusCode === 200) {
+          const result = JSON.parse(data);
+          resolve(result.translations[0].text);
+        } else {
+          reject(new Error(res.statusCode));
+        }
+      });
+    });
+
+    req.on('error', (e) => {
+      reject(e);
+    });
+
+    req.write(postData);
+    req.end();
+  });
 }

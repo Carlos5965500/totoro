@@ -19,7 +19,7 @@ module.exports = {
   description: "Traduce un mensaje citado a un idioma especificado.",
   category: "utilities",
   subcategory: "tools",
-  usage: `translate <código_idioma>`,
+  usage: `tr <código_idioma>`,
   cooldown: 5,
   botPermissions: ["SEND_MESSAGES"],
   userPermissions: [],
@@ -27,10 +27,12 @@ module.exports = {
   execute: async (totoro, msg, args) => {
     try {
       if (args.length < 1) {
-        await sendWarning(
+        await help(
           totoro,
           msg,
-          "Uso incorrecto. Ejemplo de uso: `translate es`"
+          "translate",
+          "Traduce un mensaje citado a un idioma especificado.",
+          "tr es"
         );
         return;
       }
@@ -99,8 +101,11 @@ module.exports = {
         `${translatedText}\n\n> 🌐 Traducción a ${targetLangName}`
       );
     } catch (error) {
-      console.error("Error during translation:", error);
-      await sendError(totoro, msg, error.message);
+      await sendError(
+        totoro,
+        msg,
+        `> No existe un idioma con el código ${args[0]}.`
+      );
     }
   },
 };
@@ -136,7 +141,7 @@ function translateText(text, targetLang) {
     });
 
     const options = {
-      hostname: "api-free.deepl.com",
+      hostname: "api.deepl.com", // Cambiado para DeepL Pro
       path: "/v2/translate",
       method: "POST",
       headers: {

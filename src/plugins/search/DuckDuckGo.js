@@ -6,7 +6,8 @@ module.exports = {
   subcategory: "searchings",
   usage: "duckduckgo <consulta>",
   description: "Realiza una búsqueda en DuckDuckGo",
-
+  dev: false,
+  blockcmd: true,
   async execute(totoro, msg, args, text) {
     const consulta = args.join(" ");
     const message = msg.messages && msg.messages[0];

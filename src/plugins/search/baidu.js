@@ -7,7 +7,8 @@ module.exports = {
   subcategory: "searchings",
   usage: "baidu <consulta>",
   description: "Realiza una búsqueda en Baidu",
-
+  dev: false,
+  blockcmd: true,
   async execute(totoro, msg, args, text) {
     const consulta = args.join(" ");
     const message = msg.messages && msg.messages[0];

@@ -7,7 +7,8 @@ module.exports = {
   cooldown: 5,
   botPermissions: ["SEND_MESSAGES", "ATTACH_FILES"],
   userPermissions: ["ATTACH_FILES"],
-
+  dev: false,
+  blockcmd: true,
   async execute(totoro, msg) {
     try {
       // Descargar el medio

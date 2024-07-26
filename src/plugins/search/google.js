@@ -8,7 +8,8 @@ module.exports = {
   subcategory: "searchings",
   usage: "google <consulta>",
   description: "Realiza una búsqueda en Google o Delirius API",
-
+  dev: false,
+  blockcmd: true,
   async execute(totoro, msg, args, text) {
     const consulta = args.join(" ");
     const message = msg.messages && msg.messages[0];

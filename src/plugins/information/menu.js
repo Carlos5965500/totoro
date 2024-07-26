@@ -47,14 +47,16 @@ module.exports = {
 
     // Crear el texto del menú con emojis originales
     const categoryEmojis = {
-      "Inteligencia Artificial": "🧠",
-      Audio: "🎙️",
+      "inteligencia artificial": "🧠",
+      audio: "🎙️",
       developer: "🚀",
       utility: "⚙️",
       forms: "✏️",
+      premium: "💎",
       payment: "💳",
       user: "🔑",
       group: "📢",
+      premium: "💎",
       information: "📘",
       general: "🔖",
       moderator: "🛡️",

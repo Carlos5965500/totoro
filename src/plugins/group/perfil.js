@@ -7,7 +7,7 @@ const formatPhoneNumber = require("../../utils/formatPhoneNumber"); // Función 
 module.exports = {
   name: "perfil",
   category: "group",
-  subcategory: "totoU",
+  subcategory: "tools",
   description: "Muestra el perfil de un usuario",
   usage: "perfil <@usuario>",
   aliases: ["profile", "p"],

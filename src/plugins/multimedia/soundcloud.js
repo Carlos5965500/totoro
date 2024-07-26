@@ -2,12 +2,12 @@ const scdl = require("soundcloud-downloader").default;
 const { sendWarning, sendError, help } = require("../../functions/messages");
 
 module.exports = {
-  name: "soundcloud",
-  aliases: ["asc", "sca", "scmp3", "sc", "scaudio", "play", "totorosc", "tsc"],
+  name: "SoundCloud",
   category: "multimedia",
-  subcategory: "soundcloud",
+  subcategory: "Sound Cloud",
   description: "Descarga audios de SoundCloud.",
-  usage: "scmp3 <sc url o nombre>",
+  usage: "sc < url o nombre>",
+  aliases: ["asc", "sca", "scmp3", "sc", "scaudio", "play", "totorosc", "tsc"],
   botPermissions: ["SEND_MESSAGES", "ATTACH_FILES"],
   userPermissions: [],
   cooldown: 10,

@@ -3,7 +3,7 @@ const { help, sendError } = require("../../functions/messages");
 
 module.exports = {
   name: "hercai",
-  category: "*Inteligencia Artificial*",
+  category: "Inteligencia",
   subcategory: "ai",
   description: "Hercai AI",
   usage: "hercai <message>",

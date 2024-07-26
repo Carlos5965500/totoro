@@ -1,24 +1,32 @@
 const { OpenAI } = require("openai");
-
+const { sendError, infoPremium } = require("../../functions/messages");
+const totoroLog = require("../../functions/totoroLog");
+const totoPremium = require("../../models/totoPremium");
 module.exports = {
   name: "dalle",
   aliases: [],
-  category: "Ai 🤖",
+  category: "premium",
+  subcategory: "IA",
   description: "Genera imagenes con AI.",
   cmdPrem: true,
 
-  async execute(client, msg, args) {
+  async execute(totoro, msg, args) {
     const content = args.join(" ");
 
     const info = msg.messages[0];
     const from = info.key.remoteJid;
     const reply = (text) => {
-      client.sendMessage(from, { text: text }, { quoted: info });
+      totoro.sendMessage(from, { text: text }, { quoted: info });
     };
 
     try {
       if (!content) {
         reply("Falta el prompt.");
+        return;
+      }
+
+      if (!totoPremium) {
+        infoPremium(totoro, msg, "Este comando es solo para usuarios premium.");
         return;
       }
 
@@ -31,10 +39,10 @@ module.exports = {
         response_format: "url",
       });
 
-      client.sendMessage(from, { image: { url: dallE.data[0].url } });
+      totoro.sendMessage(from, { image: { url: dallE.data[0].url } });
     } catch (e) {
-      console.log(e);
-      reply("*🏮 Error al enviar la reseña*");
+      totoroLog.error("./logs/plugins/premium/dallE.log", `${e.message}`);
+      sendError(totoro, msg, `Error al generar imagen: ${e.message}`);
     }
   },
 };

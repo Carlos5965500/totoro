@@ -8,7 +8,8 @@ module.exports = {
   subcategory: "IA",
   description: "Genera imagenes con AI.",
   cmdPrem: true,
-
+  dev: false,
+  blockcmd: true,
   async execute(totoro, msg, args) {
     const content = args.join(" ");
 

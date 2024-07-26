@@ -3,15 +3,22 @@ const { sendMessage, sendError } = require("../../functions/messages");
 module.exports = {
   name: "join",
   description: "Unirse a un grupo usando un enlace de invitación.",
-  category: "utility",
-  subcategory: "group",
+  category: "moderator",
+  subcategory: "private",
   usage: `join <link>`,
   cooldown: 5,
   botPermissions: ["SEND_MESSAGES", "JOIN_GROUP"],
   execute: async (totoro, msg, args) => {
     try {
-      const sender = msg.messages[0].key.participant;
-
+      // no se puede unir a un grupo si no es un chat privado
+      if (!msg.messages[0].key.remoteJid.endsWith("@s.whatsapp.net")) {
+        await sendMessage(
+          totoro,
+          msg,
+          "Totoro solo puede unirse a un grupo a través de un chat privado."
+        );
+        return;
+      }
       if (!args[0]) {
         await sendMessage(
           totoro,

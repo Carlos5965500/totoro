@@ -3,7 +3,7 @@ const { sendMessage, sendError } = require("../../functions/messages");
 module.exports = {
   name: "leave",
   description: "Salir del grupo actual.",
-  category: "utility",
+  category: "moderator",
   subcategory: "group",
   usage: `<leave>`,
   cooldown: 5,

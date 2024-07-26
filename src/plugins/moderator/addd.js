@@ -1,11 +1,16 @@
-const { sendWarning, help, sendError, sendMessage } = require("../../functions/messages");
+const {
+  sendWarning,
+  help,
+  sendError,
+  sendMessage,
+} = require("../../functions/messages");
 
 module.exports = {
-  name: "add",
+  name: "addd",
   description: "Agrega a un usuario al grupo.",
   category: "moderator",
   subcategory: "admin",
-  usage: `add`,
+  usage: `add <usuario>`,
   cooldown: 5,
   botPermissions: ["SEND_MESSAGES", "ADD_PARTICIPANTS"],
   userPermissions: ["ADMINISTRATOR"],

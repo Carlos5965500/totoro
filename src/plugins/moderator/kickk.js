@@ -6,11 +6,11 @@ const {
 } = require("../../functions/messages");
 
 module.exports = {
-  name: "expulsar",
+  name: "kickk",
   description: "Expulsa a un usuario del grupo.",
   category: "moderator",
   subcategory: "admin",
-  usage: `expulsar <usuario>`,
+  usage: `kickk <usuario>`,
   cooldown: 5,
   botPermissions: ["SEND_MESSAGES", "REMOVE_PARTICIPANTS"],
   userPermissions: ["ADMINISTRATOR"],

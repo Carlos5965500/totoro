@@ -3,8 +3,8 @@ const { sendError, help } = require("../../functions/messages");
 module.exports = {
   name: "delete",
   description: "Eliminar un mensaje específico mediante respuesta (reply).",
-  category: "utility",
-  subcategory: "message",
+  category: "moderator",
+  subcategory: "utility",
   usage: `delete`,
   cooldown: 5,
   dev: true,

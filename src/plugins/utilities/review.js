@@ -3,7 +3,7 @@ const { prepareWAMessageMedia } = require("@whiskeysockets/baileys");
 module.exports = {
   name: "review",
   category: "utilities",
-  subcategory: "review",
+  subcategory: "tools",
   usage: "review <review>",
   description: "Envía una sugerencia a Totoro Reviews",
 

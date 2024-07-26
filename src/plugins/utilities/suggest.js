@@ -3,7 +3,7 @@ const { help } = require("../../functions/messages");
 module.exports = {
   name: "suggest",
   category: "utilities",
-  subcategory: "suggest",
+  subcategory: "tools",
   usage: "suggest <sugerencia>",
   description: "Envía una sugerencia a Totoro Suggests",
 

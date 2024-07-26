@@ -8,7 +8,9 @@ module.exports = {
   subcategory: "instagram",
   usage: "igimage <enlace>",
   description: "Descarga imágenes de Instagram",
-
+  dev: false,
+  blockcmd: true,
+  cmdPrem: true,
   async execute(totoro, msg, args) {
     msg.react("⏳");
     if (!args[0]) {

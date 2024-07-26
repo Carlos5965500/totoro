@@ -10,7 +10,9 @@ module.exports = {
   usage: "instagram <enlace>",
   description: "Descarga video de Instagram.",
   example: "instagram https://www.instagram.com/p/CS8X3v3L6WV/",
-
+  dev: false,
+  blockcmd: true,
+  cmdPrem: true,
   async execute(totoro, msg, args) {
     msg.react("⏳");
     let { dl_url } = await Scraper.igdl(args[0]);

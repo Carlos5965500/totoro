@@ -12,7 +12,9 @@ module.exports = {
   usage: "igstalk <user>",
   example: "igstalk @nialr20",
   description: "Obten información de un perfil de Instagram",
-
+  dev: false,
+  blockcmd: true,
+  cmdPrem: true,
   async execute(totoro, msg, args) {
     const info = msg.messages[0];
     const from = info.key.remoteJid;

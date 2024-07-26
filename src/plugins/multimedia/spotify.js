@@ -11,7 +11,9 @@ module.exports = {
   example:
     "spotify https://open.spotify.com/track/2spJ8VgV43N4NzosKAYARt?si=9gfCWO2GSUmOU74M0lZrvg",
   description: "Descarga música con metadatos de Spotify",
-
+  dev: false,
+  blockcmd: true,
+  cmdPrem: true,
   async execute(totoro, msg, args) {
     msg.react("⏳");
 

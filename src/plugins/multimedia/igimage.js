@@ -2,6 +2,7 @@ const Scraper = require("@SumiFX/Scraper");
 const { prepareWAMessageMedia } = require("@whiskeysockets/baileys");
 const { sendWarning } = require("../../functions/messages");
 const totoroLog = require("../../functions/totoroLog");
+const { tr } = require("../../../data/languages");
 
 module.exports = {
   name: "igimage",
@@ -10,6 +11,10 @@ module.exports = {
   usage: "instagram <enlace>",
   description: "Descarga imagen de Instagram.",
   example: "instagram https://www.instagram.com/p/CS8X3v3L6WV/",
+  dev: false,
+  blockcmd: true,
+  cmdPrem: true,
+
 
   async execute(totoro, msg, args) {
     msg.react("⏳");

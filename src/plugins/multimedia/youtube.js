@@ -11,7 +11,9 @@ module.exports = {
   usage: "youtube <enlace o término de búsqueda>",
   description: "Descarga video de YouTube.",
   example: "youtube https://www.youtube.com/watch?v=dQw4w9WgXcQ o youtube amor",
-
+  dev: false,
+  blockcmd: true,
+  cmdPrem: true,
   async execute(totoro, msg, args) {
     try {
       msg.react("⏳");

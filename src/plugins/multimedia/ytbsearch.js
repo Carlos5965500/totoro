@@ -12,7 +12,9 @@ module.exports = {
   botPermissions: ["SEND_MESSAGES", "ATTACH_FILES"],
   userPermissions: [],
   cooldown: 10,
-
+  dev: false,
+  blockcmd: true,
+  cmdPrem: true,
   async execute(totoro, msg, args) {
     const from = msg.messages[0]?.key?.remoteJid;
 

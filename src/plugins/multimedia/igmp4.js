@@ -7,7 +7,9 @@ module.exports = {
   subcategory: "instagram",
   usage: "igmp4 <enlace>",
   description: "Descarga video de ig",
-
+  dev: false,
+  blockcmd: true,
+  cmdPrem: true,
   async execute(totoro, msg, args) {
     msg.react("⏳");
     if (!args[0]) {

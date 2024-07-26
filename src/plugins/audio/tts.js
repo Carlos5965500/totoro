@@ -7,11 +7,11 @@ const {
 } = require("../../functions/messages");
 
 module.exports = {
-  name: "textToSpeech",
+  name: "Text to Speech",
+  category: "Audio",
+  subcategory: "Voz",
   usage: "tts <texto>",
   aliases: ["tts"],
-  category: "*Audio*",
-  subcategory: "Voz",
   description: "Convierte texto a voz y envía un audio",
 
   async execute(totoro, msg, args) {

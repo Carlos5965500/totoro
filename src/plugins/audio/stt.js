@@ -13,8 +13,8 @@ const ASSEMBLYAI_API_KEY = "eb21d4224c83470db38beacebe821f81";
 module.exports = {
   name: "Speech to Text",
   description: "🎙️ Transcribe un mensaje de audio.",
-  category: "Audio",
-  subcategory: "Voz",
+  category: "audio",
+  subcategory: "voz",
   usage: `+stt <mensaje de audio>`,
   aliases: ["stt"],
   run: async (totoro, msg, args) => {

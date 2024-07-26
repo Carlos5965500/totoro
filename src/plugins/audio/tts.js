@@ -8,8 +8,8 @@ const {
 
 module.exports = {
   name: "Text to Speech",
-  category: "Audio",
-  subcategory: "Voz",
+  category: "audio",
+  subcategory: "voz",
   usage: "tts <texto>",
   aliases: ["tts"],
   description: "Convierte texto a voz y envía un audio",

@@ -2,7 +2,7 @@ const { createHash } = require("crypto");
 const totoUser = require("../../models/totoUser");
 const totoWhitelist = require("../../models/totoWhiteList");
 const countTotoUsers = require("../../functions/countTotoUsers");
-const forbiddenWords = require("../../../settings.json").forbiddenWords;
+const forbiddenWords = require("../../../data/forbiddenWords");
 const urlRegex = /https?:\/\/[^\s]+/;
 const domainRegex = /[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+/;
 const numberRegex = /\d/;
@@ -25,6 +25,8 @@ module.exports = {
   subcategory: "register",
   description: "Registra un totoUser en la base de datos",
   usage: "register <nombre>.<edad>",
+  dev: false,
+  blockcmd: true,
 
   async execute(totoro, msg, args) {
     try {
@@ -58,12 +60,12 @@ module.exports = {
       // Validación de longitud de nombre, palabras obscenas, URLs, fragmentos de dominios, números en el nombre y caracteres no permitidos
       if (
         nombre.length > 10 ||
-        forbiddenWords.some((word) => nombre.includes(word)) ||
         urlRegex.test(nombre) ||
         domainRegex.test(nombre) ||
         numberRegex.test(nombre) ||
         invalidCharsRegex.test(nombre) ||
-        repeatedCharsRegex.test(nombre)
+        repeatedCharsRegex.test(nombre) ||
+        forbiddenWords.forbidenWords.some((word) => nombre.includes(word))
       ) {
         await sendWarning(
           totoro,
@@ -134,7 +136,6 @@ module.exports = {
         );
       } else {
         totoroLog.error(
-          totoroLog.verbose,
           "./logs/plugins/forms/register.log",
           `Error al registrar usuario: ${error}`
         );

@@ -13,6 +13,8 @@ module.exports = {
   description: "Generar un número de serie para un usuario",
   usage: "getSerialNumber",
   aliases: ["getserial", "serialnumber", "serial"],
+  dev: false,
+  blockcmd: true,
 
   async execute(totoro, msg, args) {
     try {

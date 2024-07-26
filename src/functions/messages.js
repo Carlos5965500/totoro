@@ -135,7 +135,7 @@ async function noCommand(msg, prefix, pluginName, suggestCommand) {
       `│  ≡◦ *🍭 Puedes* \`${prefix}menu\` *para ver mis comandos*\n` +
       `╰─⬣\n\n` +
       `╭─⬣「 *Sugerencia de Comandos para* \`${prefix}${pluginName}\` 」⬣\n` +
-      `${suggestCommand}` +
+      `${suggestCommand}\n` +
       `╰─⬣`
   );
   try {
@@ -315,21 +315,26 @@ async function sendMediaMessage(msg, mediaType, mediaContent) {
   }
 }
 
-async function dev(msg, pluginName, devMessage) {
-  const dev = require("../../settings.json").dev;
+async function dev(msg, totoro, pluginName, devMessage) {
   try {
+    const settings = require("../../settings.json");
+    const dev = settings.dev[0];
+    const message = msg.messages[0];
+    const key = message.key;
+    const from = key.remoteJid;
+    console.log("from:", from);
+
     await msg.react("👑");
-    await msg.reply(
+
+    const mentionText =
       `╭─⬣「 \`${pluginName}\`」⬣\n` +
-        `│  ≡◦ *🔒 Este comando es solo para* ${dev}\n` +
-        `╰─⬣\n` +
-        `> ${devMessage}`
-    );
+      `│  ≡◦ *🔒 Este comando es solo para* @${dev.replace(/@.+/, "")}\n` +
+      `╰─⬣\n` +
+      `> ${devMessage}`;
+
+    msg.reply(mentionText);
   } catch (error) {
-    totoroLog.error(
-      "./logs/functions/messages.log",
-      `Error enviando mensaje de aviso: ${error}`
-    );
+    console.error(`Error enviando mensaje de aviso: ${error}`);
   }
 }
 

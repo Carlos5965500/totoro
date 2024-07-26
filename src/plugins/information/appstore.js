@@ -7,7 +7,8 @@ module.exports = {
   usage: `${prefix}appstore <app>`,
   example: `${prefix}appstore whatsapp`,
   description: "Busca una aplicación en AppStore y obtén su información",
-
+  dev: false,
+  blockcmd: true,
   async execute(totoro, msg, args) {
     const {
       sendError,
@@ -35,7 +36,7 @@ module.exports = {
         "Busca una aplicación en App Store y obtén su información.",
         `${prefix}appstore WhatsApp`
       );
-    } 
+    }
 
     try {
       const searchResults = await AppleStore.search({

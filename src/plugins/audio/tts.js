@@ -13,6 +13,8 @@ module.exports = {
   usage: "tts <texto>",
   aliases: ["tts"],
   description: "Convierte texto a voz y envía un audio",
+  dev: false,
+  blockcmd: true,
 
   async execute(totoro, msg, args) {
     const info = msg.messages[0];

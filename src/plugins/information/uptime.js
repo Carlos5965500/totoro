@@ -19,7 +19,8 @@ module.exports = {
   ],
   description: "Tiempo de conexión del bot.",
   onlyGroup: false,
-
+  dev: false,
+  blockcmd: true,
   async execute(totoro, msg) {
     const info = msg.messages[0];
     const from = info.key.remoteJid;

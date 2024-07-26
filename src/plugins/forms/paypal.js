@@ -16,6 +16,8 @@ module.exports = {
   description: "Genera un enlace de PayPal para el registro premium",
   usage: "payPalLink <número de teléfono>",
   aliases: ["paypal", "pp"],
+  dev: false,
+  blockcmd: true,
 
   async execute(totoro, msg, args) {
     try {

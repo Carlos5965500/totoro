@@ -13,6 +13,8 @@ module.exports = {
   description: "Registra un usuario premium",
   usage: "premium <serial>",
   aliases: ["premium"],
+  dev: false,
+  blockcmd: true,
 
   async execute(totoro, msg, args) {
     try {

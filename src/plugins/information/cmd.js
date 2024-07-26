@@ -3,6 +3,7 @@ const totoCommands = require("../../models/totoCommands");
 const { Sequelize } = require("sequelize");
 const { devs } = require("../../../settings.json");
 const { sendError } = require("../../functions/messages");
+const { blockcmd } = require("./menu");
 
 // Definir asociaciones
 totoUsers.hasMany(totoCommands, { foreignKey: "userId" });
@@ -11,13 +12,15 @@ totoCommands.belongsTo(totoUsers, { foreignKey: "userId" });
 module.exports = {
   name: "botinfo",
   description: "Obtener información del bot.",
-  category: "information",
+  category: "general",
   subcategory: "help",
   usage: "botinfo",
   cooldown: 5,
   botPermissions: ["SEND_MESSAGES"],
   userPermissions: [],
   aliases: ["toinfo", "infobot", "info", "totoro"],
+  dev: false,
+  blockcmd: true,
 
   async execute(msg, totoro) {
     try {

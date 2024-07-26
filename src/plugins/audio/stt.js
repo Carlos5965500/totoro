@@ -17,6 +17,8 @@ module.exports = {
   subcategory: "voz",
   usage: `+stt <mensaje de audio>`,
   aliases: ["stt"],
+  dev: false,
+  blockcmd: true,
   run: async (totoro, msg, args) => {
     try {
       const m = msg.messages[0];

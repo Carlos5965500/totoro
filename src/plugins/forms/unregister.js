@@ -1,7 +1,6 @@
 const totoUser = require("../../models/totoUser");
 const totoroLog = require("../../functions/totoroLog");
 const {
-  sendWarning,
   sendError,
   sendSuccess,
   infoRegister,
@@ -14,6 +13,8 @@ module.exports = {
   description: "Desregistra un totoUser de la base de datos",
   usage: "unregister",
   aliases: ["unreg"],
+  dev: false,
+  blockcmd: true,
 
   async execute(totoro, msg, args) {
     try {

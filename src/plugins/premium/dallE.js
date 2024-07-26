@@ -1,7 +1,6 @@
 const { OpenAI } = require("openai");
-const { sendError, infoPremium } = require("../../functions/messages");
+const { sendError } = require("../../functions/messages");
 const totoroLog = require("../../functions/totoroLog");
-const totoPremium = require("../../models/totoPremium");
 module.exports = {
   name: "dalle",
   aliases: [],
@@ -25,11 +24,6 @@ module.exports = {
         return;
       }
 
-      if (!totoPremium) {
-        infoPremium(totoro, msg, "Este comando es solo para usuarios premium.");
-        return;
-      }
-
       const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
       const dallE = await openai.images.generate({
@@ -39,7 +33,7 @@ module.exports = {
         response_format: "url",
       });
 
-      totoro.sendMessage(from, { image: { url: dallE.data[0].url } });
+      reply(dallE.data.url);
     } catch (e) {
       totoroLog.error("./logs/plugins/premium/dallE.log", `${e.message}`);
       sendError(totoro, msg, `Error al generar imagen: ${e.message}`);

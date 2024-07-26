@@ -50,12 +50,13 @@ module.exports = {
     if (!body) return;
 
     if (
-      !body.startsWith("/") &&
+      !body.startsWith(".") &&
+      !body.startsWith("+") &&
+      !body.startsWith("?") &&
       !body.startsWith("!") &&
       !body.startsWith("#") &&
       !body.startsWith("$") &&
-      !body.startsWith("-") &&
-      !body.startsWith("+")
+      !body.startsWith("-")
     ) {
       if (key.remoteJid.endsWith("@g.us")) return;
 
@@ -129,6 +130,20 @@ module.exports = {
       );
     }
 
+    // Verificación de bloqueo de comandos
+    if (
+      plugin.blockcmd &&
+      totoro.config.blockCmd.includes(plugin.name) &&
+      !totoro.config.dev.includes(user)
+    ) {
+      return noCommand(
+        msg,
+        Tprefix,
+        pluginName,
+        `Este comando ha sido bloqueado por el propietario del bot.`
+      );
+    }
+
     const verifyuser = require("../utils/verifyuser");
     const isVerified = await verifyuser(user, totoro, msg);
     if (
@@ -139,6 +154,16 @@ module.exports = {
       return infoRegister(
         msg,
         `Te invitamos Totorolandia con ${Tprefix}register <nombre>.<edad>`
+      );
+    }
+
+    // cmdPremium
+    const verifypremium = require("../utils/verifypremium");
+    const ispremium = await verifypremium(user, totoro, msg);
+    if (!ispremium && plugin.cmdPrem && !totoro.config.dev.includes(user)) {
+      return infoPremium(
+        msg,
+        `Te invitamos a Totorolandia Premium con el comando ${Tprefix}regprem <serial>`
       );
     }
 

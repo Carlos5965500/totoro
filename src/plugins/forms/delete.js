@@ -14,6 +14,8 @@ module.exports = {
   description: "Desregistra un totoUser de la base de datos",
   usage: "delete <numeroSerial>",
   aliases: ["unreg"],
+  dev: false,
+  blockcmd: true,
 
   async execute(totoro, msg, args) {
     try {

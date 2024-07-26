@@ -11,6 +11,8 @@ module.exports = {
   description: "Muestra el perfil de un usuario",
   usage: "perfil <@usuario>",
   aliases: ["profile", "p"],
+  dev: false,
+  blockcmd: true,
 
   async execute(totoro, msg, args) {
     try {

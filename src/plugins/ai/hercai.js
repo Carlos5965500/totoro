@@ -8,6 +8,8 @@ module.exports = {
   description: "Hercai AI",
   usage: "hercai <message>",
   aliases: ["hercai", "hercai"],
+  dev: false,
+  blockcmd: true,
   async execute(totoro, msg, args) {
     try {
       const message = args.join(" ");

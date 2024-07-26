@@ -26,13 +26,13 @@ module.exports = {
     try {
       const code = args.join(" ");
       /* eslint no-eval: 0 */
-      let evaled = await eval(code);
+      let evaled = eval(code);
 
       if (typeof evaled !== "string") {
-        evaled = require("util").inspect(evaled, { depth: 1 });
+        evaled = require("util").inspect(evaled);
       }
 
-      reply("```" + clean(evaled) + "```");
+      reply(clean(evaled));
 
       msg.react("🔍");
     } catch (e) {
@@ -48,8 +48,8 @@ module.exports = {
 function clean(text) {
   if (typeof text === "string") {
     return text
-      .replace(/`/g, `\`${String.fromCharCode(8203)}`)
-      .replace(/@/g, `@${String.fromCharCode(8203)}`);
+      .replace(/`/g, '\`${String.fromCharCode(8203)}')
+      .replace(/`@/g, '\`@\`${String.fromCharCode(8203)}');
   }
   return text;
 }

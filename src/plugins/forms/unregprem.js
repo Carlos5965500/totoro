@@ -2,7 +2,6 @@ const {
   sendError,
   sendSuccess,
   help,
-  sendWarning,
   infoGroup,
 } = require("../../functions/messages");
 const { totoUser, totoPremium } = require("../../models");
@@ -14,6 +13,8 @@ module.exports = {
   description: "Desregistrar un usuario premium por número de serie",
   usage: "leavePremium <serialNumber>",
   aliases: ["leaveprem", "leavepremium", "leavep"],
+  dev: false,
+  blockcmd: true,
 
   async execute(totoro, msg, args) {
     try {

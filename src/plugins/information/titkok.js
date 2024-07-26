@@ -1,4 +1,4 @@
-const axios = require('axios');
+const axios = require("axios");
 const { help, sendError } = require("../../functions/messages");
 
 module.exports = {
@@ -11,7 +11,8 @@ module.exports = {
   botPermissions: ["SEND_MESSAGES", "ATTACH_FILES"],
   userPermissions: [],
   cooldown: 10,
-
+  dev: false,
+  blockcmd: true,
   async execute(totoro, msg, args) {
     try {
       // Verificar si se proporcionó un nombre de usuario
@@ -83,15 +84,15 @@ module.exports = {
 │ ┆ ✐;  *Me gusta:* ${likes}
 │ ┆ ✐;  *Videos:* ${videos}
 │ ┆ ✐;  *Vistas:* ${views}
-│ ┆ ✐;  *Cuenta de empresa:* ${isBusiness ? '🍭' : '🐥'}
-│ ┆ ✐;  *Verificado:* ${verified ? '🍭' : '🐥'}
+│ ┆ ✐;  *Cuenta de empresa:* ${isBusiness ? "🍭" : "🐥"}
+│ ┆ ✐;  *Verificado:* ${verified ? "🍭" : "🐥"}
 ╰─────────────────────┈`;
 
       // Enviar el mensaje de respuesta al canal de Discord
       await msg.reply(txt);
 
       // Si hay un avatar, enviarlo como archivo adjunto
-      if (avatar) {     
+      if (avatar) {
         await totoro.sendMessage(msg.from, {
           url: avatar,
           filename: "avatar.jpg",

@@ -10,7 +10,8 @@ module.exports = {
   cooldown: 5,
   botPermissions: ["SEND_MESSAGES", "SEND_REACTIONS"],
   userPermissions: [],
-
+  dev: false,
+  blockcmd: true,
   async execute(totoro, msg, _) {
     // Registrar el tiempo de inicio
     const start = Date.now();

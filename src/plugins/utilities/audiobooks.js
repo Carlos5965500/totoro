@@ -1,11 +1,15 @@
-const https = require('https');
-const { sendWarning, sendError, sendMessage } = require("../../functions/messages");
+const https = require("https");
+const {
+  sendWarning,
+  sendError,
+  sendMessage,
+} = require("../../functions/messages");
 
 module.exports = {
   name: "audiobook",
   aliases: ["abook"],
   description: "Descarga un audiolibro gratuito.",
-  category: "media",
+  category: "utilities",
   subcategory: "audiobooks",
   usage: `audiobook <nombre del libro>`,
   cooldown: 5,
@@ -14,7 +18,11 @@ module.exports = {
 
   execute: async (totoro, msg, args) => {
     if (!args.length) {
-      return sendWarning(totoro, msg, "Por favor, proporciona el nombre de un audiolibro.");
+      return sendWarning(
+        totoro,
+        msg,
+        "Por favor, proporciona el nombre de un audiolibro."
+      );
     }
 
     const bookName = args.join(" ");
@@ -43,21 +51,21 @@ module.exports = {
 function getAudiobookInfo(bookName) {
   return new Promise((resolve, reject) => {
     const options = {
-      hostname: 'openlibrary.org',
+      hostname: "openlibrary.org",
       path: `/search.json?title=${encodeURIComponent(bookName)}`,
-      method: 'GET'
+      method: "GET",
     };
 
     const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', (chunk) => {
+      let data = "";
+      res.on("data", (chunk) => {
         data += chunk;
       });
 
-      res.on('end', () => {
+      res.on("end", () => {
         if (res.statusCode === 200) {
           const result = JSON.parse(data);
-          const book = result.docs.find(doc => doc.has_fulltext && doc.ocaid);
+          const book = result.docs.find((doc) => doc.has_fulltext && doc.ocaid);
           resolve(book);
         } else {
           reject(new Error(res.statusCode));
@@ -65,7 +73,7 @@ function getAudiobookInfo(bookName) {
       });
     });
 
-    req.on('error', (e) => {
+    req.on("error", (e) => {
       reject(e);
     });
 

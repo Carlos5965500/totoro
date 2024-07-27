@@ -1,6 +1,7 @@
 const { OpenAI } = require("openai");
-const { sendError } = require("../../functions/messages");
+const { sendError, help } = require("../../functions/messages");
 const totoroLog = require("../../functions/totoroLog");
+const prefix = require("../../../settings.json").prefix;
 module.exports = {
   name: "dalle",
   aliases: [],
@@ -11,6 +12,7 @@ module.exports = {
   dev: false,
   blockcmd: true,
   async execute(totoro, msg, args) {
+    await msg.react("⏳");
     const content = args.join(" ");
 
     const info = msg.messages[0];
@@ -21,7 +23,13 @@ module.exports = {
 
     try {
       if (!content) {
-        reply("Falta el prompt.");
+        help(
+          totoro,
+          msg,
+          "dalle",
+          "Genera imagenes con AI.", 
+          `${prefix}dalle crea una imagen de un gato`
+        );
         return;
       }
 
@@ -34,7 +42,12 @@ module.exports = {
         response_format: "url",
       });
 
-      reply(dallE.data.url);
+      await msg.react("🪼");
+      totoro.sendMessage(from, {
+        image: { url: dallE.data[0].url },
+        caption: `Totoro AI - DALL-E\n\nPrompt: ${content}`,
+        quoted: info,
+      });
     } catch (e) {
       totoroLog.error("./logs/plugins/premium/dallE.log", `${e.message}`);
       sendError(totoro, msg, `Error al generar imagen: ${e.message}`);

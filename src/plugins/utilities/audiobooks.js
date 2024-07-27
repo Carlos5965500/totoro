@@ -3,6 +3,7 @@ const {
   sendWarning,
   sendError,
   sendMessage,
+  help,
 } = require("../../functions/messages");
 
 module.exports = {
@@ -19,10 +20,12 @@ module.exports = {
   blockcmd: true,
   execute: async (totoro, msg, args) => {
     if (!args.length) {
-      return sendWarning(
+      return help(
         totoro,
         msg,
-        "Por favor, proporciona el nombre de un audiolibro."
+        "audiobook",
+        "Descarga un audiolibro gratuito.",
+        "audiobook El principito"
       );
     }
 
@@ -31,8 +34,11 @@ module.exports = {
       const bookInfo = await getAudiobookInfo(bookName);
 
       if (!bookInfo) {
-        const warningMessage = `\n> No se pudo encontrar el audiolibro solicitado.`;
-        return sendWarning(totoro, msg, warningMessage);
+        return sendWarning(
+          totoro,
+          msg,
+          `No se encontró un audiolibro con el nombre *${bookName}*`
+        );
       }
 
       let responseMessage = `Audiolibro encontrado:\n\n`;
@@ -43,8 +49,8 @@ module.exports = {
       await sendMessage(totoro, msg, responseMessage);
     } catch (error) {
       console.error("Error retrieving audiobook information:", error);
-      const errorMessage = `╭─⬣「 *Advertencia* 」⬣\n│  ≡◦ *⚠️ Totoro te advierte lo siguiente:*\n╰─⬣\n> ${error.message}`;
-      await sendError(totoro, msg, errorMessage);
+      sendWarning(totoro, msg, `${error.message}`);
+      await sendError(totoro, msg, `${error.message}`);
     }
   },
 };

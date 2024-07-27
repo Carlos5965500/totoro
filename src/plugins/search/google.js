@@ -1,6 +1,8 @@
 const googleIt = require("google-it");
 const axios = require("axios");
 const { Writable } = require("stream");
+const { help } = require("../../functions/messages");
+const prefix = require("../../../settings.json").prefix;
 
 module.exports = {
   name: "google",
@@ -14,21 +16,17 @@ module.exports = {
     const consulta = args.join(" ");
     const message = msg.messages && msg.messages[0];
 
-    if (!message) {
-      console.error(
-        "La estructura del mensaje no es correcta. No se puede obtener el mensaje.",
-        msg
-      );
-      return;
-    }
-
     const remoteJid = message.key && message.key.remoteJid;
 
     if (!consulta) {
       if (remoteJid) {
-        return totoro.sendMessage(remoteJid, {
-          text: "🍭 Ingresa lo que deseas buscar.",
-        });
+        return help(
+          totoro,
+          msg,
+          "google",
+          "Realiza una búsqueda en Google o Delirius API",
+          `${prefix}google python`
+        );
       } else {
         console.error(
           "La estructura del mensaje no es correcta. No se puede obtener remoteJid.",

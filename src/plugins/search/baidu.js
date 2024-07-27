@@ -1,5 +1,7 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
+const { help } = require("../../functions/messages");
+const prefix = require("../../../settings.json").prefix;
 
 module.exports = {
   name: "baidu",
@@ -21,9 +23,13 @@ module.exports = {
 
     if (!consulta) {
       if (remoteJid) {
-        return totoro.sendMessage(remoteJid, {
-          text: "🍭 Ingresa lo que deseas buscar en Baidu.",
-        });
+        return help(
+          totoro,
+          msg,
+          "baidu",
+          "Realiza una búsqueda en Baidu",
+          `${prefix}baidu python`
+        );
       } else {
         return; // Termina si no se puede obtener remoteJid
       }

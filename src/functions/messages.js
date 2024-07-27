@@ -169,18 +169,16 @@ async function infoRegister(msg, warningMessage) {
 // Función para verficar que no eres premium
 async function infoPremium(msg, warningMessage) {
   try {
-    await msg.react("ℹ️");
     await msg.reply(
       `╭─⬣「 *TotoPremium* 」⬣\n` +
         `│  ≡◦ *⚠️ No eres Premium*\n` +
         `╰─⬣\n` +
         `> ${warningMessage}`
     );
+
+    await msg.react("ℹ️");
   } catch (error) {
-    totoroLog.error(
-      "./logs/functions/messages.log",
-      `Error enviando mensaje de infoPremium: ${error}`
-    );
+    return;
   }
 }
 

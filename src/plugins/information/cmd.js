@@ -1,13 +1,7 @@
-const totoUsers = require("../../models/totoUser");
-const totoCommands = require("../../models/totoCommands");
 const { Sequelize } = require("sequelize");
-const { devs } = require("../../../settings.json");
+const { totoUser, totoPlugin, totoDev, totoCounter } = require("../../models");
 const { sendError } = require("../../functions/messages");
-const { blockcmd } = require("./menu");
-
-// Definir asociaciones
-totoUsers.hasMany(totoCommands, { foreignKey: "userId" });
-totoCommands.belongsTo(totoUsers, { foreignKey: "userId" });
+const totoroLog = require("../../functions/totoroLog");
 
 module.exports = {
   name: "botinfo",
@@ -21,42 +15,81 @@ module.exports = {
   aliases: ["toinfo", "infobot", "info", "totoro"],
   dev: false,
   blockcmd: true,
-
-  async execute(msg, totoro) {
+  async execute(totoro, msg, args) {
     try {
-      // Contar el total de usuarios
-      const totalUsers = await totoUsers.count();
-      console.log("Total Users:", totalUsers); // Debugging
+      console.log("Executing botinfo command");
 
-      // Contar el total de usuarios premium
-      const premiumUsers = await totoUsers.count({
-        where: {
-          premium: true,
-        },
-      });
-      console.log("Premium Users:", premiumUsers); // Debugging
+      // Obtener teléfonos de desarrolladores
+      const devUsers = await totoDev.findAll({ attributes: ["phone"] });
+      const devPhones = devUsers.map((dev) =>
+        dev.phone.replace("@s.whatsapp.net", "")
+      );
 
-      // Contar el total de comandos, excluyendo los de devs
-      const totalCommands = await totoCommands.count({
+      // Obtener IDs de usuarios desarrolladores
+      const devUserRecords = await totoUser.findAll({
+        attributes: ["id"],
         where: {
-          userId: {
-            [Sequelize.Op.notIn]: devs,
+          phone: {
+            [Sequelize.Op.in]: devPhones,
           },
         },
       });
-      console.log("Total Commands:", totalCommands); // Debugging
+      const devUserIds = devUserRecords.map((user) => user.id);
+
+      // Contar el total de usuarios excluyendo desarrolladores
+      const totalUsers = await totoUser.count({
+        where: {
+          id: {
+            [Sequelize.Op.notIn]: devUserIds,
+          },
+        },
+      });
+      console.log("Total Users:", totalUsers);
+
+      // Contar el total de usuarios premium excluyendo desarrolladores
+      const premiumUsers = await totoUser.count({
+        where: {
+          id: {
+            [Sequelize.Op.notIn]: devUserIds,
+          },
+          premium: true,
+        },
+      });
+
+      // Contar el total de plugins
+      const totalPlugins = await totoPlugin.count();
+
+      const pluginRecords = await totoCounter.findAll();
+      const plugins = pluginRecords.map((record) =>
+        record.pluginName.toLowerCase()
+      );
+
+      let totalPluginsExec = 0;
+      const count = await totoCounter.findAll();
+      count.forEach((user) => {
+        if (plugins.includes(user.pluginName.toLowerCase())) {
+          totalPluginsExec += user.count;
+        }
+      });
 
       // Crear el mensaje
-      let txt = `╭─⬣「 * Totoro Info * 」\n`;
+      let txt = `╭─⬣「 *Totoro Info* 」\n`;
+      txt += `│  ≡◦ *🔌 Plugins Totales ∙* ${totalPlugins}\n`;
       txt += `│  ≡◦ *👥 Total Usuarios ∙* ${totalUsers}\n`;
       txt += `│  ≡◦ *🌟 Usuarios Premium ∙* ${premiumUsers}\n`;
-      txt += `│  ≡◦ *📝 Total Comandos Ejecutados ∙* ${totalCommands}\n`;
+      txt += `│  ≡◦ *🧩 Plugin Ejecutados∙* ${totalPluginsExec}\n`;
       txt += `╰─⬣`;
 
-      // Enviar mensaje de respuesta
-      await msg.reply(txt);
+      // Enviar mensaje de respuesta como reply
+      const info = msg.messages[0];
+      const remoteJid = info.key.remoteJid;
+      await totoro.sendMessage(remoteJid, { text: txt }, { quoted: info });
+      console.log("Message sent");
     } catch (error) {
-      console.error("Error Details:", error); // Debugging
+      totoroLog.error(
+        "./logs/plugins/information/botinfo.log",
+        `Error en botinfo: ${error}`
+      );
       sendError(totoro, msg, error);
     }
   },

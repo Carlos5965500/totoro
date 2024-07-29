@@ -20,10 +20,7 @@ async function verifyPremium(participant, totoro, msg) {
         msg,
         `> Por favor, adquiere una membresía premium para poder utilizar este comando.`
       );
-      totoroLog.info(
-        "./logs/utils/verifypremium.log",
-        `Usuario no premium: ${phone}`
-      );
+
       return null;
     }
     return user;

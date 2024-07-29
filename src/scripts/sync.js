@@ -180,7 +180,9 @@ class totoDBSync {
         await this.removeAbsentDevs(devPhones, this.backupModels.totoDev);
 
         // Cargar y registrar plugins
-        const pluginCount = await this.loadAndRegisterPlugins(this.backupModels.totoPlugin);
+        const pluginCount = await this.loadAndRegisterPlugins(
+          this.backupModels.totoPlugin
+        );
         syncMessage += `
 │ ✅  ${pluginCount} plugins cargados y registrados en la base de datos de respaldo`;
 
@@ -259,16 +261,24 @@ class totoDBSync {
     const directory = await fs.promises.readdir("./src/plugins");
     let pluginCount = 0;
 
+    // Limpiar la base de datos de plugins que ya no existen en el sistema de archivos
+    const existingPlugins = await pluginModel.findAll();
+    const existingPluginNames = existingPlugins.map((plugin) => plugin.name);
+    const pluginNamesInDirectory = [];
+
     for (const folder of directory) {
       const files = await fs.promises.readdir(`./src/plugins/${folder}`);
 
       for (const file of files) {
         const pluginPath = path.join(__dirname, "../plugins", folder, file);
+
+        // Eliminar caché antes de requerir el módulo
         delete require.cache[require.resolve(pluginPath)];
 
         try {
           const plugin = require(pluginPath);
           if (plugin && plugin.name) {
+            pluginNamesInDirectory.push(plugin.name); // Agregar a la lista de plugins en el directorio
             // Utilizar upsert para sobrescribir en caso de duplicados
             await pluginModel.upsert({
               name: plugin.name,
@@ -276,15 +286,20 @@ class totoDBSync {
               category: plugin.category || null,
               subcategory: plugin.subcategory || null,
               usage: plugin.usage || null,
-              aliases: plugin.aliases ? plugin.aliases.join(',') : null,
+              aliases: plugin.aliases ? plugin.aliases.join(",") : null,
             });
             pluginCount++;
-          } else {
-            console.log(`Plugin no válido en ${pluginPath}`);
           }
         } catch (error) {
           console.error(`Error al cargar plugin en ${pluginPath}:`, error);
         }
+      }
+    }
+
+    // Eliminar plugins de la base de datos que ya no están en el sistema de archivos
+    for (const pluginName of existingPluginNames) {
+      if (!pluginNamesInDirectory.includes(pluginName)) {
+        await pluginModel.destroy({ where: { name: pluginName } });
       }
     }
 

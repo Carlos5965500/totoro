@@ -7,8 +7,8 @@ if (typeof global.lastRestartTime === "undefined") {
 
 module.exports = {
   name: "uptime",
-  category: "information",
-  subcategory: "general",
+  category: "general",
+  subcategory: "information",
   aliases: [
     "up",
     "tiempo",

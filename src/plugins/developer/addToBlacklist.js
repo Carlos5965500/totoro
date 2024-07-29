@@ -1,5 +1,5 @@
 module.exports = {
-  name: "addtoblacklist",
+  name: "addBlacklist",
   description: "Añadir un usuario a la lista negra.",
   category: "developer",
   subcategory: "blacklist",

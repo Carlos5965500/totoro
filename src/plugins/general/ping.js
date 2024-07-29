@@ -5,7 +5,7 @@ module.exports = {
   description: "Muestra la latencia del bot.",
   aliases: ["ping"],
   category: "general",
-  subcategory: "info",
+  subcategory: "information",
   usage: "<ping>",
   cooldown: 5,
   botPermissions: ["SEND_MESSAGES", "SEND_REACTIONS"],

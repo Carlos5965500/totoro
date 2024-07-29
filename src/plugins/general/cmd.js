@@ -7,7 +7,7 @@ module.exports = {
   name: "botinfo",
   description: "Obtener información del bot.",
   category: "general",
-  subcategory: "help",
+  subcategory: "information",
   usage: "botinfo",
   cooldown: 5,
   botPermissions: ["SEND_MESSAGES"],

@@ -50,13 +50,8 @@ module.exports = {
     if (!body) return;
 
     if (
-      !body.startsWith(".") &&
       !body.startsWith("+") &&
-      !body.startsWith("?") &&
-      !body.startsWith("!") &&
-      !body.startsWith("#") &&
-      !body.startsWith("$") &&
-      !body.startsWith("-")
+      !body.startsWith("!")
     ) {
       if (key.remoteJid.endsWith("@g.us")) return;
 
@@ -99,7 +94,7 @@ module.exports = {
       ];
 
       const matcherx = matcher(pluginName, pluginEntry).filter(
-        (v) => v.accuracy >= 20
+        (v) => v.accuracy >= 60
       );
 
       if (matcherx.length > 0) {

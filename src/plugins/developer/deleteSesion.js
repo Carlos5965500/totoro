@@ -13,12 +13,12 @@ module.exports = {
     // Borrar todo el contenido de la carpeta de sesiones de WhatsApp menos el archivo creds.json
     try {
       // Leer el contenido del directorio de autenticación
-      const auth = await fs.readdir("auth/momo-auth");
+      const auth = await fs.readdir("auth/totoro-auth");
       for (const file of auth) {
         // Comprobar si el archivo no es creds.json
         if (file !== "creds.json") {
           // Eliminar el archivo
-          await fs.unlink(`auth/momo-auth/${file}`);
+          await fs.unlink(`auth/totoro-auth/${file}`);
         }
       }
 

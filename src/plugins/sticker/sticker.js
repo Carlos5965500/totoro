@@ -26,6 +26,7 @@ module.exports = {
     };
 
     await msg.react("🧩");
+
     const isQuotedImage =
       !!info.message?.imageMessage ||
       !!info.message?.extendedTextMessage?.contextInfo?.quotedMessage
@@ -45,22 +46,30 @@ module.exports = {
       }
 
       let buffer = Buffer.from([]);
-      if (isQuotedImage) {
-        const stream = await downloadContentFromMessage(
-          info.message?.imageMessage ||
+      if (isQuotedImage || isQuotedVideo || isQuotedSticker) {
+        const message = isQuotedImage
+          ? info.message?.imageMessage ||
             info.message?.extendedTextMessage?.contextInfo?.quotedMessage
-              ?.imageMessage,
-          "image"
-        );
+              ?.imageMessage
+          : isQuotedVideo
+            ? info.message?.videoMessage ||
+              info.message?.extendedTextMessage?.contextInfo?.quotedMessage
+                ?.videoMessage
+            : info.message?.stickerMessage ||
+              info.message?.extendedTextMessage?.contextInfo?.quotedMessage
+                ?.stickerMessage;
+        const type = isQuotedImage
+          ? "image"
+          : isQuotedVideo
+            ? "video"
+            : "sticker";
+        const stream = await downloadContentFromMessage(message, type);
+
         for await (const chunk of stream) {
           buffer = Buffer.concat([buffer, chunk]);
         }
-      } else if (isQuotedVideo) {
-        if (
-          info.message?.videoMessage?.seconds > 10 ||
-          info.message?.extendedTextMessage?.contextInfo?.quotedMessage
-            ?.videoMessage?.seconds > 10
-        ) {
+
+        if (isQuotedVideo && message?.seconds > 10) {
           return sendWarning(
             totoro,
             from,
@@ -68,61 +77,30 @@ module.exports = {
             info
           );
         }
-        const stream = await downloadContentFromMessage(
-          info.message?.videoMessage ||
-            info.message?.extendedTextMessage?.contextInfo?.quotedMessage
-              ?.videoMessage,
-          "video"
-        );
-        for await (const chunk of stream) {
-          buffer = Buffer.concat([buffer, chunk]);
-        }
 
-        const tempVideoPath = join(tmpdir(), `video-${Date.now()}.mp4`);
-        const tempGifPath = join(tmpdir(), `video-${Date.now()}.gif`);
-        writeFileSync(tempVideoPath, buffer);
-
-        await new Promise((resolve, reject) => {
-          ffmpeg(tempVideoPath)
-            .output(tempGifPath)
-            .on("end", resolve)
-            .on("error", reject)
-            .run();
-        });
-
-        buffer = readFileSync(tempGifPath);
-
-        unlinkSync(tempVideoPath);
-        unlinkSync(tempGifPath);
-      } else if (isQuotedSticker) {
-        const stream = await downloadContentFromMessage(
-          info.message?.stickerMessage ||
-            info.message?.extendedTextMessage?.contextInfo?.quotedMessage
-              ?.stickerMessage,
-          "sticker"
-        );
-        for await (const chunk of stream) {
-          buffer = Buffer.concat([buffer, chunk]);
-        }
-
-        if (info.message?.stickerMessage?.isAnimated) {
-          // Convierte el sticker animado en un gif
+        if (isQuotedVideo) {
+          const tempVideoPath = join(tmpdir(), `video-${Date.now()}.mp4`);
+          writeFileSync(tempVideoPath, buffer);
+          buffer = readFileSync(tempVideoPath);
+          unlinkSync(tempVideoPath);
+        } else if (isQuotedSticker && message.isAnimated) {
           const tempStickerPath = join(tmpdir(), `sticker-${Date.now()}.webp`);
-          const tempGifPath = join(tmpdir(), `sticker-${Date.now()}.gif`);
+          const tempVideoPath = join(tmpdir(), `sticker-${Date.now()}.mp4`);
           writeFileSync(tempStickerPath, buffer);
 
           await new Promise((resolve, reject) => {
             ffmpeg(tempStickerPath)
-              .output(tempGifPath)
+              .inputFormat("webp")
+              .outputOptions(["-vcodec libx264", "-pix_fmt yuv420p", "-crf 28"])
+              .output(tempVideoPath)
               .on("end", resolve)
               .on("error", reject)
               .run();
           });
 
-          buffer = readFileSync(tempGifPath);
-
+          buffer = readFileSync(tempVideoPath);
           unlinkSync(tempStickerPath);
-          unlinkSync(tempGifPath);
+          unlinkSync(tempVideoPath);
         }
       }
 
@@ -138,11 +116,10 @@ module.exports = {
         const result = await sticker.toMessage();
         totoro.sendMessage(from, result, { quoted: info });
       } else if (isQuotedSticker) {
-        // Envia el sticker como imagen o gif
         if (info.message?.stickerMessage?.isAnimated) {
           totoro.sendMessage(
             from,
-            { video: buffer, gifPlayback: true },
+            { video: buffer, mimetype: "mp4" },
             { quoted: info }
           );
         } else {

@@ -9,7 +9,5 @@ module.exports = {
   userPermissions: [],
   aliases: ["addb", "blacklist", "blacklistadd"],
 
-  async execute(msg, totoro) {
-    
-  },
+  async execute(msg, totoro) {},
 };

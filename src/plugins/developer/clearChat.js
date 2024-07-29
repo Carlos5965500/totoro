@@ -8,7 +8,7 @@ const {
 module.exports = {
   name: "clear",
   aliases: ["cc", "vaciar"],
-  category: "admin",
+  category: "developer",
   subcategory: "owner",
   description: "Vacía el chat actual.",
   usage: "clearChat",

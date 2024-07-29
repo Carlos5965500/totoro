@@ -6,8 +6,8 @@ module.exports = {
   name: "deleteCmdPrem",
   category: "developer",
   subcategory: "owner",
-  aliases: ["delcmdprem"],
-  usage: "delcmdprem <comando>",
+  aliases: ["dcmdp"],
+  usage: "dcmdp <cmd>",
   description: "Elimina cmdPrem de settings.json",
   dev: true,
 

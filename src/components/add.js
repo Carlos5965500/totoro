@@ -58,7 +58,7 @@ module.exports = {
             `│  ≡◦ 🍭 Bienvenido/a al grupo ${groupName}\n` +
             `╰─⬣\n` +
             `> ¡Bienvenido/a @${phoneNumber}! @${executorId.split("@")[0]} te ha agregado al grupo.\n`,
-          mentions: [participantId, executorId], 
+          mentions: [participantId, executorId], // Mencionar al nuevo miembro y al ejecutor
         });
       }
     } catch (error) {

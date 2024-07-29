@@ -12,7 +12,7 @@ module.exports = {
   subcategory: "register",
   description: "Registra un usuario premium",
   usage: "premium <serial>",
-  aliases: ["premium"],
+  aliases: ["premium", "Premium", "prem", "Prem", "premi"],
   dev: false,
   blockcmd: true,
 
@@ -37,8 +37,8 @@ module.exports = {
           totoro,
           msg,
           "Registro de Usuario Premium",
-          "Ingresa tu número serial",
-          "+regPremium <serial>"
+          "Registra un usuario premium",
+          `${prefix}premium <correo>`
         );
         await msg.react("❓");
         return;

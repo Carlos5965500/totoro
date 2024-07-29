@@ -1,10 +1,10 @@
 const {
-  sendWarning,
   noCommand,
   infoRegister,
   infoPremium,
   dev,
 } = require("../functions/messages");
+const { totoUser, totoDev, totoCounter } = require("../models");
 const { matcher } = require("../functions/matcher");
 const totoroLog = require("../functions/totoroLog");
 module.exports = {
@@ -165,6 +165,42 @@ module.exports = {
         msg,
         `Te invitamos a Totorolandia Premium con el comando ${Tprefix}regprem <serial>`
       );
+    }
+
+    // Incrementar el contador del comando actual si no es un desarrollador ni el teléfono específico
+    const specificPhoneToExclude = "34638579630";
+    const currentUser = await totoUser.findOne({
+      where: {
+        phone: user.split("@")[0],
+      },
+    });
+
+    const devUsers = await totoDev.findAll({ attributes: ["phone"] });
+    const devPhones = devUsers.map((dev) =>
+      dev.phone.replace("@s.whatsapp.net", "")
+    );
+
+    if (
+      currentUser &&
+      !devPhones.includes(user.split("@")[0]) &&
+      user.split("@")[0] !== specificPhoneToExclude
+    ) {
+      const counterRecord = await totoCounter.findOne({
+        where: {
+          totoUserId: currentUser.id,
+          pluginName: plugin.name,
+        },
+      });
+
+      if (counterRecord) {
+        await counterRecord.increment("count");
+      } else {
+        await totoCounter.create({
+          totoUserId: currentUser.id,
+          pluginName: plugin.name,
+          count: 1,
+        });
+      }
     }
 
     plugin.execute(totoro, msg, args)?.catch((error) => {

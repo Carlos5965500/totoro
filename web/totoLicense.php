@@ -2,10 +2,10 @@
 // Configuración de la base de datos
 function getDatabaseConnection()
 {
-    $host = 'nodo.cinammon.es';
-    $db = 's4_totoro';
-    $user = 'u4_ZzjLwctXqJ';
-    $pass = '^soWpcozR3W07ZMXDmr^Tb8q';
+    $host = '';
+    $db = '';
+    $user = '';
+    $pass = '';
     $charset = 'utf8mb4';
     $port = '3306';
 

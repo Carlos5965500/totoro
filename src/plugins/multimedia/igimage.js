@@ -6,7 +6,7 @@ const { tr } = require("../../../data/languages");
 
 module.exports = {
   name: "igimage",
-  category: "multimedia",
+  category: "premium",
   subcategory: "instagram",
   usage: "instagram <enlace>",
   description: "Descarga imagen de Instagram.",

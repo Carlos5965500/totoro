@@ -3,7 +3,7 @@ const { sendError, help, sendWarning } = require("../../functions/messages");
 const totoroLog = require("../../functions/totoroLog");
 module.exports = {
   name: "igmp4",
-  category: "multimedia",
+  category: "premium",
   subcategory: "instagram",
   usage: "igmp4 <enlace>",
   description: "Descarga video de ig",

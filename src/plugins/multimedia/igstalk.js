@@ -7,7 +7,7 @@ const { help, sendWarning } = require("../../functions/messages");
 module.exports = {
   name: "instagramstalk",
   aliases: ["igstalk", "ig"],
-  category: "multimedia",
+  category: "premium",
   subcategory: "instagram",
   usage: "igstalk <user>",
   example: "igstalk @nialr20",

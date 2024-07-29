@@ -5,8 +5,8 @@ const { sendWarning } = require("../../functions/messages");
 module.exports = {
   name: "spotify",
   aliases: ["spotifydl", "spot", "spdl", "sdl", "music", "song"],
-  category: "multimedia",
-  subcategory: "downloads",
+  category: "premium",
+  subcategory: "spotify",
   usage: "<url>",
   example:
     "spotify https://open.spotify.com/track/2spJ8VgV43N4NzosKAYARt?si=9gfCWO2GSUmOU74M0lZrvg",

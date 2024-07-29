@@ -6,7 +6,7 @@ const totoroLog = require("../../functions/totoroLog");
 
 module.exports = {
   name: "youtube",
-  category: "multimedia",
+  category: "premium",
   subcategory: "youtube",
   usage: "youtube <enlace o término de búsqueda>",
   description: "Descarga video de YouTube.",

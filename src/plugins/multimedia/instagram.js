@@ -5,7 +5,7 @@ const totoroLog = require("../../functions/totoroLog");
 
 module.exports = {
   name: "instagram",
-  category: "multimedia",
+  category: "premium",
   subcategory: "instagram",
   usage: "instagram <enlace>",
   description: "Descarga video de Instagram.",

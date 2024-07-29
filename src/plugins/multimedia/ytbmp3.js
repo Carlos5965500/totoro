@@ -6,7 +6,7 @@ const { sendWarning, sendError, help } = require("../../functions/messages");
 module.exports = {
   name: "ytbmp3",
   aliases: ["yt3", "ytm3", "ytv3"],
-  category: "multimedia",
+  category: "premium",
   subcategory: "youtube",
   description: "Descarga audios de YouTube.",
   usage: "ytmp3 <yt url o nombre>",

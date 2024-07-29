@@ -5,7 +5,7 @@ const { sendWarning, sendError, help } = require("../../functions/messages");
 module.exports = {
   name: "ytbmp4",
   aliases: ["yt4", "ytm4", "ytv4"],
-  category: "multimedia",
+  category: "premium",
   subcategory: "youtube",
   description: "Descarga videos de YouTube.",
   usage: "ytmp4 <yt url o nombre>",

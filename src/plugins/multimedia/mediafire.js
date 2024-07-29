@@ -7,8 +7,8 @@ const AdmZip = require("adm-zip");
 module.exports = {
   name: "mediafire",
   aliases: ["mf"],
-  category: "multimedia",
-  subcategory: "downloads",
+  category: "premium",
+  subcategory: "mediafire",
   description: "Descarga archivos de Mediafire.",
   usage: "mediafire <mediafire url>",
   botPermissions: ["SEND_MESSAGES", "ATTACH_FILES"],

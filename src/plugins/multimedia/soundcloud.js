@@ -2,29 +2,19 @@ const scdl = require("soundcloud-downloader").default;
 const { sendWarning, sendError, help } = require("../../functions/messages");
 
 module.exports = {
-  name: "SoundCloud",
-  category: "multimedia",
-  subcategory: "Sound Cloud",
-  description: "Descarga audios de SoundCloud.",
-  usage: "sc < url o nombre>",
+  name: "soundcloud",
   aliases: ["asc", "sca", "scmp3", "sc", "scaudio", "play", "totorosc", "tsc"],
+  category: "premium",
+  subcategory: "sound cloud",
+  description: "Descarga audios de SoundCloud.",
+  usage: "scmp3 <sc url o nombre>",
   botPermissions: ["SEND_MESSAGES", "ATTACH_FILES"],
   userPermissions: [],
   cooldown: 10,
-  dev: false,
-  blockcmd: true,
-  cmdPrem: true,
+
   async execute(totoro, msg, args) {
     const participant = msg.messages?.[0]?.key?.participant;
     const remoteJid = msg.messages?.[0]?.key?.remoteJid;
-
-    if (!participant && !remoteJid) {
-      return sendError(
-        totoro,
-        msg,
-        "No se pudo obtener el número del usuario o el chat."
-      );
-    }
 
     if (!args[0]) {
       return help(
@@ -86,7 +76,7 @@ module.exports = {
       const audioBuffer = await streamToBuffer(downloadStream);
       const fileSizeMB = audioBuffer.length / (1024 * 1024); // Convertir bytes a megabytes
 
-      if (fileSizeMB > 100) {
+      if (fileSizeMB > 400) {
         return sendWarning(
           totoro,
           msg,
@@ -137,6 +127,12 @@ module.exports = {
 // Función para convertir un stream a un buffer
 function streamToBuffer(stream) {
   return new Promise((resolve, reject) => {
+    const chunks = [];
+    stream.on("data", (chunk) => chunks.push(chunk));
+    stream.on("end", () => resolve(Buffer.concat(chunks)));
+    stream.on("error", reject);
+  });
+}n new Promise((resolve, reject) => {
     const chunks = [];
     stream.on("data", (chunk) => chunks.push(chunk));
     stream.on("end", () => resolve(Buffer.concat(chunks)));

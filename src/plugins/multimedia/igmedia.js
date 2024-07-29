@@ -4,7 +4,7 @@ const totoroLog = require("../../functions/totoroLog");
 
 module.exports = {
   name: "igmedia",
-  category: "multimedia",
+  category: "premium",
   subcategory: "instagram",
   usage: "igimage <enlace>",
   description: "Descarga imágenes de Instagram",

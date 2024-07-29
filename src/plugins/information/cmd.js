@@ -84,7 +84,6 @@ module.exports = {
       const info = msg.messages[0];
       const remoteJid = info.key.remoteJid;
       await totoro.sendMessage(remoteJid, { text: txt }, { quoted: info });
-      console.log("Message sent");
     } catch (error) {
       totoroLog.error(
         "./logs/plugins/information/botinfo.log",

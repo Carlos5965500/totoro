@@ -16,7 +16,6 @@ module.exports = async (totoro) => {
         try {
           const plugin = require(pluginPath);
           if (plugin && plugin.name) {
-            // Añadir el plugin al mapa de plugins
             if (!totoro.plugins) {
               totoro.plugins = new Map();
             }

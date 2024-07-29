@@ -7,11 +7,11 @@ module.exports = {
   subcategory: "ia",
   description: "Hercai AI",
   usage: "hercai <message>",
-  aliases: ["hercai", "hercai"],
   dev: false,
   blockcmd: true,
   async execute(totoro, msg, args) {
     try {
+      await msg.react("🧩");
       const message = args.join(" ");
       if (!message) {
         await help(
@@ -31,6 +31,7 @@ module.exports = {
         model: "v3",
       });
 
+      await msg.react("✅");
       // Enviar la respuesta usando msg.reply
       await msg.reply(response.reply);
     } catch (error) {

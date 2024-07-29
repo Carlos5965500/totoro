@@ -16,21 +16,21 @@ const totoCounter = tDB.sequelize.define(
       allowNull: false,
       references: {
         model: totoUser,
-        key: "id",
-      },
+        key: 'id'
+      }
     },
     pluginName: {
       type: DataTypes.STRING,
       allowNull: false,
       references: {
         model: totoPlugin,
-        key: "name",
-      },
+        key: 'name'
+      }
     },
     count: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: 0,
+      defaultValue: 0
     },
   },
   {

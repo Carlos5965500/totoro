@@ -12,7 +12,7 @@ module.exports = {
   async execute(_, msg, __) {
     // Leer el contenido de la carpeta de sesiones de WhatsApp
     try {
-      const auth = await fs.readdir("auth/momo-auth");
+      const auth = await fs.readdir("auth/totoro-auth");
 
       // Verificar si la carpeta está vacía
       if (auth.length === 0) {

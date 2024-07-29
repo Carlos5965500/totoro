@@ -24,7 +24,7 @@ module.exports = {
         remoteJid || participant,
         {
           audio: audioBuffer,
-          ptt: true, 
+          ptt: true, // Esto asegura que se envía como un mensaje de voz (push-to-talk)
           caption: "🎵 Aquí está tu canción",
         },
         { quoted: msg.messages[0] }

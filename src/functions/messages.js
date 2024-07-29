@@ -199,15 +199,13 @@ async function infoSerial(msg, warningMessage) {
   }
 }
 
-async function sendSerial(msg, userName, serialNumber) {
+async function sendLicence(msg, userName, Licence) {
   try {
-    await msg.react("🔍");
     await msg.reply(
-      `╭─⬣「 *Número de Serie* 」⬣\n` +
-        `│  ≡◦ *ℹ️ Totoro generó una licencia para ${userName}*\n` +
-        `│  ≡◦ *ℹ️ Tu número de serie es*\n` +
-        `╰─⬣\n` +
-        `> ${serialNumber}`
+      `╭─⬣「 *Número de Serie* 」⬣\n` + 
+      `│  ≡◦ *ℹ️ ${userName} Obten tu licencia para ser totoPremium*\n` +
+      `╰─⬣\n` +
+      `> ${Licence}`
     );
   } catch (error) {
     totoroLog.error(
@@ -347,7 +345,7 @@ module.exports = {
   infoPremium,
   infoSerial,
   infoGroup,
-  sendSerial,
+  sendLicence,
   noCommand,
   sendError,
   sendPrem,

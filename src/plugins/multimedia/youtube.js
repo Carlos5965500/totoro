@@ -6,14 +6,14 @@ const totoroLog = require("../../functions/totoroLog");
 
 module.exports = {
   name: "youtube",
-  category: "premium",
+  category: "multimedia",
   subcategory: "youtube",
   usage: "youtube <enlace o término de búsqueda>",
   description: "Descarga video de YouTube.",
   example: "youtube https://www.youtube.com/watch?v=dQw4w9WgXcQ o youtube amor",
   dev: false,
   blockcmd: true,
-  cmdPrem: true,
+  cmdPrem: false,
   async execute(totoro, msg, args) {
     try {
       msg.react("⏳");
@@ -109,7 +109,7 @@ function createInteractiveMessage(content, imageMessage, dl_url, videoUrl) {
       body: { text: content },
       footer: { text: `Descargado por Totoro` },
       nativeFlowMessage: {
-        buttons: [ 
+        buttons: [
           {
             name: "cta_url",
             buttonParamsJson: JSON.stringify({

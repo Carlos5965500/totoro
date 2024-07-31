@@ -7,7 +7,7 @@ const AdmZip = require("adm-zip");
 module.exports = {
   name: "mediafire",
   aliases: ["mf"],
-  category: "premium",
+  category: "multimedia",
   subcategory: "mediafire",
   description: "Descarga archivos de Mediafire.",
   usage: "mediafire <mediafire url>",
@@ -16,7 +16,7 @@ module.exports = {
   cooldown: 10,
   dev: false,
   blockcmd: true,
-  cmdPrem: true,
+  cmdPrem: false,
   async execute(totoro, msg, args) {
     const participant = msg.messages?.[0]?.key?.participant;
     const remoteJid = msg.messages?.[0]?.key?.remoteJid;

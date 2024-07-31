@@ -9,6 +9,11 @@ const tDB = new TotoDB();
 const totoPlugin = tDB.sequelize.define(
   "totoPlugin",
   {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true, // Hacer que el campo sea auto-incremental
+      primaryKey: true,
+    },
     name: {
       type: DataTypes.STRING,
       allowNull: false,

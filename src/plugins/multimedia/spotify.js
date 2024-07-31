@@ -5,7 +5,7 @@ const { sendWarning } = require("../../functions/messages");
 module.exports = {
   name: "spotify",
   aliases: ["spotifydl", "spot", "spdl", "sdl", "music", "song"],
-  category: "premium",
+  category: "multimedia",
   subcategory: "spotify",
   usage: "<url>",
   example:
@@ -13,7 +13,7 @@ module.exports = {
   description: "Descarga música con metadatos de Spotify",
   dev: false,
   blockcmd: true,
-  cmdPrem: true,
+  cmdPrem: false,
   async execute(totoro, msg, args) {
     msg.react("⏳");
 

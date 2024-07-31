@@ -4,13 +4,16 @@ const { sendWarning, sendError, help } = require("../../functions/messages");
 module.exports = {
   name: "soundcloud",
   aliases: ["asc", "sca", "scmp3", "sc", "scaudio", "play", "totorosc", "tsc"],
-  category: "premium",
+  category: "multimedia",
   subcategory: "sound cloud",
   description: "Descarga audios de SoundCloud.",
   usage: "scmp3 <sc url o nombre>",
   botPermissions: ["SEND_MESSAGES", "ATTACH_FILES"],
   userPermissions: [],
   cooldown: 10,
+  dev: false,
+  blockcmd: true,
+  cmdPrem: false,
 
   async execute(totoro, msg, args) {
     const participant = msg.messages?.[0]?.key?.participant;

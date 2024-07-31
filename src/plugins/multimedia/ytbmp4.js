@@ -5,7 +5,7 @@ const { sendWarning, sendError, help } = require("../../functions/messages");
 module.exports = {
   name: "ytbmp4",
   aliases: ["yt4", "ytm4", "ytv4"],
-  category: "premium",
+  category: "multimedia",
   subcategory: "youtube",
   description: "Descarga videos de YouTube.",
   usage: "ytmp4 <yt url o nombre>",
@@ -14,7 +14,7 @@ module.exports = {
   cooldown: 10,
   dev: false,
   blockcmd: true,
-  cmdPrem: true,
+  cmdPrem: false,
   async execute(totoro, msg, args) {
     // Aseguramos que el objeto msg y sus propiedades están definidas
     const participant = msg.messages?.[0]?.key?.participant;

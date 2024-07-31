@@ -266,6 +266,9 @@ class totoDBSync {
     const existingPluginNames = existingPlugins.map((plugin) => plugin.name);
     const pluginNamesInDirectory = [];
 
+    // Obtener el último ID
+    let lastId = (await pluginModel.max("id")) || 0;
+
     for (const folder of directory) {
       const files = await fs.promises.readdir(`./src/plugins/${folder}`);
 
@@ -279,8 +282,13 @@ class totoDBSync {
           const plugin = require(pluginPath);
           if (plugin && plugin.name) {
             pluginNamesInDirectory.push(plugin.name); // Agregar a la lista de plugins en el directorio
+
+            // Incrementar el ID manualmente
+            lastId++;
+
             // Utilizar upsert para sobrescribir en caso de duplicados
             await pluginModel.upsert({
+              id: lastId,
               name: plugin.name,
               description: plugin.description || null,
               category: plugin.category || null,
@@ -302,6 +310,9 @@ class totoDBSync {
         await pluginModel.destroy({ where: { name: pluginName } });
       }
     }
+
+    // Ordenar plugins alfabéticamente
+    await pluginModel.findAll({ order: [["name", "ASC"]] });
 
     return pluginCount;
   }

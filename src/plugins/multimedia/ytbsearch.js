@@ -14,7 +14,7 @@ module.exports = {
   cooldown: 10,
   dev: false,
   blockcmd: true,
-  cmdPrem: true,
+  cmdPrem: false,
   async execute(totoro, msg, args) {
     const from = msg.messages[0]?.key?.remoteJid;
 

@@ -3,13 +3,13 @@ const { sendError, help, sendWarning } = require("../../functions/messages");
 const totoroLog = require("../../functions/totoroLog");
 module.exports = {
   name: "igmp4",
-  category: "premium",
+  category: "multimedia",
   subcategory: "instagram",
   usage: "igmp4 <enlace>",
   description: "Descarga video de ig",
   dev: false,
   blockcmd: true,
-  cmdPrem: true,
+  cmdPrem: false,
   async execute(totoro, msg, args) {
     msg.react("⏳");
     if (!args[0]) {

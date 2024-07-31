@@ -6,15 +6,14 @@ const { tr } = require("../../../data/languages");
 
 module.exports = {
   name: "igimage",
-  category: "premium",
+  category: "multimedia",
   subcategory: "instagram",
   usage: "instagram <enlace>",
   description: "Descarga imagen de Instagram.",
   example: "instagram https://www.instagram.com/p/CS8X3v3L6WV/",
   dev: false,
   blockcmd: true,
-  cmdPrem: true,
-
+  cmdPrem: false,
 
   async execute(totoro, msg, args) {
     msg.react("⏳");

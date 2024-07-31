@@ -4,13 +4,13 @@ const totoroLog = require("../../functions/totoroLog");
 
 module.exports = {
   name: "igmedia",
-  category: "premium",
+  category: "multimedia",
   subcategory: "instagram",
   usage: "igimage <enlace>",
   description: "Descarga imágenes de Instagram",
   dev: false,
   blockcmd: true,
-  cmdPrem: true,
+  cmdPrem: false,
   async execute(totoro, msg, args) {
     msg.react("⏳");
     if (!args[0]) {

@@ -4,13 +4,13 @@ const totoroLog = require("../../functions/totoroLog");
 
 module.exports = {
   name: "ttksearch",
-  category: "premium",
+  category: "multimedia",
   subcategory: "tiktok",
   usage: "ttksearch <término>",
   description: "Busca videos en TikTok",
   dev: false,
   blockcmd: true,
-  cmdPrem: true,
+  cmdPrem: false,
   async execute(totoro, msg, args) {
     msg.react("⏳");
     const message = msg.messages[0];

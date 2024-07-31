@@ -5,14 +5,14 @@ const totoroLog = require("../../functions/totoroLog");
 
 module.exports = {
   name: "instagram",
-  category: "premium",
+  category: "multimedia",
   subcategory: "instagram",
   usage: "instagram <enlace>",
   description: "Descarga video de Instagram.",
   example: "instagram https://www.instagram.com/p/CS8X3v3L6WV/",
   dev: false,
   blockcmd: true,
-  cmdPrem: true,
+  cmdPrem: false,
   async execute(totoro, msg, args) {
     msg.react("⏳");
     let { dl_url } = await Scraper.igdl(args[0]);

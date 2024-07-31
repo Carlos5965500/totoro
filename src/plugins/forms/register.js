@@ -40,7 +40,7 @@ module.exports = {
           msg,
           "Registro",
           "Ingresa tu nombre y edad",
-          "+reg Nia.22"
+          "+register Nia.22"
         );
         await msg.react("❓");
         return;

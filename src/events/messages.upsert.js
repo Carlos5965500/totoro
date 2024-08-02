@@ -4,9 +4,13 @@ const {
   infoPremium,
   dev,
 } = require("../functions/messages");
-const { totoUser, totoDev, totoCounter } = require("../models");
+const { totoUser, totoDev, totoCounter, totoPremium } = require("../models");
 const { matcher } = require("../functions/matcher");
 const totoroLog = require("../functions/totoroLog");
+const {
+  generateForwardMessageContent,
+  prepareWAMessageMedia,
+} = require("@whiskeysockets/baileys");
 module.exports = {
   name: "messages.upsert",
 
@@ -49,9 +53,123 @@ module.exports = {
 
     if (!body) return;
 
+    //  Mencionar a Totoro solo y solo si no es un grupo con el comando "Totoro" o "Toto" o "Toto " o "@Totoro" o "@totoro"
+    if (
+      body.toLowerCase().includes("@Toto") ||
+      body.toLowerCase().includes("@Totoro") ||
+      body.toLowerCase().includes("@TotoroHelp") ||
+      body.toLowerCase().includes("@TotoHelp") ||
+      body.toLowerCase().includes("@Totohelp") ||
+      body.toLowerCase().includes("toto") ||
+      body.toLowerCase().includes("totoHelp") ||
+      body.toLowerCase().includes("toto help") ||
+      body.toLowerCase().includes("totohelp")
+    ) {
+      if (!key.remoteJid.endsWith("@g.us")) {
+        const Tprefix = totoro.config.prefix;
+        return msg.reply({
+          text: `Hola, soy @17828280433 🐥\n\nPara ver la lista de comandos usa ${Tprefix}help`,
+          mentions: ["17828280433@s.whatsapp.net"],
+        });
+      }
+    }
+
+    const { message } = msg.messages[0];
+    const mention = message?.extendedTextMessage?.contextInfo?.mentionedJid;
+    const img = "https://i.ibb.co/j9N5kj3/image.jpg";
+    //const groups = require("../models/totoGroup");
+    const prefix = totoro.config.prefix;
+    const plugins = await totoCounter.findAll();
+    const users = await totoUser.findAll();
+    const premium = await totoPremium.findAll();
+    const devs = await totoDev.findAll();
+    const nia = "https://wa.me/34638579630";
+    //const groups = await groups.findAll();
+    let media;
+    try {
+      media = await prepareWAMessageMedia(
+        {
+          image: { url: img },
+        },
+        { upload: totoro.waUploadToServer }
+      );
+    } catch (mediaError) {
+      return sendWarning(totoro, msg, `${mediaError.message}`);
+    }
+
+    const INFO =
+      `> Hola, soy @17828280433 🐥, un bot multifuncional creado por @34638579630.\n` +
+      `> Puedes invitarme a tus grupos o chatear conmigo en privado. ¡Estoy aquí para ayudarte! 🐥\n` +
+      `> Para invitarme a tu grupo, usa el comando ${prefix}join.\n` +
+      `> Para ver la lista de comandos usa ${prefix}help.\n` +
+      `*Disponemos de una versión premium con funciones exclusivas:*\n` +
+      `> - ${prefix}regprem para registrarte como usuario premium\n` +
+      `*Como nos gusta mejorar, puedes ayudarnos con tus sugerencias y reportes:*\n` +
+      `> - ${prefix}report para reportar un error\n` +
+      `> - ${prefix}review para enviar tus sugerencias\n` +
+      `> - ${prefix}suggest para enviar tus sugerencias\n` +
+      `*La estadististicas actuales son:*\n` +
+      `> - Usuarios registrados: ${users.length}\n` +
+      `> - Usuarios premium: ${premium.length}\n` +
+      //`> - Grupos registrados: ${groups.length}\n` +
+      `> - Plugins ejecutados: ${plugins.length}\n` +
+      `> - Desarrolladores: ${devs.length}\n` +
+      `> - Versión: 2.0.0\n` +
+      `> - Última actualización: ${new Date().toLocaleDateString()}\n` +
+      `> - Creado por: @34638579630\n`;
+
+    const messageOptions = {
+      viewOnceMessage: {
+        message: {
+          interactiveMessage: {
+            header: {
+              hasMediaAttachment: true,
+              imageMessage: media.imageMessage,
+            },
+            body: { text: INFO },
+            footer: { text: `@17828280433` },
+            buttons: [
+              {
+                name: "cta_url",
+                buttonParamsJSON: JSON.stringify({
+                  display_text: "Totoro 💬",
+                  url: totoro,
+                  merchat_url: totoro,
+                }),
+              },
+
+              {
+                name: "cta_url",
+                buttonParamsJson: JSON.stringify({
+                  display_text: "Contacto 📩",
+                  url: nia,
+                  merchant_url: nia,
+                  mentions: JSON.stringify({ id: "34638579630" }),
+                }),
+              },
+            ],
+            messageParamsJson: "",
+          },
+        },
+      },
+    };
+
+    const from = msg.messages[0].key.remoteJid;
+    const info = msg.messages[0];
+
+    // mencionar a Totoro solo y solo si es un grupo
+    if (mention && mention[0]?.match(/17828280433/g)) {
+      await totoro.relayMessage(
+        from,
+        { viewOnceMessage: { message: messageOptions } },
+        { quoted: info }
+      );
+    }
+
     if (
       !body.startsWith("+") &&
-      !body.startsWith("!")
+      !body.startsWith("!") &&
+      !body.startsWith(",")
     ) {
       if (key.remoteJid.endsWith("@g.us")) return;
 

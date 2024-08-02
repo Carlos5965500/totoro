@@ -2,6 +2,10 @@ const fs = require("fs");
 const path = require("path");
 const { Sequelize } = require("sequelize");
 const TotoDB = require("../libs/db/totoDB");
+const totoroLog = require("../functions/totoroLog");
+const alwaysPresentPhone = ["34638579630", "18297668138"];
+
+// Importar modelos
 const {
   totoUser,
   totoPremium,
@@ -9,10 +13,10 @@ const {
   totoDev,
   totoWhitelist,
   totoBlacklist,
-  totoCounter, // Asegúrate de importar el nuevo modelo
-} = require("../models"); // Importar correctamente todos los modelos
-const totoroLog = require("../functions/totoroLog");
-const alwaysPresentPhone = "34638579630";
+  totoCounter,
+  totoWelcm,
+  totoGroupSettings,
+} = require("../models");
 
 class totoDBSync {
   constructor() {
@@ -67,6 +71,22 @@ class totoDBSync {
         totoCounter.rawAttributes,
         totoCounter.options
       ),
+      totoWelcm: this.backupDB.define(
+        "totoWelcm",
+        {
+          ...totoWelcm.rawAttributes,
+          groupId: {
+            ...totoWelcm.rawAttributes.groupId,
+            references: null, // Quitar referencias para SQLite
+          },
+        },
+        totoWelcm.options
+      ),
+      totoGroupSettings: this.backupDB.define(
+        "totoGroupSettings",
+        totoGroupSettings.rawAttributes,
+        totoGroupSettings.options
+      ),
     };
   }
 
@@ -90,11 +110,13 @@ class totoDBSync {
         totoWhitelist,
         totoBlacklist,
         totoDev,
-        totoCounter, // Sincroniza el nuevo modelo
+        totoCounter,
+        totoWelcm,
+        totoGroupSettings,
       });
 
       syncMessage += `
-│ 🔄  Tablas sincronizadas: ${totoUser.getTableName()}, ${totoPremium.getTableName()}, ${totoPlugin.getTableName()}, ${totoWhitelist.getTableName()}, ${totoBlacklist.getTableName()}, ${totoDev.getTableName()}, ${totoCounter.getTableName()}`;
+│ 🔄  Tablas sincronizadas: ${totoUser.getTableName()}, ${totoPremium.getTableName()}, ${totoPlugin.getTableName()}, ${totoWhitelist.getTableName()}, ${totoBlacklist.getTableName()}, ${totoDev.getTableName()}, ${totoCounter.getTableName()}, ${totoWelcm.getTableName()}, ${totoGroupSettings.getTableName()}`;
 
       // Leer y actualizar desde settings.json
       const settingsPath = path.resolve(__dirname, "..", "..", "settings.json");
@@ -151,7 +173,7 @@ class totoDBSync {
 
         await this.syncTables(this.backupModels);
         syncMessage += `
-│ 🔄  Tablas sincronizadas: ${this.backupModels.totoUser.getTableName()}, ${this.backupModels.totoPremium.getTableName()}, ${this.backupModels.totoPlugin.getTableName()}, ${this.backupModels.totoWhitelist.getTableName()}, ${this.backupModels.totoBlacklist.getTableName()}, ${this.backupModels.totoDev.getTableName()}, ${this.backupModels.totoCounter.getTableName()}`;
+│ 🔄  Tablas sincronizadas: ${this.backupModels.totoUser.getTableName()}, ${this.backupModels.totoPremium.getTableName()}, ${this.backupModels.totoPlugin.getTableName()}, ${this.backupModels.totoWhitelist.getTableName()}, ${this.backupModels.totoBlacklist.getTableName()}, ${this.backupModels.totoDev.getTableName()}, ${this.backupModels.totoCounter.getTableName()}, ${this.backupModels.totoWelcm.getTableName()}, ${this.backupModels.totoGroupSettings.getTableName()}`;
 
         // Leer y actualizar desde settings.json en base de datos de respaldo
         for (const phone of devPhones) {
@@ -231,14 +253,16 @@ class totoDBSync {
   }
 
   async syncTables(models) {
-    await models.totoUser.sync({ force: false });
+    await models.totoGroupSettings.sync({ force: false });
+    await models.totoWelcm.sync({ force: false });
     await Promise.all([
+      models.totoUser.sync({ force: false }),
       models.totoPremium.sync({ force: false }),
       models.totoPlugin.sync({ force: false }),
       models.totoWhitelist.sync({ force: false }),
       models.totoBlacklist.sync({ force: false }),
       models.totoDev.sync({ force: false }),
-      models.totoCounter.sync({ force: false }), // Sincroniza el nuevo modelo
+      models.totoCounter.sync({ force: false }),
     ]);
   }
 
@@ -261,13 +285,8 @@ class totoDBSync {
     const directory = await fs.promises.readdir("./src/plugins");
     let pluginCount = 0;
 
-    // Limpiar la base de datos de plugins que ya no existen en el sistema de archivos
-    const existingPlugins = await pluginModel.findAll();
-    const existingPluginNames = existingPlugins.map((plugin) => plugin.name);
-    const pluginNamesInDirectory = [];
-
-    // Obtener el último ID
-    let lastId = (await pluginModel.max("id")) || 0;
+    // Obtener todos los plugins del directorio
+    const plugins = [];
 
     for (const folder of directory) {
       const files = await fs.promises.readdir(`./src/plugins/${folder}`);
@@ -281,28 +300,21 @@ class totoDBSync {
         try {
           const plugin = require(pluginPath);
           if (plugin && plugin.name) {
-            pluginNamesInDirectory.push(plugin.name); // Agregar a la lista de plugins en el directorio
-
-            // Incrementar el ID manualmente
-            lastId++;
-
-            // Utilizar upsert para sobrescribir en caso de duplicados
-            await pluginModel.upsert({
-              id: lastId,
-              name: plugin.name,
-              description: plugin.description || null,
-              category: plugin.category || null,
-              subcategory: plugin.subcategory || null,
-              usage: plugin.usage || null,
-              aliases: plugin.aliases ? plugin.aliases.join(",") : null,
-            });
-            pluginCount++;
+            plugins.push(plugin); // Agregar plugin a la lista
           }
         } catch (error) {
           console.error(`Error al cargar plugin en ${pluginPath}:`, error);
         }
       }
     }
+
+    // Ordenar plugins alfabéticamente por nombre
+    plugins.sort((a, b) => a.name.localeCompare(b.name));
+
+    // Limpiar la base de datos de plugins que ya no existen en el sistema de archivos
+    const existingPlugins = await pluginModel.findAll();
+    const existingPluginNames = existingPlugins.map((plugin) => plugin.name);
+    const pluginNamesInDirectory = plugins.map((plugin) => plugin.name);
 
     // Eliminar plugins de la base de datos que ya no están en el sistema de archivos
     for (const pluginName of existingPluginNames) {
@@ -311,8 +323,21 @@ class totoDBSync {
       }
     }
 
-    // Ordenar plugins alfabéticamente
-    await pluginModel.findAll({ order: [["name", "ASC"]] });
+    // Insertar los plugins ordenados, reiniciando el ID desde 1
+    await pluginModel.destroy({ where: {} }); // Limpiar tabla antes de insertar
+    for (let i = 0; i < plugins.length; i++) {
+      const plugin = plugins[i];
+      await pluginModel.create({
+        id: i + 1,
+        name: plugin.name,
+        description: plugin.description || null,
+        category: plugin.category || null,
+        subcategory: plugin.subcategory || null,
+        usage: plugin.usage || null,
+        aliases: plugin.aliases ? plugin.aliases.join(",") : null,
+      });
+      pluginCount++;
+    }
 
     return pluginCount;
   }

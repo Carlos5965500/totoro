@@ -10,7 +10,7 @@ module.exports = {
   description: "Expulsa a un usuario del grupo.",
   category: "moderator",
   subcategory: "admin",
-  usage: `kickk <usuario>`,
+  usage: `kickk <usuario> | kickk <número de teléfono> | kickk <mensaje citado>`,
   cooldown: 5,
   botPermissions: ["SEND_MESSAGES", "REMOVE_PARTICIPANTS"],
   userPermissions: ["ADMINISTRATOR"],
@@ -37,6 +37,68 @@ module.exports = {
 
       if (msg.messages[0].key.remoteJid.endsWith("@g.us")) {
         const group = msg.messages[0].key.remoteJid;
+
+        // Validar si se proporcionó un número de teléfono como argumento
+        if (args.length > 0) {
+          const phoneOrMention = args[0];
+          let userJid;
+
+          // Check if argument is a phone number
+          if (/^\d+$/.test(phoneOrMention)) {
+            userJid = `${phoneOrMention}@s.whatsapp.net`;
+          } else {
+            // Handle mention
+            const mentionedUsers =
+              msg.messages[0].message.extendedTextMessage?.contextInfo
+                ?.mentionedJid;
+            if (mentionedUsers && mentionedUsers.length > 0) {
+              userJid = mentionedUsers[0];
+            } else {
+              await sendMessage(
+                totoro,
+                msg,
+                `El formato proporcionado no es válido. Usa un número de teléfono o menciona al usuario.`
+              );
+              return;
+            }
+          }
+
+          const user = groupInfo.participants.find((x) => x.id === userJid);
+          if (!user) {
+            await msg.react("⚠️");
+            msg.reply({
+              text: `@${phoneOrMention} no está en el grupo.`,
+              mentions: [userJid],
+            });
+            return;
+          }
+
+          if (user.admin) {
+            await msg.react("⚠️");
+            msg.reply({
+              text: `@${phoneOrMention} es un administrador y no puede ser expulsado.`,
+              mentions: [userJid],
+            });
+            return;
+          }
+
+          await totoro.groupParticipantsUpdate(group, [userJid], "remove");
+
+          // Enviar mensaje de expulsión
+          await totoro.sendMessage(group, {
+            text:
+              `╭─⬣「 Expulsar Usuario 」⬣\n` +
+              `│  ≡◦ 🦑 El usuario ha sido expulsado del grupo ${groupName}\n` +
+              `╰─⬣\n` +
+              `> Usuario expulsado: @${phoneOrMention}\n` +
+              `> Moderador: @${sender.split("@")[0]}\n` +
+              `> ⏰ Fecha y hora: ${new Date().toLocaleString()}\n\n` +
+              `> 🪼 Actualmente en *${groupName}* hay ${groupInfo.participants.length - 1} miembros.`,
+            mentions: [userJid, sender],
+          });
+
+          return;
+        }
 
         // Validar si hay un mensaje citado
         const quotedMessage =
@@ -65,15 +127,45 @@ module.exports = {
           return;
         }
 
+        const user = groupInfo.participants.find((x) => x.id === quotedUser);
+        if (user.admin) {
+          await msg.react("⚠️");
+          msg.reply({
+            text: `> @${quotedUser.split("@")[0]} es un administrador y no puede ser expulsado.`,
+            mentions: [`${sender}`, `${quotedUser}`],
+          });
+          return;
+        }
+
+        if (quotedUser === sender) {
+          await msg.react("⚠️");
+          msg.reply({
+            text: `> No puedes expulsarte a ti mismo del grupo. ${sender.split("@")[0]}`,
+            mentions: [`${sender}`],
+          });
+
+          return;
+        } else if (!user) {
+          await msg.react("⚠️");
+          msg.reply({
+            text: `> El usuario @${quotedUser.split("@")[0]} no está en el grupo.`,
+            mentions: [`${quotedUser}`],
+          });
+          return;
+        }
+
         await totoro.groupParticipantsUpdate(group, [quotedUser], "remove");
 
         // Enviar mensaje de expulsión
         await totoro.sendMessage(group, {
           text:
-            `╭─⬣「 Mensaje de Expulsión 」⬣\n` +
-            `│  ≡◦ 🍭 Totoro te expulsó` +
+            `╭─⬣「 Expulsar Usuario 」⬣\n` +
+            `│  ≡◦ 🦑 El usuario ha sido expulsado del grupo ${groupName}\n` +
             `╰─⬣\n` +
-            `> Hasta luego @${quotedUser.split("@")[0]}, @${sender.split("@")[0]} lo ha expulsado del grupo ${groupName}.\n`,
+            `> Nuevo miembro: @${quotedUser.split("@")[0]}\n` +
+            `> Moderador: @${sender.split("@")[0]}\n` +
+            `> ⏰ Fecha y hora: ${new Date().toLocaleString()}\n\n` +
+            `> 🪼 Actualmente en *${groupName}* hay ${groupInfo.participants.length - 1} miembros.`,
           mentions: [quotedUser, sender],
         });
       } else {

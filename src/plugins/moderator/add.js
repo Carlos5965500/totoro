@@ -32,24 +32,36 @@ module.exports = {
 
       if (msg.messages[0].key.remoteJid.endsWith("@g.us")) {
         const group = msg.messages[0].key.remoteJid;
+        let userToAdd = null;
 
-        const quotedUser =
-          msg.messages[0].message.extendedTextMessage.contextInfo.participant;
+        // Verificar si hay un usuario citado
+        if (
+          msg.messages[0].message.extendedTextMessage.contextInfo.participant
+        ) {
+          userToAdd =
+            msg.messages[0].message.extendedTextMessage.contextInfo.participant;
+        }
 
-        if (!quotedUser) {
+        // Verificar si hay un número de teléfono en los argumentos
+        if (!userToAdd && args.length > 0) {
+          const phone = args[0].replace(/\D/g, ""); // Eliminar cualquier carácter no numérico
+          userToAdd = `${phone}@s.whatsapp.net`;
+        }
+
+        if (!userToAdd) {
           await help(
             totoro,
             msg,
             "Agregar Usuario",
-            "No se pudo determinar el usuario a agregar. Asegúrate de citar el mensaje correctamente.",
-            "add <usuario>"
+            "No se pudo determinar el usuario a agregar. Asegúrate de citar el mensaje correctamente o proporcionar un número de teléfono.",
+            "add <usuario> | add <número de teléfono> | add <mensaje citado>"
           );
           return;
         }
 
-        await totoro.groupParticipantsUpdate(group, [quotedUser], "add");
+        await totoro.groupParticipantsUpdate(group, [userToAdd], "add");
 
-        // Enviar mensaje de expulsión interactivo
+        // Enviar mensaje de bienvenida interactivo
         const message = {
           interactiveMessage: {
             header: {
@@ -60,8 +72,8 @@ module.exports = {
                 `╭─⬣「 Mensaje de Bienvenida 」⬣\n` +
                 `│  ≡◦ 🍭 Bienvenido/a al grupo ${groupName}\n` +
                 `╰─⬣\n` +
-                `>  ¡Bienvenido/a @${quotedUser.split("@")[0]}! @${sender.split("@")[0]} te ha agregado al grupo.\n`,
-              mentions: [quotedUser, sender],
+                `>  ¡Bienvenido/a @${userToAdd.split("@")[0]}! @${sender.split("@")[0]} te ha agregado al grupo.\n`,
+              mentions: [userToAdd, sender],
             },
             footer: { text: "Agregado por Totoro" },
             nativeFlowMessage: {
@@ -70,7 +82,7 @@ module.exports = {
                   name: "quick_reply",
                   buttonParamsJson: JSON.stringify({
                     display_text: `Expulsar Usuario`,
-                    id: `kick+${quotedUser.split("@")[0]}`,
+                    id: `kick+${userToAdd.split("@")[0]}`,
                   }),
                 },
                 {
@@ -84,7 +96,7 @@ module.exports = {
               messageParamsJson: "",
             },
           },
-          mentions: [quotedUser, sender],
+          mentions: [userToAdd, sender],
         };
 
         try {

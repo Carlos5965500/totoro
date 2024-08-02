@@ -6,11 +6,11 @@ const {
 } = require("../../functions/messages");
 
 module.exports = {
-  name: "addd",
-  description: "Agrega a un usuario al grupo.",
+  name: "add",
+  description: "Agrega a un usuario al grupo sin uso de botones.",
   category: "moderator",
   subcategory: "admin",
-  usage: `add <usuario>`,
+  usage: `add <usuario> | add <número de teléfono>`,
   cooldown: 5,
   botPermissions: ["SEND_MESSAGES", "ADD_PARTICIPANTS"],
   userPermissions: ["ADMINISTRATOR"],
@@ -37,6 +37,47 @@ module.exports = {
 
       if (msg.messages[0].key.remoteJid.endsWith("@g.us")) {
         const group = msg.messages[0].key.remoteJid;
+
+        // Validar si se proporcionó un número de teléfono como argumento
+        if (args.length > 0) {
+          const phoneNumber = args[0];
+          if (!/^\d+$/.test(phoneNumber)) {
+            await sendMessage(
+              totoro,
+              msg,
+              `El número de teléfono proporcionado no es válido.`
+            );
+            return;
+          }
+
+          const userJid = `${phoneNumber}@s.whatsapp.net`;
+
+          if (groupInfo.participants.find((x) => x.id === userJid)) {
+            await msg.react("⚠️");
+            msg.reply({
+              text: `@${phoneNumber} ya está en el grupo.`,
+              mentions: [userJid],
+            });
+            return;
+          }
+
+          await totoro.groupParticipantsUpdate(group, [userJid], "add");
+
+          // Enviar mensaje de bienvenida
+          await totoro.sendMessage(group, {
+            text:
+              `╭─⬣「 Añadir Usuario 」⬣\n` +
+              `│  ≡◦ 🍭 Bienvenido/a al grupo ${groupName}\n` +
+              `╰─⬣\n` +
+              `> Nuevo miembro: @${phoneNumber}\n` +
+              `> Moderador: @${sender.split("@")[0]}\n` +
+              `> ⏰ Fecha y hora: ${new Date().toLocaleString()}\n\n` +
+              `> 🪼 Actualmente en *${groupName}* hay ${groupInfo.participants.length + 1} miembros.`,
+            mentions: [userJid, sender],
+          });
+
+          return;
+        }
 
         // Validar si hay un mensaje citado
         const quotedMessage =
@@ -65,15 +106,34 @@ module.exports = {
           return;
         }
 
+        if (quotedUser === sender) {
+          await msg.react("⚠️");
+          msg.reply({
+            text: `${sender.split("@")[0]}, no puedes agregarte a ti mismo al grupo.`,
+            mentions: [`${sender}`],
+          });
+          return;
+        } else if (groupInfo.participants.find((x) => x.id === quotedUser)) {
+          await msg.react("⚠️");
+          msg.reply({
+            text: `@${quotedUser.split("@")[0]} ya está en el grupo.`,
+            mentions: [quotedUser],
+          });
+          return;
+        }
+
         await totoro.groupParticipantsUpdate(group, [quotedUser], "add");
 
         // Enviar mensaje de bienvenida
         await totoro.sendMessage(group, {
           text:
-            `╭─⬣「 Mensaje de Bienvenida 」⬣\n` +
-            `│  ≡◦ 🍭 Bienvenido/a al grupo\n` +
+            `╭─⬣「 Añadir Usuario 」⬣\n` +
+            `│  ≡◦ 🍭 Bienvenido/a al grupo ${groupName}\n` +
             `╰─⬣\n` +
-            `> ¡Bienvenido/a @${quotedUser.split("@")[0]}! @${sender.split("@")[0]} te ha agregado al grupo ${groupName}.\n`,
+            `> Nuevo miembro: @${quotedUser.split("@")[0]}\n` +
+            `> Moderador: @${sender.split("@")[0]}\n` +
+            `> ⏰ Fecha y hora: ${new Date().toLocaleString()}\n\n` +
+            `> 🪼 Actualmente en *${groupName}* hay ${groupInfo.participants.length + 1} miembros.`,
           mentions: [quotedUser, sender],
         });
       } else {
@@ -84,7 +144,7 @@ module.exports = {
         );
       }
     } catch (error) {
-      console.error("Error during execution:", error);
+      console.error("Error durante la ejecución:", error);
       await sendError(
         totoro,
         msg,

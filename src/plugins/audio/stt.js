@@ -1,17 +1,13 @@
 const axios = require("axios");
 const fs = require("fs");
 const FormData = require("form-data");
-const {Wit} = require("node-wit")
-const ffmpeg = require('fluent-ffmpeg');
-const ffmpegPath = require('ffmpeg-static');
+const { Wit } = require("node-wit");
+const ffmpeg = require("fluent-ffmpeg");
+const ffmpegPath = require("ffmpeg-static");
 ffmpeg.setFfmpegPath(ffmpegPath);
 const { downloadContentFromMessage } = require("@whiskeysockets/baileys");
-const { PassThrough } = require('stream');
-const {
-  sendError,
-  sendSuccess,
-  sendMessage,
-} = require("../../functions/messages");
+const { PassThrough } = require("stream");
+const { sendError } = require("../../functions/messages");
 
 //const ASSEMBLYAI_API_KEY = "eb21d4224c83470db38beacebe821f81";
 
@@ -26,10 +22,15 @@ module.exports = {
   blockcmd: true,
   execute: async (totoro, msg, args) => {
     try {
-        const participant = msg.messages[0].key.participant || msg.messages[0].key.remoteJID;
-      const m = msg.messages[0].message.extendedTextMessage?.contextInfo?.quotedMessage ? msg.messages[0].message.extendedTextMessage?.contextInfo?.quotedMessage : msg.messages[0].message;
+      await msg.react("⏳");
 
-      // Verificar que el mensaje sea un mensaje de audio
+      const participant =
+        msg.messages[0].key.participant || msg.messages[0].key.remoteJID;
+      const participantName = msg.messages[0].pushName || "Usuario desconocido";
+      const m =
+        msg.messages[0].message.extendedTextMessage?.contextInfo
+          ?.quotedMessage || msg.messages[0].message;
+
       if (!m.audioMessage) {
         await sendError(
           totoro,
@@ -39,28 +40,24 @@ module.exports = {
         return;
       }
 
-
-      // Descargar el contenido de audio usando bailey
       const str = await downloadContentFromMessage(m.audioMessage, "audio");
 
-      
       const trsx = await OGGaMP3(str).catch(console.error);
-      const transcription = await transcribirAudio(trsx).catch();
+      if (!trsx) {
+        await sendError(totoro, msg, "Error en la conversión de audio.");
+        return;
+      }
 
-      
+      const transcription = await transcribirAudio(trsx).catch(console.error);
+      if (!transcription) {
+        await sendError(totoro, msg, "Error en la transcripción del audio.");
+        return;
+      }
 
-      // Construir mensaje con la transcripción y el participante
-      const message = `🎙️ Transcripción de ${participant}:\n${transcription}`;
-
-      // Enviar la transcripción al chat
-      await sendMessage(totoro, msg, message);
-
-      // Enviar mensaje de éxito
-      await sendSuccess(totoro, msg, "Transcripción completada exitosamente.");
-
+      await msg.react("🗣️");
+      const message = `*Transcripción del audio para* ${participantName}:\n\n> ${transcription}`;
+      msg.reply(message);
     } catch (error) {
-      console.error(error);
-
       await sendError(
         totoro,
         msg,
@@ -71,33 +68,73 @@ module.exports = {
 };
 
 async function OGGaMP3(inputStream) {
-    return new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
+    const outputStream = new PassThrough();
+    const chunks = [];
 
-        const outputStream = new PassThrough();
-        const chunks = [];
-
-        outputStream.on('data', chunk => chunks.push(chunk));
-        outputStream.on('end', () => resolve(Buffer.concat(chunks)));
-        outputStream.on('error', reject);
-
-        ffmpeg(inputStream)
-            .inputFormat('ogg')
-            .toFormat('mp3')
-            .on('error', reject)
-            .pipe(outputStream);
+    inputStream.on("data", (chunk) => {
+      chunks.push(chunk);
     });
+
+    inputStream.on("end", () => {
+      if (chunks.length === 0) {
+        reject(new Error("El flujo de entrada está vacío."));
+        return;
+      }
+
+      const buffer = Buffer.concat(chunks);
+      const newInputStream = new PassThrough();
+      newInputStream.end(buffer);
+
+      outputStream.on("data", (chunk) => chunks.push(chunk));
+      outputStream.on("end", () => {
+        const buffer = Buffer.concat(chunks);
+        if (buffer.length < 100) {
+          reject(
+            new Error("El archivo de audio convertido es demasiado pequeño.")
+          );
+        } else {
+          resolve(buffer);
+        }
+      });
+      outputStream.on("error", reject);
+
+      ffmpeg(newInputStream)
+        .inputFormat("ogg")
+        .toFormat("mp3")
+        .on("error", reject)
+        .pipe(outputStream);
+    });
+
+    inputStream.on("error", reject);
+  });
 }
 
+async function transcribirAudio(audioBuffer) {
+  if (!audioBuffer || audioBuffer.length < 100) {
+    throw new Error("El buffer de audio es demasiado pequeño.");
+  }
 
+  const form = new FormData();
+  form.append("file", audioBuffer, "audio.mp3");
+  form.append("model", "whisper-1");
+  form.append("language", "es");
 
+  try {
+    const response = await axios.post(
+      "https://api.openai.com/v1/audio/transcriptions",
+      form,
+      {
+        headers: {
+          ...form.getHeaders(),
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+        },
+      }
+    );
 
-async function transcribirAudio(ruta) {
-    const client = new Wit({ accessToken: "UL3DRPNHSCXPBSCZQFT2QU3QTQZ3J6S3" });
-    
-    const fl = new PassThrough();
-    fl.end(ruta);
-
-    const response = await client.speech("audio/mpeg", fl).catch(console.error);
-
-    return response?.text;
+    const transcription = response.data.text;
+    return transcription;
+  } catch (error) {
+    throw error;
+  }
 }

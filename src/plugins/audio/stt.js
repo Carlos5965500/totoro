@@ -1,14 +1,19 @@
 const axios = require("axios");
 const fs = require("fs");
 const FormData = require("form-data");
+const {Wit} = require("node-wit")
+const ffmpeg = require('fluent-ffmpeg');
+const ffmpegPath = require('ffmpeg-static');
+ffmpeg.setFfmpegPath(ffmpegPath);
 const { downloadContentFromMessage } = require("@whiskeysockets/baileys");
+const { PassThrough } = require('stream');
 const {
   sendError,
   sendSuccess,
   sendMessage,
 } = require("../../functions/messages");
 
-const ASSEMBLYAI_API_KEY = "eb21d4224c83470db38beacebe821f81";
+//const ASSEMBLYAI_API_KEY = "eb21d4224c83470db38beacebe821f81";
 
 module.exports = {
   name: "Speech to Text",
@@ -19,12 +24,13 @@ module.exports = {
   aliases: ["stt"],
   dev: false,
   blockcmd: true,
-  run: async (totoro, msg, args) => {
+  execute: async (totoro, msg, args) => {
     try {
-      const m = msg.messages[0];
+        const participant = msg.messages[0].key.participant || msg.messages[0].key.remoteJID;
+      const m = msg.messages[0].message.extendedTextMessage?.contextInfo?.quotedMessage ? msg.messages[0].message.extendedTextMessage?.contextInfo?.quotedMessage : msg.messages[0].message;
 
       // Verificar que el mensaje sea un mensaje de audio
-      if (!m.message.audioMessage) {
+      if (!m.audioMessage) {
         await sendError(
           totoro,
           msg,
@@ -33,23 +39,15 @@ module.exports = {
         return;
       }
 
-      const participant = m.key.participant || m.key.remoteJid;
 
-      // Descargar el contenido de audio usando baileys
-      const buffer = await downloadAudioContent(totoro, m);
+      // Descargar el contenido de audio usando bailey
+      const str = await downloadContentFromMessage(m.audioMessage, "audio");
 
-      // Guardar el archivo de audio temporalmente
-      const audioFile = "./temp_audio.opus";
-      fs.writeFileSync(audioFile, buffer);
+      
+      const trsx = await OGGaMP3(str).catch(console.error);
+      const transcription = await transcribirAudio(trsx).catch();
 
-      // Subir el archivo de audio a AssemblyAI
-      const uploadUrl = await uploadAudioToAssemblyAI(audioFile);
-
-      // Enviar el audio a AssemblyAI para transcripción
-      const transcriptionId = await requestTranscription(uploadUrl);
-
-      // Esperar la transcripción
-      const transcription = await waitForTranscription(transcriptionId);
+      
 
       // Construir mensaje con la transcripción y el participante
       const message = `🎙️ Transcripción de ${participant}:\n${transcription}`;
@@ -60,8 +58,6 @@ module.exports = {
       // Enviar mensaje de éxito
       await sendSuccess(totoro, msg, "Transcripción completada exitosamente.");
 
-      // Limpiar archivos temporales
-      fs.unlinkSync(audioFile);
     } catch (error) {
       console.error(error);
 
@@ -74,84 +70,34 @@ module.exports = {
   },
 };
 
-// Función para descargar el contenido de audio usando baileys
-async function downloadAudioContent(totoro, m) {
-  try {
-    const stream = await downloadContentFromMessage(
-      m.message.audioMessage,
-      "audio"
-    );
-    let buffer = Buffer.from([]);
+async function OGGaMP3(inputStream) {
+    return new Promise((resolve, reject) => {
 
-    for await (const chunk of stream) {
-      buffer = Buffer.concat([buffer, chunk]);
-    }
+        const outputStream = new PassThrough();
+        const chunks = [];
 
-    return buffer;
-  } catch (error) {
-    console.error("Error al descargar el mensaje de audio:", error);
-    throw new Error("Error al descargar el mensaje de audio");
-  }
+        outputStream.on('data', chunk => chunks.push(chunk));
+        outputStream.on('end', () => resolve(Buffer.concat(chunks)));
+        outputStream.on('error', reject);
+
+        ffmpeg(inputStream)
+            .inputFormat('ogg')
+            .toFormat('mp3')
+            .on('error', reject)
+            .pipe(outputStream);
+    });
 }
 
-// Función para subir el archivo de audio a AssemblyAI
-async function uploadAudioToAssemblyAI(filePath) {
-  const formData = new FormData();
-  formData.append("file", fs.createReadStream(filePath));
 
-  const response = await axios.post(
-    "https://api.assemblyai.com/v2/upload",
-    formData,
-    {
-      headers: {
-        authorization: ASSEMBLYAI_API_KEY,
-        ...formData.getHeaders(),
-      },
-    }
-  );
 
-  console.log("Upload response:", response.data);
-  return response.data.upload_url;
-}
 
-// Función para solicitar la transcripción
-async function requestTranscription(audioUrl) {
-  const response = await axios.post(
-    "https://api.assemblyai.com/v2/transcript",
-    {
-      audio_url: audioUrl,
-    },
-    {
-      headers: {
-        authorization: ASSEMBLYAI_API_KEY,
-        "content-type": "application/json",
-      },
-    }
-  );
+async function transcribirAudio(ruta) {
+    const client = new Wit({ accessToken: "UL3DRPNHSCXPBSCZQFT2QU3QTQZ3J6S3" });
+    
+    const fl = new PassThrough();
+    fl.end(ruta);
 
-  console.log("Transcription request response:", response.data);
-  return response.data.id;
-}
+    const response = await client.speech("audio/mpeg", fl).catch(console.error);
 
-// Función para esperar la transcripción
-async function waitForTranscription(transcriptionId) {
-  while (true) {
-    const response = await axios.get(
-      `https://api.assemblyai.com/v2/transcript/${transcriptionId}`,
-      {
-        headers: {
-          authorization: ASSEMBLYAI_API_KEY,
-        },
-      }
-    );
-
-    console.log("Transcription status:", response.data);
-    if (response.data.status === "completed") {
-      return response.data.text;
-    } else if (response.data.status === "failed") {
-      throw new Error("Transcripción fallida");
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-  }
+    return response?.text;
 }

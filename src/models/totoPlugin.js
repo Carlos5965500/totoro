@@ -1,5 +1,3 @@
-// models/totoPlugin.js
-
 const { DataTypes } = require("sequelize");
 const TotoDB = require("../libs/db/totoDB");
 const totoroLog = require("../functions/totoroLog");
@@ -50,7 +48,7 @@ const totoPlugin = tDB.sequelize.define(
 
 totoroLog.info(
   "./logs/models/totoPlugin.log",
-  `[MODELS] Modelo totoPlugin creado.`
+  `[MODELS] Modelo ${totoPlugin.name} creado.`
 );
 
 module.exports = totoPlugin;

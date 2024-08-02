@@ -5,6 +5,8 @@ const totoWhitelist = require("./totoWhiteList");
 const totoBlacklist = require("./totoBlackList");
 const totoDev = require("./totoDev");
 const totoCounter = require("./totoCounter");
+const totoGroupSettings = require("./totoGroupSettings");
+const totoWelcm = require("./totoWelcm");
 
 // Relación uno a uno
 totoUser.hasOne(totoPremium, {
@@ -29,11 +31,13 @@ totoPlugin.belongsTo(totoUser, {
 });
 
 module.exports = {
-  totoUser,
-  totoPremium,
-  totoPlugin,
-  totoWhitelist,
+  totoGroupSettings,
   totoBlacklist,
-  totoDev,
+  totoWhitelist,
+  totoPremium,
   totoCounter,
+  totoPlugin,
+  totoWelcm,
+  totoUser,
+  totoDev,
 };

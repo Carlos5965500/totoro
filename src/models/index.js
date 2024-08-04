@@ -7,6 +7,10 @@ const totoDev = require("./totoDev");
 const totoCounter = require("./totoCounter");
 const totoGroupSettings = require("./totoGroupSettings");
 const totoWelcm = require("./totoWelcm");
+const totoStatus = require("./totoStatus");
+const totoBlock = require("./totoBlock");
+const totoMantainance = require("./totoMantainance");
+
 
 // Relación uno a uno
 totoUser.hasOne(totoPremium, {
@@ -32,11 +36,14 @@ totoPlugin.belongsTo(totoUser, {
 
 module.exports = {
   totoGroupSettings,
+  totoMantainance,
   totoBlacklist,
   totoWhitelist,
   totoPremium,
   totoCounter,
   totoPlugin,
+  totoStatus,
+  totoBlock,
   totoWelcm,
   totoUser,
   totoDev,

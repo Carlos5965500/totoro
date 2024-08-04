@@ -1,18 +1,14 @@
 {
   "dev": [
     "34638579630@s.whatsapp.net",
-    "17828280433@s.whatsapp.net"
+    "18297668138@s.whatsapp.net",
+    "51943890649@s.whatsapp.net",
+    "17402142877@s.whatsapp.net"
   ],
-  "admin": [
-    "34638579630@s.whatsapp.net"
-  ],
-  "cmdPrem": [
-    "dalle"
-  ],
-  "blockCmd": [
-    "menu"
-  ],
+  "admin": ["34638579630@s.whatsapp.net"],
+  "cmdPrem": ["dalle", "stt", "join"],
+  "blockCmd": ["stt"],
   "manteiner": [],
   "blacklist": [],
-  "prefix": "+"
+  "prefix": ["+"]
 }

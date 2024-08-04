@@ -7,10 +7,7 @@ const {
 const { totoUser, totoDev, totoCounter, totoPremium } = require("../models");
 const { matcher } = require("../functions/matcher");
 const totoroLog = require("../functions/totoroLog");
-const {
-  generateForwardMessageContent,
-  prepareWAMessageMedia,
-} = require("@whiskeysockets/baileys");
+const { prepareWAMessageMedia } = require("@whiskeysockets/baileys");
 module.exports = {
   name: "messages.upsert",
 
@@ -94,7 +91,9 @@ module.exports = {
         { upload: totoro.waUploadToServer }
       );
     } catch (mediaError) {
-      return sendWarning(totoro, msg, `${mediaError.message}`);
+      totoroLog.error(
+        `Error al cargar la imagen para el mensaje de bienvenida: ${mediaError.message}`
+      );
     }
 
     const INFO =
@@ -191,6 +190,76 @@ module.exports = {
       const response = await chatAI(totoro, body);
 
       return msg.reply(response);
+    }
+
+    const totoStatus = require("../models/totoStatus");
+    // verificar si el bot está activo o no
+    const status = await totoStatus.findOne({ where: { statusId: 1 } });
+    if (
+      status &&
+      status.status === "off" &&
+      !totoro.config.dev.includes(key.participant)
+    ) {
+      msg.reply({
+        text:
+          `╭─⬣「 Totoro desactivado 」\n` +
+          `│ ≡◦ Aguarda, esto lleverá un tiempo.\n` +
+          `│ ≡◦ Disculpa las molestias.\n` +
+          `│ ≡◦ Para más información, contacta a @34638579630\n` +
+          `╰─⬣\n` +
+          `> @${key.participant.split("@")[0]}, el bot está desactivado. Inténtalo más tarde.`,
+        mentions: [key.participant, "34638579630@s.whatsapp.net"],
+      });
+      return;
+    }
+
+    const totoMantainance = require("../models/totoMantainance");
+    // verificar si el bot está en mantenimiento
+    const maintenance = await totoMantainance.findOne({
+      where: { maintenanceId: 1 },
+    });
+
+    if (
+      maintenance &&
+      maintenance.status === "on" &&
+      !totoro.config.dev.includes(key.participant)
+    ) {
+      msg.reply({
+        text:
+          `╭─⬣「 Totoro en mantenimiento 」\n` +
+          `│ ≡◦ Aguarda, esto lleverá un tiempo.\n` +
+          `│ ≡◦ Disculpa las molestias.\n` +
+          `│ ≡◦ Para más información, contacta a @34638579630\n` +
+          `╰─⬣\n` +
+          `> @${key.participant.split("@")[0]}, el bot está en mantenimiento. Inténtalo más tarde.`,
+        mentions: [key.participant, "34638579630@s.whatsapp.net"],
+      });
+      return;
+    }
+
+    // verificar si el bot está bloqueado en el grupo actual y sin bloquear a todo el bot
+    const totoBlock = require("../models/totoBlock");
+    const groupId = key.remoteJid;
+    const block = await totoBlock.findOne({ where: { groupId } });
+
+    if (
+      block &&
+      block.status === "on" &&
+      !totoro.config.dev.includes(key.participant) &&
+      !totoro.config.block.includes(groupId)
+    ) {
+      msg.reply({
+        text:
+          `╭─⬣「 Totoro bloqueado 」\n` +
+          `│ ≡◦ Totoro ha sido bloqueado en este grupo.\n` +
+          `│ ≡◦ Disculpa las molestias.\n` +
+          `│ ≡◦ Los administradores pueden desbloquear el bot.\n` +
+          `│ ≡◦ Para más información, contacta a @34638579630\n` +
+          `╰─⬣\n` +
+          `> @${key.participant.split("@")[0]}, el bot está bloqueado en este grupo. Inténtalo más tarde.`,
+        mentions: [key.participant, "34638579630@s.whatsapp.net"],
+      });
+      return;
     }
 
     const args = body.slice(1).trim().split(/\s+/);
@@ -319,13 +388,16 @@ module.exports = {
     plugin.execute(totoro, msg, args)?.catch((error) => {
       msg
         .reply(
-          `🐥 Ocurrió un error al ejecutar el comando ${pluginName} 🐥\n\n${error.message}`
+          `🐥 Ocurrió un error al ejecutar el comando *${pluginName}* 🐥\n\n> ${error.message}`
         )
         .then((msg) => {
           msg.react("❌");
         });
 
-      totoroLog.error(`Error ejecutando ${pluginName}: ${error.message}`);
+      totoroLog.error(
+        "./logs/events/messages.upsert.js",
+        `Error ejecutando ${pluginName}: ${error.message}`
+      );
       console.error(error);
     });
   },

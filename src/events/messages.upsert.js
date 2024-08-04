@@ -195,6 +195,7 @@ module.exports = {
     const totoStatus = require("../models/totoStatus");
     // verificar si el bot está activo o no
     const status = await totoStatus.findOne({ where: { statusId: 1 } });
+
     if (
       status &&
       status.status === "off" &&
@@ -207,7 +208,7 @@ module.exports = {
           `│ ≡◦ Disculpa las molestias.\n` +
           `│ ≡◦ Para más información, contacta a @34638579630\n` +
           `╰─⬣\n` +
-          `> @${key.participant.split("@")[0]}, el bot está desactivado. Inténtalo más tarde.`,
+          `> @${key.participant?.split("@")[0]}, el bot está desactivado. Inténtalo más tarde.`,
         mentions: [key.participant, "34638579630@s.whatsapp.net"],
       });
       return;
@@ -231,7 +232,7 @@ module.exports = {
           `│ ≡◦ Disculpa las molestias.\n` +
           `│ ≡◦ Para más información, contacta a @34638579630\n` +
           `╰─⬣\n` +
-          `> @${key.participant.split("@")[0]}, el bot está en mantenimiento. Inténtalo más tarde.`,
+          `> @${key.participant?.split("@")[0]}, el bot está en mantenimiento. Inténtalo más tarde.`,
         mentions: [key.participant, "34638579630@s.whatsapp.net"],
       });
       return;
@@ -256,7 +257,7 @@ module.exports = {
           `│ ≡◦ Los administradores pueden desbloquear el bot.\n` +
           `│ ≡◦ Para más información, contacta a @34638579630\n` +
           `╰─⬣\n` +
-          `> @${key.participant.split("@")[0]}, el bot está bloqueado en este grupo. Inténtalo más tarde.`,
+          `> @${key.participant?.split("@")[0]}, el bot está bloqueado en este grupo. Inténtalo más tarde.`,
         mentions: [key.participant, "34638579630@s.whatsapp.net"],
       });
       return;

@@ -14,8 +14,6 @@ module.exports = {
   dev: true,
 
   async execute(totoro, msg, args) {
-    msg.react("⌛");
-
     const participant = msg.messages[0].key.participant.split("@")[0];
     const userWithDomain = `${participant}@s.whatsapp.net`;
 
@@ -37,6 +35,7 @@ module.exports = {
         `${settings.prefix}mantainance <on/off>`
       );
     }
+    msg.react("⌛");
 
     const maintenance = args[0].toLowerCase();
 

@@ -14,9 +14,6 @@ module.exports = {
   dev: true,
 
   async execute(totoro, msg, args) {
-    // Reaccionar al comando
-    await msg.react("⌛");
-
     // Obtener el número de teléfono del participante
     const participant = msg.messages[0].key.participant.split("@")[0];
     const userWithDomain = `${participant}@s.whatsapp.net`;
@@ -40,7 +37,7 @@ module.exports = {
         `${settings.prefix}activate <on/off>`
       );
     }
-
+    await msg.react("⌛");
     const status = args[0].toLowerCase();
     if (status !== "on" && status !== "off") {
       return msg.reply({

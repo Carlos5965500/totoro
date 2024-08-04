@@ -1,10 +1,5 @@
 const axios = require("axios");
-const {
-  sendWarning,
-  sendError,
-  sendMessage,
-  sendSuccess,
-} = require("../../functions/messages");
+const { sendWarning, sendError, help } = require("../../functions/messages");
 
 module.exports = {
   name: "Text to Speech",
@@ -20,17 +15,31 @@ module.exports = {
     const info = msg.messages[0];
     const from = info.key.remoteJid;
 
-    if (!args.length) {
+    let text = args.join(" ");
+
+    if (!text) {
+      const quotedMessage =
+        info.message.extendedTextMessage?.contextInfo?.quotedMessage;
+      if (quotedMessage) {
+        if (quotedMessage.conversation) {
+          text = quotedMessage.conversation;
+        } else if (quotedMessage.extendedTextMessage?.text) {
+          text = quotedMessage.extendedTextMessage.text;
+        }
+      }
+    }
+
+    if (!text) {
       return help(
         totoro,
         msg,
         "tts",
-        "Debes escribir un texto para convertir a voz",
+        "Debes escribir un texto o citar un mensaje para convertir a voz",
         "+tts <texto>"
       );
     }
 
-    const text = args.join(" ");
+    msg.react("⌛");
 
     const voices = ["Elena", "Tomas"];
     const selectedVoice = voices[Math.floor(Math.random() * voices.length)];
@@ -45,13 +54,16 @@ module.exports = {
           responseType: "arraybuffer",
         });
         const audioBuffer = Buffer.from(audioResponse.data, "binary");
-        await msg.react("🔊");
 
-        await totoro.sendMessage(from, {
-          audio: audioBuffer,
-          mimetype: "audio/mp4",
-          ptt: true,
-        });
+        await totoro.sendMessage(
+          from,
+          {
+            audio: audioBuffer,
+            mimetype: "audio/mp4",
+            ptt: true,
+          },
+          { quoted: msg.messages[0] }
+        );
 
         await msg.react("🔊");
       } else {

@@ -1,125 +1,206 @@
-const ytdl = require("ytdl-core");
-const youtubeSearch = require("youtube-search-api");
-const { prepareWAMessageMedia } = require("@whiskeysockets/baileys");
-const { sendWarning, sendError } = require("../../functions/messages");
+const Scraper = require("@SumiFX/Scraper");
 const totoroLog = require("../../functions/totoroLog");
+const { sendWarning, sendError, help } = require("../../functions/messages");
 
 module.exports = {
   name: "youtube",
+  aliases: ["you", "ytbdownload", "ytbd", "ytbdwn", "ytbdl", "y", "yt"],
   category: "multimedia",
   subcategory: "youtube",
-  usage: "youtube <enlace o término de búsqueda>",
-  description: "Descarga video de YouTube.",
-  example: "youtube https://www.youtube.com/watch?v=dQw4w9WgXcQ o youtube amor",
+  description: `Realiza busquedas en YouTube y descarga audios o videos de YouTube.`,
+  usage:
+    "ytbdownload <audio / mp3 / video / mp4 / both / search> <yt url o nombre>",
+  botPermissions: ["SEND_MESSAGES", "ATTACH_FILES"],
+  userPermissions: [],
+  cooldown: 10,
   dev: false,
   blockcmd: true,
   cmdPrem: false,
   async execute(totoro, msg, args) {
+    const participant = msg.messages?.[0]?.key?.participant;
+    const remoteJid = msg.messages?.[0]?.key?.remoteJid;
+
+    if (!participant && !remoteJid) {
+      return sendError(
+        totoro,
+        msg,
+        "No se pudo obtener el número del usuario o el chat."
+      );
+    }
+
+    if (!args[0] || !args[1]) {
+      return help(
+        totoro,
+        msg,
+        "ytbdownload",
+        "Descarga audios o videos de YouTube.",
+        "ytbdownload <audio|mp3|video|mp4|both|search> <yt url o nombre>"
+      );
+    }
+
+    const mode = args[0].toLowerCase();
+    const query = args.slice(1).join(" ");
+
+    if (
+      !["audio", "mp3", "video", "mp4", "both", "search", "metadatos"].includes(
+        mode
+      )
+    ) {
+      return sendWarning(
+        totoro,
+        msg,
+        "Modo no válido. Usa 'audio', 'mp3', 'video', 'mp4', 'both', 'search' o 'metadatos'."
+      );
+    }
+
     try {
-      msg.react("⏳");
-
-      if (!args[0]) {
-        return sendWarning(
-          totoro,
-          msg,
-          "Por favor, proporciona una URL de YouTube o un término de búsqueda."
-        );
-      }
-
-      let videoUrl;
-      if (ytdl.validateURL(args[0])) {
-        videoUrl = args[0];
-      } else {
-        videoUrl = await getYoutubeVideoUrlFromSearch(args.join(" "));
-        if (!videoUrl) {
+      if (mode === "search") {
+        const searchResults = await Scraper.ytsearch(query);
+        if (searchResults.length === 0) {
           return sendWarning(
             totoro,
             msg,
             "No se encontraron resultados para la búsqueda."
           );
         }
-      }
 
-      const dl_url = await getYoutubeDownloadUrl(videoUrl);
-      if (!dl_url) {
-        return sendWarning(
-          totoro,
-          msg,
-          "No se pudo obtener el enlace de descarga."
+        let img = searchResults[0].thumbnail;
+        let txt = `         「 *YouTube Search con ${query}* 」\n`;
+        txt += `> si deseas descargarlo puedes usarlo con el mismo comando solo que en vez de \`search\` puedes usar \`audio o mp3 o mp4\` seguido de la \`url del video\` o su \`nombre\``;
+        txt += `\n\n`;
+        searchResults.slice(0, 5).forEach((video, index) => {
+          txt += ` ╭─⬣「 *YouTube Search ${index + 1}* 」⬣\n`;
+          txt += ` │  ≡◦ \`🍭 Titulo ∙ ${video.title}\`\n`;
+          txt += ` │  ≡◦ \`🕜 Duración ∙ ${video.duration}\`\n`;
+          txt += ` │  ≡◦ \`🪴 Publicado ∙ ${video.published}\`\n`;
+          txt += ` │  ≡◦ \`📚 Autor ∙ ${video.author}\`\n`;
+          txt += ` │  ≡◦ \`⛓ Url ∙ ${video.url}\`\n`;
+          txt += ` ╰──────────⬣`;
+          txt += `\n\n`;
+        });
+
+        return totoro.sendMessage(
+          remoteJid || participant,
+          { image: { url: img }, caption: txt },
+          { quoted: msg.messages[0] }
         );
       }
 
-      const user = msg.messages[0]?.pushName || ".";
-      const content = `Solicitada por ${user}`;
-      const { imageMessage } = await prepareWAMessageMedia(
-        { image: { url: "https://i.ibb.co/j9N5kj3/image.jpg" } },
-        { upload: totoro.waUploadToServer }
-      );
+      let videoUrl = query;
+      if (!videoUrl.match(/youtu/gi)) {
+        const searchResults = await Scraper.ytsearch(query);
+        if (searchResults.length === 0) {
+          return sendWarning(
+            totoro,
+            msg,
+            "No se encontraron resultados para la búsqueda."
+          );
+        }
+        videoUrl = searchResults[0].url;
+      }
 
-      const message = createInteractiveMessage(
-        content,
-        imageMessage,
-        dl_url,
-        videoUrl
-      );
+      const { title, size, quality, thumbnail, dl_url } =
+        mode === "mp4" || mode === "video"
+          ? await Scraper.ytmp4(videoUrl)
+          : await Scraper.ytmp3(videoUrl);
 
-      await totoro.relayMessage(
-        msg.messages[0].key.remoteJid,
-        { viewOnceMessage: { message } },
-        { quoted: msg.messages[0] }
-      );
-      await msg.react("📽️");
+      if (size.includes("GB") || parseFloat(size.replace(" MB", "")) > 100) {
+        return sendWarning(
+          totoro,
+          msg,
+          "El archivo pesa más de 100 MB, se canceló la descarga."
+        );
+      }
+
+      await msg.react("⏳");
+
+      let metadata = `*Titulo:* ${title}\n*Calidad:* ${quality}\n*Peso:* ${size}`;
+      let caption = `╭─⬣「 *YouTube Download* 」⬣\n`;
+      caption += `│  ≡◦ *🍭 Titulo ∙* ${title}\n`;
+      caption += `│  ≡◦ *🪴 Calidad ∙* ${quality}\n`;
+      caption += `│  ≡◦ *⚖ Peso ∙* ${size}\n`;
+      caption += `╰─⬣`;
+
+      if (mode === "audio") {
+        await totoro.sendMessage(
+          remoteJid || participant,
+          {
+            audio: { url: dl_url },
+            mimetype: "audio/mpeg",
+            ptt: true,
+            caption: metadata,
+          },
+          { quoted: msg.messages[0] }
+        );
+        await msg.react("🎙️");
+      } else if (mode === "mp3") {
+        await totoro.sendMessage(
+          remoteJid || participant,
+          {
+            image: { url: thumbnail },
+            document: { url: dl_url },
+            mimetype: "audio/mpeg",
+            fileName: `${title}.mp3`,
+            caption: caption,
+          },
+          { quoted: msg.messages[0], asDocument: true }
+        );
+        await msg.react("🎙️");
+      } else if (mode === "mp4" || mode === "video") {
+        await totoro.sendMessage(
+          remoteJid || participant,
+          {
+            image: { url: thumbnail },
+            document: { url: dl_url },
+            mimetype: "video/mp4",
+            fileName: `${title}.mp4`,
+            caption: caption,
+          },
+          { quoted: msg.messages[0], asDocument: true }
+        );
+        await msg.react("🎥");
+      } else if (mode === "both") {
+        await totoro.sendMessage(
+          remoteJid || participant,
+          {
+            audio: { url: dl_url },
+            mimetype: "audio/mpeg",
+            ptt: true,
+            caption: metadata,
+          },
+          { quoted: msg.messages[0] }
+        );
+        await msg.react("🎙️");
+
+        await totoro.sendMessage(
+          remoteJid || participant,
+          {
+            image: { url: thumbnail },
+            document: { url: dl_url },
+            mimetype: "audio/mpeg",
+            fileName: `${title}.mp3`,
+            caption: caption,
+          },
+          { quoted: msg.messages[0], asDocument: true }
+        );
+        await msg.react("🎙️");
+      } else if (mode === "metadatos") {
+        await totoro.sendMessage(
+          remoteJid || participant,
+          { text: metadata },
+          { quoted: msg.messages[0] }
+        );
+      }
     } catch (error) {
-      totoroLog.info(
-        "./logs/plugins/multimedia/youtube.log",
-        `Error: ${error.message}`
+      totoroLog.error(
+        "./logs/ytbdownload.log",
+        `Error al descargar de YouTube: ${error}`
       );
-      return sendError(totoro, msg, "Hubo un error al procesar tu solicitud.");
+      await sendError(
+        totoro,
+        msg,
+        "Hubo un error al intentar descargar el contenido."
+      );
     }
   },
 };
-
-async function getYoutubeVideoUrlFromSearch(query) {
-  try {
-    const searchResults = await youtubeSearch.GetListByKeyword(query, false, 1);
-    if (searchResults.items.length === 0) {
-      return null;
-    }
-    return `https://www.youtube.com/watch?v=${searchResults.items[0].id}`;
-  } catch (error) {
-    throw new Error(
-      `Error al realizar la búsqueda en YouTube: ${error.message}`
-    );
-  }
-}
-
-async function getYoutubeDownloadUrl(videoUrl) {
-  try {
-    const info = await ytdl.getInfo(videoUrl);
-    return ytdl.chooseFormat(info.formats, { quality: "highestvideo" }).url;
-  } catch (error) {
-    throw new Error(`Error al obtener el enlace de descarga: ${error.message}`);
-  }
-}
-
-function createInteractiveMessage(content, imageMessage, dl_url, videoUrl) {
-  return {
-    interactiveMessage: {
-      header: { hasMediaAttachment: true, imageMessage: imageMessage },
-      body: { text: content },
-      footer: { text: `Descargado por Totoro` },
-      nativeFlowMessage: {
-        buttons: [
-          {
-            name: "cta_url",
-            buttonParamsJson: JSON.stringify({
-              display_text: `Open in YouTube 📲`,
-              url: videoUrl,
-            }),
-          },
-        ],
-        messageParamsJson: "",
-      },
-    },
-  };
-}

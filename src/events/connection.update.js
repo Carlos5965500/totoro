@@ -14,12 +14,7 @@ module.exports = {
         lastDisconnect.error instanceof Boom &&
         lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut;
 
-      console.log(
-        "connection closed due to",
-        lastDisconnect.error,
-        ", reconnecting",
-        shouldReconnect
-      );
+      console.log(`Connection closed. Reason: ${lastDisconnect.error.message}`);
 
       if (shouldReconnect) {
         await connectToWA();

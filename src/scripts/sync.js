@@ -19,6 +19,7 @@ const {
   totoStatus,
   totoBlock,
   totoMantainance,
+  activateTotoCounter,
 } = require("../models");
 
 class totoDBSync {
@@ -105,6 +106,11 @@ class totoDBSync {
         totoMantainance.rawAttributes,
         totoMantainance.options
       ),
+      activateTotoCounter: this.backupDB.define(
+        "activateTotoCounter",
+        activateTotoCounter.rawAttributes,
+        activateTotoCounter.options
+      ),
     };
   }
 
@@ -134,10 +140,11 @@ class totoDBSync {
         totoStatus,
         totoBlock,
         totoMantainance,
+        activateTotoCounter,
       });
 
       syncMessage += `
-│ 🔄  Tablas sincronizadas: ${totoUser.getTableName()}, ${totoPremium.getTableName()}, ${totoPlugin.getTableName()}, ${totoWhitelist.getTableName()}, ${totoBlacklist.getTableName()}, ${totoDev.getTableName()}, ${totoCounter.getTableName()}, ${totoWelcm.getTableName()}, ${totoGroupSettings.getTableName()}, ${totoStatus.getTableName()}, ${totoBlock.getTableName()}, ${totoMantainance.getTableName()}`;
+│ 🔄  Tablas sincronizadas: ${totoUser.getTableName()}, ${totoPremium.getTableName()}, ${totoPlugin.getTableName()}, ${totoWhitelist.getTableName()}, ${totoBlacklist.getTableName()}, ${totoDev.getTableName()}, ${totoCounter.getTableName()}, ${totoWelcm.getTableName()}, ${totoGroupSettings.getTableName()}, ${totoStatus.getTableName()}, ${totoBlock.getTableName()}, ${totoMantainance.getTableName()}, ${activateTotoCounter.getTableName()}`;
 
       // Leer y actualizar desde settings.json
       const settingsPath = path.resolve(__dirname, "..", "..", "settings.json");
@@ -194,7 +201,7 @@ class totoDBSync {
 
         await this.syncTables(this.backupModels);
         syncMessage += `
-│ 🔄  Tablas sincronizadas: ${this.backupModels.totoUser.getTableName()}, ${this.backupModels.totoPremium.getTableName()}, ${this.backupModels.totoPlugin.getTableName()}, ${this.backupModels.totoWhitelist.getTableName()}, ${this.backupModels.totoBlacklist.getTableName()}, ${this.backupModels.totoDev.getTableName()}, ${this.backupModels.totoCounter.getTableName()}, ${this.backupModels.totoWelcm.getTableName()}, ${this.backupModels.totoGroupSettings.getTableName()}, ${this.backupModels.totoStatus.getTableName()}, ${this.backupModels.totoBlock.getTableName()}, ${this.backupModels.totoMantainance.getTableName()}`;
+│ 🔄  Tablas sincronizadas: ${this.backupModels.totoUser.getTableName()}, ${this.backupModels.totoPremium.getTableName()}, ${this.backupModels.totoPlugin.getTableName()}, ${this.backupModels.totoWhitelist.getTableName()}, ${this.backupModels.totoBlacklist.getTableName()}, ${this.backupModels.totoDev.getTableName()}, ${this.backupModels.totoCounter.getTableName()}, ${this.backupModels.totoWelcm.getTableName()}, ${this.backupModels.totoGroupSettings.getTableName()}, ${this.backupModels.totoStatus.getTableName()}, ${this.backupModels.totoBlock.getTableName()}, ${this.backupModels.totoMantainance.getTableName()}, ${this.backupModels.activateTotoCounter.getTableName()}`;
 
         // Leer y actualizar desde settings.json en base de datos de respaldo
         for (const phone of devPhones) {
@@ -276,6 +283,7 @@ class totoDBSync {
   async syncTables(models) {
     await models.totoGroupSettings.sync({ force: false });
     await models.totoWelcm.sync({ force: false });
+    await models.activateTotoCounter.sync({ force: false }); // Asegúrate de sincronizar activateTotoCounter antes de totoCounter
     await Promise.all([
       models.totoUser.sync({ force: false }),
       models.totoPremium.sync({ force: false }),

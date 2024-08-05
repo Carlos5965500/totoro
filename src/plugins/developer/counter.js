@@ -1,16 +1,17 @@
 const { help, sendWarning } = require("../../functions/messages");
-const ActivateTotoCounter = require("../../models/activateTotoCounter");
-const TotoCounter = require("../../models/totoCounter");
+const activateTotoCounter = require("../../models/activateTotoCounter");
+const totoCounter = require("../../models/totoCounter");
 const settings = require("../../../settings.json");
 const totoroLog = require("../../functions/totoroLog");
 
 module.exports = {
-  name: "activateTotoCounter",
+  name: "Contador Totoro",
   category: "developer",
   subcategory: "settings",
-  aliases: ["counter"],
-  usage: `${settings.prefix}counter <on|off>`,
-  description: "Activa o desactiva el contador del bot de manera global",
+  aliases: ["counter", "totoCounter", "contador"],
+  usage: `${settings.prefix}counter <on/off/reset>`,
+  description:
+    "Activa, desactiva o reinicia el contador del bot de manera global",
   dev: true,
 
   async execute(totoro, msg, args) {
@@ -30,38 +31,87 @@ module.exports = {
     }
 
     // Verificar si se ha proporcionado el argumento necesario
-    if (!args.length) {
+    if (args.length < 1) {
       return help(
         totoro,
         msg,
         `Activar Contador Totoro`,
         "Falta el estado de activación",
-        `${settings.prefix}counter <on/off>`
+        `${settings.prefix}counter <on/off/reset>`
       );
     }
+
     if (typeof msg.react === "function") {
       await msg.react("⌛");
     }
 
     const status = args[0].toLowerCase();
-    if (status !== "on" && status !== "off") {
+
+    if (status !== "on" && status !== "off" && status !== "reset") {
       return msg.reply({
-        text: `@${participant}, ${status} no es un estado válido. Debe ser 'on' o 'off'.`,
+        text: `@${participant}, ${status} no es un estado válido. Debe ser 'on', 'off' o 'reset'.`,
         mentions: [participant],
       });
     }
 
     // Obtener el estado actual del contador
-    let currentStatus = await ActivateTotoCounter.findOne({
+    let currentStatus = await activateTotoCounter.findOne({
       where: { counterId: 1 },
     });
 
     // Si no existe un estado actual, crearlo con estado "off" por defecto
     if (!currentStatus) {
-      currentStatus = await ActivateTotoCounter.create({
+      currentStatus = await activateTotoCounter.create({
         counterId: 1,
         status: "off",
       });
+    }
+
+    // Almacenar los conteos actuales solo si el estado es "on"
+    let countsMap = [];
+    if (currentStatus.status === "on") {
+      const currentCounts = await totoCounter.findAll();
+      countsMap = currentCounts.map((counter) => ({
+        totoUserId: counter.totoUserId,
+        pluginName: counter.pluginName,
+        count: counter.count,
+      }));
+    }
+
+    if (status === "reset") {
+      try {
+        // Eliminar todos los registros de contadores
+        await totoCounter.destroy({ where: {} });
+
+        msg.react("✅");
+        // Obtener la fecha y hora actual en la zona horaria de Madrid
+        const now = new Date();
+        const date = now.toLocaleDateString("es-ES", {
+          timeZone: "Europe/Madrid",
+        });
+        const time = now.toLocaleTimeString("es-ES", {
+          timeZone: "Europe/Madrid",
+        });
+
+        // Enviar mensaje de confirmación
+        return msg.reply({
+          text:
+            `╭─⬣「 Counter Totoro 」\n` +
+            `│  ≡◦ Estado: reset\n` +
+            `│  ≡◦ Acción: reiniciado\n` +
+            `│  ≡◦ Moderador: @${participant}\n` +
+            `│  ≡◦ Fecha: ${date}\n` +
+            `│  ≡◦ Hora: ${time}\n` +
+            `╰──────────────`,
+          mentions: [userWithDomain],
+        });
+      } catch (error) {
+        console.error("Error eliminando contadores:", error);
+        return msg.reply({
+          text: `@${participant}, hubo un error al intentar eliminar los contadores.`,
+          mentions: [participant],
+        });
+      }
     }
 
     // Verificar si el estado solicitado ya está establecido
@@ -79,59 +129,48 @@ module.exports = {
     // Actualizar el estado del contador
     await currentStatus.update({ status });
 
-    if (status === "on") {
-      // Obtener el ID del usuario desde el número de teléfono
-      const totoUserId = await getUserIdFromPhoneNumber(participant);
-
-      // Si el contador se activa, agregar o incrementar el registro del usuario y plugin en totoCounters
-      const [counter, created] = await TotoCounter.findOrCreate({
-        where: { totoUserId, pluginName: "activateTotoCounter" },
-        defaults: {
-          counterId: 1, // Siempre establecer counterId en 1
-          count: 0,
-        },
-      });
-
-      if (created) {
-        totoroLog.info(
-          "./logs/functions/totoCounter.log",
-          `Nuevo contador creado para el comando 'activateTotoCounter' y el usuario con ID ${totoUserId}.`
-        );
-      }
-
-      counter.count += 1;
-      await counter.save();
-
-      totoroLog.info(
-        "./logs/functions/totoCounter.log",
-        `Contador incrementado para el comando 'activateTotoCounter' y el usuario con ID ${totoUserId}. Nuevo valor: ${counter.count}`
-      );
-    } else {
-      // Si el contador se desactiva, no realizar ninguna acción adicional
-      totoroLog.info(
-        "./logs/functions/totoCounter.log",
-        `El contador se ha desactivado para el comando 'activateTotoCounter' y el usuario con ID ${participant}.`
-      );
-    }
-
+    msg.react("✅");
     // Obtener la fecha y hora actual en la zona horaria de Madrid
     const now = new Date();
     const date = now.toLocaleDateString("es-ES", { timeZone: "Europe/Madrid" });
     const time = now.toLocaleTimeString("es-ES", { timeZone: "Europe/Madrid" });
 
-    // Enviar confirmación al usuario
-    if (typeof msg.react === "function") {
-      await msg.react("✅");
+    // Restaurar los conteos si el estado es "on"
+    if (status === "on" && countsMap.length > 0) {
+      for (const counter of countsMap) {
+        try {
+          await totoCounter.create(counter);
+        } catch (error) {
+          console.error("Error restaurando contadores:", error);
+        }
+      }
     }
+
+    // Enviar mensaje de confirmación
+    let confirmationMessage =
+      `╭─⬣「 Counter Totoro 」\n` +
+      `│  ≡◦ Estado: ${status}\n` +
+      `│  ≡◦ Acción: ${status === "on" ? "activado" : "desactivado"}\n` +
+      `│  ≡◦ Moderador: @${participant}\n` +
+      `│  ≡◦ Fecha: ${date}\n` +
+      `│  ≡◦ Hora: ${time}\n`;
+
+    if (status === "on") {
+      // Obtener y mostrar el valor actual del contador si está activado
+      const counters = await totoCounter.findAll();
+      let total = 0;
+      confirmationMessage += `│  ≡◦ Contadores:\n`;
+      counters.forEach((counter) => {
+        confirmationMessage += `│    - ${counter.pluginName}: ${counter.count}\n`;
+        total += counter.count;
+      });
+      confirmationMessage += `│  ≡◦ Total: ${total}\n`;
+    }
+
+    confirmationMessage += `╰──────────────`;
+
     msg.reply({
-      text:
-        `╭─⬣「 Counter Totoro 」\n` +
-        `│  ≡◦ Estado: ${status}\n` +
-        `│  ≡◦ Acción: ${status === "on" ? "activado" : "desactivado"}\n` +
-        `│  ≡◦ Moderador: @${participant}\n` +
-        `│  ≡◦ Fecha: ${date}\n` +
-        `│  ≡◦ Hora: ${time}\n` +
-        `╰──────────────`,
+      text: confirmationMessage,
       mentions: [userWithDomain],
     });
   },

@@ -366,15 +366,24 @@ module.exports = {
     });
 
     const devUsers = await totoDev.findAll({ attributes: ["phone"] });
+    const activateTotoCounter = require("../models/activateTotoCounter");
     const devPhones = devUsers.map((dev) =>
       dev.phone.replace("@s.whatsapp.net", "")
     );
 
+    const activateCounter = await activateTotoCounter.findOne({
+      where: { counterId: 1 },
+    });
+
     if (
-      currentUser &&
-      !devPhones.includes(user.split("@")[0]) &&
-      user.split("@")[0] !== specificPhoneToExclude
-    ) {
+      !currentUser ||
+      !activateCounter ||
+      activateCounter.status !== "on" ||
+      devPhones.includes(user.split("@")[0]) ||
+      user.split("@")[0] === specificPhoneToExclude
+    )  {
+      return plugin.execute(totoro, msg, args);
+    } else {
       const counterRecord = await totoCounter.findOne({
         where: {
           totoUserId: currentUser.id,

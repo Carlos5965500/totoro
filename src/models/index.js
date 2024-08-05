@@ -1,16 +1,18 @@
-const totoUser = require("./totoUser");
-const totoPremium = require("./totoPremium");
-const totoPlugin = require("./totoPlugin");
-const totoWhitelist = require("./totoWhiteList");
-const totoBlacklist = require("./totoBlackList");
-const totoDev = require("./totoDev");
-const totoCounter = require("./totoCounter");
-const totoGroupSettings = require("./totoGroupSettings");
-const totoWelcm = require("./totoWelcm");
-const totoStatus = require("./totoStatus");
-const totoBlock = require("./totoBlock");
-const totoMantainance = require("./totoMantainance");
 const activateTotoCounter = require("./activateTotoCounter");
+const totoGroupSettings = require("./totoGroupSettings");
+const totoMantainance = require("./totoMantainance");
+const totoBlacklist = require("./totoBlackList");
+const totoWhitelist = require("./totoWhiteList");
+const totoPremium = require("./totoPremium");
+const totoCounter = require("./totoCounter");
+const totoStatus = require("./totoStatus");
+const totoPlugin = require("./totoPlugin");
+const totoWelcm = require("./totoWelcm");
+const totoBlock = require("./totoBlock");
+const totoAdmin = require("./totoAdmin");
+const totoUser = require("./totoUser");
+const totoDev = require("./totoDev");
+//const totoAfk = require("./totoAfk");
 
 // Relación uno a uno
 totoUser.hasOne(totoPremium, {
@@ -42,10 +44,12 @@ module.exports = {
   totoWhitelist,
   totoPremium,
   totoCounter,
-  totoPlugin,
   totoStatus,
+  totoPlugin,
+  totoAdmin,
   totoBlock,
   totoWelcm,
   totoUser,
+  //totoAfk,
   totoDev,
 };

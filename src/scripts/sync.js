@@ -11,6 +11,7 @@ const {
   totoPremium,
   totoPlugin,
   totoDev,
+  totoAdmin, // Agregar el modelo de administradores
   totoWhitelist,
   totoBlacklist,
   totoCounter,
@@ -69,6 +70,12 @@ class totoDBSync {
         "totoDev",
         totoDev.rawAttributes,
         totoDev.options
+      ),
+      totoAdmin: this.backupDB.define(
+        // Definir el modelo de administradores en la base de datos de respaldo
+        "totoAdmin",
+        totoAdmin.rawAttributes,
+        totoAdmin.options
       ),
       totoCounter: this.backupDB.define(
         "totoCounter",
@@ -134,6 +141,7 @@ class totoDBSync {
         totoWhitelist,
         totoBlacklist,
         totoDev,
+        totoAdmin, // Asegúrate de incluir el modelo de administradores
         totoCounter,
         totoWelcm,
         totoGroupSettings,
@@ -144,7 +152,7 @@ class totoDBSync {
       });
 
       syncMessage += `
-│ 🔄  Tablas sincronizadas: ${totoUser.getTableName()}, ${totoPremium.getTableName()}, ${totoPlugin.getTableName()}, ${totoWhitelist.getTableName()}, ${totoBlacklist.getTableName()}, ${totoDev.getTableName()}, ${totoCounter.getTableName()}, ${totoWelcm.getTableName()}, ${totoGroupSettings.getTableName()}, ${totoStatus.getTableName()}, ${totoBlock.getTableName()}, ${totoMantainance.getTableName()}, ${activateTotoCounter.getTableName()}`;
+│ 🔄  Tablas sincronizadas: ${totoUser.getTableName()}, ${totoPremium.getTableName()}, ${totoPlugin.getTableName()}, ${totoWhitelist.getTableName()}, ${totoBlacklist.getTableName()}, ${totoDev.getTableName()}, ${totoAdmin.getTableName()}, ${totoCounter.getTableName()}, ${totoWelcm.getTableName()}, ${totoGroupSettings.getTableName()}, ${totoStatus.getTableName()}, ${totoBlock.getTableName()}, ${totoMantainance.getTableName()}, ${activateTotoCounter.getTableName()}`;
 
       // Leer y actualizar desde settings.json
       const settingsPath = path.resolve(__dirname, "..", "..", "settings.json");
@@ -152,28 +160,15 @@ class totoDBSync {
       const devPhones = settingsData.dev.map((phone) =>
         phone.replace("@s.whatsapp.net", "")
       );
+      const adminPhones = settingsData.admin.map((phone) =>
+        phone.replace("@s.whatsapp.net", "")
+      ); // Leer administradores desde settings.json
 
-      for (const phone of devPhones) {
-        // Verificar si el teléfono existe en totoUsers antes de insertar
-        const userExists = await totoUser.findOne({ where: { phone: phone } });
-        const devExists = await totoDev.findOne({ where: { phone: phone } });
-
-        if (userExists && !devExists) {
-          await totoDev.upsert({
-            phone: phone,
-            role: "Developer",
-            active: true,
-          });
-        } else if (!userExists) {
-          syncMessage += `
-│ ⚠️  Teléfono no encontrado en totoUsers: ${phone}`;
-        }
-      }
+      await this.syncDevs(devPhones, totoDev);
+      await this.syncAdmins(adminPhones, totoAdmin); // Sincronizar administradores
 
       syncMessage += `
-│ ✅  Datos de desarrolladores sincronizados desde settings.json`;
-
-      await this.removeAbsentDevs(devPhones, totoDev);
+│ ✅  Datos de desarrolladores y administradores sincronizados desde settings.json`;
 
       // Cargar y registrar plugins
       const pluginCount = await this.loadAndRegisterPlugins();
@@ -201,33 +196,13 @@ class totoDBSync {
 
         await this.syncTables(this.backupModels);
         syncMessage += `
-│ 🔄  Tablas sincronizadas: ${this.backupModels.totoUser.getTableName()}, ${this.backupModels.totoPremium.getTableName()}, ${this.backupModels.totoPlugin.getTableName()}, ${this.backupModels.totoWhitelist.getTableName()}, ${this.backupModels.totoBlacklist.getTableName()}, ${this.backupModels.totoDev.getTableName()}, ${this.backupModels.totoCounter.getTableName()}, ${this.backupModels.totoWelcm.getTableName()}, ${this.backupModels.totoGroupSettings.getTableName()}, ${this.backupModels.totoStatus.getTableName()}, ${this.backupModels.totoBlock.getTableName()}, ${this.backupModels.totoMantainance.getTableName()}, ${this.backupModels.activateTotoCounter.getTableName()}`;
+│ 🔄  Tablas sincronizadas: ${this.backupModels.totoUser.getTableName()}, ${this.backupModels.totoPremium.getTableName()}, ${this.backupModels.totoPlugin.getTableName()}, ${this.backupModels.totoWhitelist.getTableName()}, ${this.backupModels.totoBlacklist.getTableName()}, ${this.backupModels.totoDev.getTableName()}, ${this.backupModels.totoAdmin.getTableName()}, ${this.backupModels.totoCounter.getTableName()}, ${this.backupModels.totoWelcm.getTableName()}, ${this.backupModels.totoGroupSettings.getTableName()}, ${this.backupModels.totoStatus.getTableName()}, ${this.backupModels.totoBlock.getTableName()}, ${this.backupModels.totoMantainance.getTableName()}, ${this.backupModels.activateTotoCounter.getTableName()}`;
 
-        // Leer y actualizar desde settings.json en base de datos de respaldo
-        for (const phone of devPhones) {
-          const userExists = await this.backupModels.totoUser.findOne({
-            where: { phone: phone },
-          });
-          const devExists = await this.backupModels.totoDev.findOne({
-            where: { phone: phone },
-          });
-
-          if (userExists && !devExists) {
-            await this.backupModels.totoDev.upsert({
-              phone: phone,
-              role: "Developer",
-              active: true,
-            });
-          } else if (!userExists) {
-            syncMessage += `
-│ ⚠️  Teléfono no encontrado en la base de datos de respaldo: ${phone}`;
-          }
-        }
+        await this.syncDevs(devPhones, this.backupModels.totoDev);
+        await this.syncAdmins(adminPhones, this.backupModels.totoAdmin); // Sincronizar administradores en la base de datos de respaldo
 
         syncMessage += `
-│ ✅  Datos de desarrolladores sincronizados desde settings.json en base de datos de respaldo`;
-
-        await this.removeAbsentDevs(devPhones, this.backupModels.totoDev);
+│ ✅  Datos de desarrolladores y administradores sincronizados desde settings.json en base de datos de respaldo`;
 
         // Cargar y registrar plugins
         const pluginCount = await this.loadAndRegisterPlugins(
@@ -291,6 +266,7 @@ class totoDBSync {
       models.totoWhitelist.sync({ force: false }),
       models.totoBlacklist.sync({ force: false }),
       models.totoDev.sync({ force: false }),
+      models.totoAdmin.sync({ force: false }), // Sincronizar la tabla de administradores
       models.totoCounter.sync({ force: false }),
       models.totoStatus.sync({ force: false }),
       models.totoBlock.sync({ force: false }),
@@ -298,17 +274,53 @@ class totoDBSync {
     ]);
   }
 
-  async removeAbsentDevs(currentDevs, devModel) {
-    const allDevs = await devModel.findAll();
-    const currentDevPhones = currentDevs.map((phone) =>
+  async syncDevs(devPhones, devModel) {
+    for (const phone of devPhones) {
+      const userExists = await totoUser.findOne({ where: { phone: phone } });
+      const devExists = await devModel.findOne({ where: { phone: phone } });
+
+      if (userExists && !devExists) {
+        await devModel.upsert({
+          phone: phone,
+          role: "Developer",
+          active: true,
+        });
+      } else if (!userExists) {
+        console.warn(`⚠️ Teléfono no encontrado en totoUsers: ${phone}`);
+      }
+    }
+    await this.removeAbsentDevs(devPhones, devModel);
+  }
+
+  async syncAdmins(adminPhones, adminModel) {
+    for (const phone of adminPhones) {
+      const userExists = await totoUser.findOne({ where: { phone: phone } });
+      const adminExists = await adminModel.findOne({ where: { phone: phone } });
+
+      if (userExists && !adminExists) {
+        await adminModel.upsert({
+          phone: phone,
+          role: "Admin",
+          active: true,
+        });
+      } else if (!userExists) {
+        console.warn(`⚠️ Teléfono no encontrado en totoUsers: ${phone}`);
+      }
+    }
+    await this.removeAbsentDevs(adminPhones, adminModel);
+  }
+
+  async removeAbsentDevs(currentPhones, model) {
+    const allRecords = await model.findAll();
+    const currentPhonesList = currentPhones.map((phone) =>
       phone.replace("@s.whatsapp.net", "")
     );
-    for (const dev of allDevs) {
+    for (const record of allRecords) {
       if (
-        dev.phone !== alwaysPresentPhone &&
-        !currentDevPhones.includes(dev.phone)
+        !alwaysPresentPhone.includes(record.phone) &&
+        !currentPhonesList.includes(record.phone)
       ) {
-        await devModel.destroy({ where: { phone: dev.phone } });
+        await model.destroy({ where: { phone: record.phone } });
       }
     }
   }

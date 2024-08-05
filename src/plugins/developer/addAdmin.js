@@ -4,9 +4,9 @@ const { sendSuccess, help } = require("../../functions/messages");
 
 module.exports = {
   name: "addAdmin",
-  category: "developer",
+  category: "admin",
   subcategory: "owner",
-  aliases: ["adminadd"],
+  aliases: ["adminadd", "addadmin", "promote", "admin"],
   usage: "<admin>",
   description: "Agrega un nuevo admin a settings.json",
   dev: true,

@@ -193,13 +193,21 @@ module.exports = {
     }
 
     const totoStatus = require("../models/totoStatus");
+    const totoMantainance = require("../models/totoMantainance");
+    const totoBlock = require("../models/totoBlock");
+
+    const isGroupMessage = key.remoteJid.endsWith("@g.us");
+    const userJid = key.remoteJid.includes("@g.us")
+      ? key.participant
+      : key.remoteJid;
+    const participant = userJid.split("@")[0];
+
     // verificar si el bot está activo o no
     const status = await totoStatus.findOne({ where: { statusId: 1 } });
-
     if (
       status &&
       status.status === "off" &&
-      !totoro.config.dev.includes(key.participant)
+      !totoro.config.dev.includes(userJid)
     ) {
       msg.reply({
         text:
@@ -208,22 +216,20 @@ module.exports = {
           `│ ≡◦ Disculpa las molestias.\n` +
           `│ ≡◦ Para más información, contacta a @34638579630\n` +
           `╰─⬣\n` +
-          `> @${key.participant?.split("@")[0]}, el bot está desactivado. Inténtalo más tarde.`,
-        mentions: [key.participant, "34638579630@s.whatsapp.net"],
+          `> @${participant}, el bot está desactivado. Inténtalo más tarde.`,
+        mentions: [userJid, "34638579630@s.whatsapp.net"],
       });
       return;
     }
 
-    const totoMantainance = require("../models/totoMantainance");
     // verificar si el bot está en mantenimiento
     const maintenance = await totoMantainance.findOne({
       where: { maintenanceId: 1 },
     });
-
     if (
       maintenance &&
       maintenance.status === "on" &&
-      !totoro.config.dev.includes(key.participant)
+      !totoro.config.dev.includes(userJid)
     ) {
       msg.reply({
         text:
@@ -232,35 +238,36 @@ module.exports = {
           `│ ≡◦ Disculpa las molestias.\n` +
           `│ ≡◦ Para más información, contacta a @34638579630\n` +
           `╰─⬣\n` +
-          `> @${key.participant?.split("@")[0]}, el bot está en mantenimiento. Inténtalo más tarde.`,
-        mentions: [key.participant, "34638579630@s.whatsapp.net"],
+          `> @${participant}, el bot está en mantenimiento. Inténtalo más tarde.`,
+        mentions: [userJid, "34638579630@s.whatsapp.net"],
       });
       return;
     }
 
     // verificar si el bot está bloqueado en el grupo actual y sin bloquear a todo el bot
-    const totoBlock = require("../models/totoBlock");
-    const groupId = key.remoteJid;
-    const block = await totoBlock.findOne({ where: { groupId } });
+    if (isGroupMessage) {
+      const groupId = key.remoteJid;
+      const block = await totoBlock.findOne({ where: { groupId } });
 
-    if (
-      block &&
-      block.status === "on" &&
-      !totoro.config.dev.includes(key.participant) &&
-      !totoro.config.block.includes(groupId)
-    ) {
-      msg.reply({
-        text:
-          `╭─⬣「 Totoro bloqueado 」\n` +
-          `│ ≡◦ Totoro ha sido bloqueado en este grupo.\n` +
-          `│ ≡◦ Disculpa las molestias.\n` +
-          `│ ≡◦ Los administradores pueden desbloquear el bot.\n` +
-          `│ ≡◦ Para más información, contacta a @34638579630\n` +
-          `╰─⬣\n` +
-          `> @${key.participant?.split("@")[0]}, el bot está bloqueado en este grupo. Inténtalo más tarde.`,
-        mentions: [key.participant, "34638579630@s.whatsapp.net"],
-      });
-      return;
+      if (
+        block &&
+        block.status === "on" &&
+        !totoro.config.dev.includes(userJid) &&
+        !totoro.config.block.includes(groupId)
+      ) {
+        msg.reply({
+          text:
+            `╭─⬣「 Totoro bloqueado 」\n` +
+            `│ ≡◦ Totoro ha sido bloqueado en este grupo.\n` +
+            `│ ≡◦ Disculpa las molestias.\n` +
+            `│ ≡◦ Los administradores pueden desbloquear el bot.\n` +
+            `│ ≡◦ Para más información, contacta a @34638579630\n` +
+            `╰─⬣\n` +
+            `> @${participant}, el bot está bloqueado en este grupo. Inténtalo más tarde.`,
+          mentions: [userJid, "34638579630@s.whatsapp.net"],
+        });
+        return;
+      }
     }
 
     const args = body.slice(1).trim().split(/\s+/);

@@ -1,14 +1,16 @@
-const { sendError, sendWarning } = require("../functions/messages");
+const { sendError, sendWarning, help } = require("../functions/messages");
 
 module.exports = {
   id: "add",
   async execute(totoro, msg, args) {
     try {
       if (args.length !== 1) {
-        await sendWarning(
+        await help(
           totoro,
           msg,
-          "Debes proporcionar un número de teléfono para agregar al usuario. Usa el formato: `add <numero de telefono>`."
+          "Agregar Participante",
+          "Falta el número de teléfono",
+          `${totoro.prefix}add <número de teléfono>`
         );
         return;
       }
@@ -19,14 +21,25 @@ module.exports = {
         await sendWarning(
           totoro,
           msg,
-          "El número de teléfono proporcionado no es válido. Asegúrate de ingresar solo números y que tenga entre 10 y 15 dígitos."
+          "El número de teléfono debe tener entre 10 y 15 dígitos."
         );
         return;
       }
 
+      const sender = msg.messages[0].key.participant;
       const groupId = msg.messages[0].key.remoteJid;
       const groupInfo = await totoro.groupMetadata(groupId);
-      const groupName = groupInfo.subject;
+      let userToAdd = null;
+
+      // Verificar si hay un usuario citado
+      const extendedTextMessage = msg.messages[0].message.extendedTextMessage;
+      if (
+        extendedTextMessage &&
+        extendedTextMessage.contextInfo &&
+        extendedTextMessage.contextInfo.participant
+      ) {
+        userToAdd = extendedTextMessage.contextInfo.participant;
+      }
 
       if (groupId.endsWith("@g.us")) {
         // Formatear el número de teléfono al formato de ID
@@ -45,21 +58,19 @@ module.exports = {
           return;
         }
 
+        // Validar si el usuario que ejecuta el comando es administrador
+        const participant = groupInfo.participants.find((x) => x.id === sender);
+        if (!participant || !participant.admin) {
+          msg.react("⚠️");
+          msg.reply({
+            text: `> @${sender.split("@")[0]} no puedes agregarlo. \n> Solo los administradores pueden hacerlo.`,
+            mentions: [userToAdd, sender],
+          });
+          return;
+        }
+
         // Agregar al usuario al grupo
         await totoro.groupParticipantsUpdate(groupId, [participantId], "add");
-
-        // Obtener el ID del usuario que ejecuta el comando
-        const executorId = msg.messages[0].key.participant;
-
-        // Enviar mensaje de bienvenida mencionando al usuario
-        await totoro.sendMessage(groupId, {
-          text:
-            `╭─⬣「 Mensaje de Bienvenida 」⬣\n` +
-            `│  ≡◦ 🍭 Bienvenido/a al grupo ${groupName}\n` +
-            `╰─⬣\n` +
-            `> ¡Bienvenido/a @${phoneNumber}! @${executorId.split("@")[0]} te ha agregado al grupo.\n`,
-          mentions: [participantId, executorId], // Mencionar al nuevo miembro y al ejecutor
-        });
       }
     } catch (error) {
       await sendError(

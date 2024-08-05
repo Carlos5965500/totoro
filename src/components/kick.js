@@ -1,38 +1,37 @@
-const { sendError, sendWarning } = require("../functions/messages");
+const { sendError, sendWarning, help } = require("../functions/messages");
 
 module.exports = {
   id: "kick",
   async execute(totoro, msg, args) {
     try {
       if (args.length !== 1) {
-        await sendWarning(
+        await help(
           totoro,
           msg,
-          "Debes proporcionar un número de teléfono para expulsar al usuario. Usa el formato: `kick <numero de telefono>`."
+          "Expulsar Participante",
+          "Falta el número de teléfono",
+          `${totoro.prefix}kick <número de teléfono>`
         );
         return;
       }
 
       const phoneNumber = args[0];
       if (!/^\d{10,15}$/.test(phoneNumber)) {
-        // Asegúrate de ajustar el patrón según el formato esperado
         await sendWarning(
           totoro,
           msg,
-          "El número de teléfono proporcionado no es válido. Asegúrate de ingresar solo números y que tenga entre 10 y 15 dígitos."
+          "El número de teléfono debe tener entre 10 y 15 dígitos."
         );
         return;
       }
 
+      const sender = msg.messages[0].key.participant;
       const groupId = msg.messages[0].key.remoteJid;
       const groupInfo = await totoro.groupMetadata(groupId);
-      const groupName = groupInfo.subject;
 
       if (groupId.endsWith("@g.us")) {
-        // Formatear el número de teléfono al formato de ID
         const participantId = `${phoneNumber}@s.whatsapp.net`;
 
-        // Verificar si el usuario está en el grupo
         const userExists = groupInfo.participants.some(
           (p) => p.id === participantId
         );
@@ -45,25 +44,30 @@ module.exports = {
           return;
         }
 
-        // Expulsar al usuario del grupo
+        const participant = groupInfo.participants.find((x) => x.id === sender);
+        if (!participant || !participant.admin) {
+          msg.react("⚠️");
+          msg.reply({
+            text: `> @${sender.split("@")[0]} no puedes expulsar a @${phoneNumber.split("@")[0]}. \n> Solo los administradores pueden hacerlo.`,
+            mentions: [participantId, sender],
+          });
+          return;
+        }
+
         await totoro.groupParticipantsUpdate(
           groupId,
           [participantId],
           "remove"
         );
 
-        // Obtener el ID del usuario que ejecuta el comando
-        const executorId = msg.messages[0].key.participant;
-
-        // Enviar mensaje informando sobre la expulsión
-        await totoro.sendMessage(groupId, {
-          text:
-            `╭─⬣「 Mensaje de Expulsión 」⬣\n` +
-            `│  ≡◦ 💔 ${groupName}\n` +
-            `╰─⬣\n` +
-            `> @${phoneNumber} ha sido expulsado del grupo por @${executorId.split("@")[0]}.`,
-          mentions: [participantId, executorId], // Mencionar al usuario expulsado y al ejecutor
-        });
+        await totoro.sendMessage(
+          groupId,
+          {
+            text: `> @${phoneNumber} ha sido expulsado del grupo por @${sender.split("@")[0]}.`,
+            mentions: [participantId, sender],
+          },
+          { quoted: msg }
+        );
       }
     } catch (error) {
       await sendError(

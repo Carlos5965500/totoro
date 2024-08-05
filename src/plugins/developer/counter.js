@@ -1,8 +1,8 @@
-// commands/activateTotoCounter.js
-
 const { help, sendWarning } = require("../../functions/messages");
 const ActivateTotoCounter = require("../../models/activateTotoCounter");
+const TotoCounter = require("../../models/totoCounter");
 const settings = require("../../../settings.json");
+const totoroLog = require("../../functions/totoroLog");
 
 module.exports = {
   name: "activateTotoCounter",
@@ -20,7 +20,9 @@ module.exports = {
 
     // Verificación de si el participante es un desarrollador autorizado
     if (!settings.dev.includes(userWithDomain)) {
-      await msg.react("⚠️");
+      if (typeof msg.react === "function") {
+        await msg.react("⚠️");
+      }
       return msg.reply({
         text: `${userWithDomain}, solo los desarrolladores pueden ejecutar este comando.`,
         mentions: [userWithDomain],
@@ -37,7 +39,10 @@ module.exports = {
         `${settings.prefix}counter <on/off>`
       );
     }
-    await msg.react("⌛");
+    if (typeof msg.react === "function") {
+      await msg.react("⌛");
+    }
+
     const status = args[0].toLowerCase();
     if (status !== "on" && status !== "off") {
       return msg.reply({
@@ -46,10 +51,12 @@ module.exports = {
       });
     }
 
+    // Obtener el estado actual del contador
     let currentStatus = await ActivateTotoCounter.findOne({
       where: { counterId: 1 },
     });
 
+    // Si no existe un estado actual, crearlo con estado "off" por defecto
     if (!currentStatus) {
       currentStatus = await ActivateTotoCounter.create({
         counterId: 1,
@@ -57,8 +64,11 @@ module.exports = {
       });
     }
 
+    // Verificar si el estado solicitado ya está establecido
     if (status === currentStatus.status) {
-      await msg.react("⚠️");
+      if (typeof msg.react === "function") {
+        await msg.react("⚠️");
+      }
       return sendWarning(
         totoro,
         msg,
@@ -66,13 +76,53 @@ module.exports = {
       );
     }
 
+    // Actualizar el estado del contador
     await currentStatus.update({ status });
 
+    if (status === "on") {
+      // Obtener el ID del usuario desde el número de teléfono
+      const totoUserId = await getUserIdFromPhoneNumber(participant);
+
+      // Si el contador se activa, agregar o incrementar el registro del usuario y plugin en totoCounters
+      const [counter, created] = await TotoCounter.findOrCreate({
+        where: { totoUserId, pluginName: "activateTotoCounter" },
+        defaults: {
+          counterId: 1, // Siempre establecer counterId en 1
+          count: 0,
+        },
+      });
+
+      if (created) {
+        totoroLog.info(
+          "./logs/functions/totoCounter.log",
+          `Nuevo contador creado para el comando 'activateTotoCounter' y el usuario con ID ${totoUserId}.`
+        );
+      }
+
+      counter.count += 1;
+      await counter.save();
+
+      totoroLog.info(
+        "./logs/functions/totoCounter.log",
+        `Contador incrementado para el comando 'activateTotoCounter' y el usuario con ID ${totoUserId}. Nuevo valor: ${counter.count}`
+      );
+    } else {
+      // Si el contador se desactiva, no realizar ninguna acción adicional
+      totoroLog.info(
+        "./logs/functions/totoCounter.log",
+        `El contador se ha desactivado para el comando 'activateTotoCounter' y el usuario con ID ${participant}.`
+      );
+    }
+
+    // Obtener la fecha y hora actual en la zona horaria de Madrid
     const now = new Date();
     const date = now.toLocaleDateString("es-ES", { timeZone: "Europe/Madrid" });
     const time = now.toLocaleTimeString("es-ES", { timeZone: "Europe/Madrid" });
 
-    await msg.react("✅");
+    // Enviar confirmación al usuario
+    if (typeof msg.react === "function") {
+      await msg.react("✅");
+    }
     msg.reply({
       text:
         `╭─⬣「 Counter Totoro 」\n` +

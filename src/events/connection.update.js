@@ -14,8 +14,10 @@ module.exports = {
         lastDisconnect.error instanceof Boom &&
         lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut;
 
-      console.log(`Connection closed. Reason: ${lastDisconnect.error.message}`);
-
+      totoroLog.error(
+        "./logs/handlers/connection.log",
+        `[CONNECTION] ${connection} ${lastDisconnect.error.message}`
+      );
       if (shouldReconnect) {
         await connectToWA();
       }

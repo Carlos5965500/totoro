@@ -3,12 +3,12 @@ const path = require("path");
 const { sendSuccess, help } = require("../../functions/messages");
 
 module.exports = {
-  name: "addDev",
+  name: "removeAdmin",
   category: "developer",
   subcategory: "owner",
-  aliases: ["devadd", "adddev", "promo", "dev"],
-  usage: "<dev>",
-  description: "Agrega un nuevo dev a settings.json",
+  aliases: ["admindelete", "adminremove", "admindel", "radmin"],
+  usage: "<admin>",
+  description: "Elimina un admin de settings.json",
   dev: true,
 
   async execute(totoro, msg, args) {
@@ -23,31 +23,31 @@ module.exports = {
         msg.messages[0].message.extendedTextMessage?.contextInfo?.quotedMessage;
 
       // Usa el número de teléfono del participant citado si está presente
-      let devValue = "";
+      let adminValue = "";
       if (quotedUser) {
-        devValue = quotedUser.replace("@s.whatsapp.net", ""); // Elimina la parte "@s.whatsapp.net"
+        adminValue = quotedUser.replace("@s.whatsapp.net", ""); // Elimina la parte "@s.whatsapp.net"
       } else if (quotedMessage) {
-        devValue = quotedMessage.extendedTextMessage?.text || "";
+        adminValue = quotedMessage.extendedTextMessage?.text || "";
       } else {
         // Si no hay mensaje citado ni participant, usa el primer argumento del comando
-        devValue = args.join(" ");
+        adminValue = args.join(" ");
       }
 
       // Verifica si el valor es válido
-      if (!devValue.trim()) {
+      if (!adminValue.trim()) {
         return help(
           totoro,
           msg,
-          "addDev",
-          "Falta el valor de dev",
-          '+addDev "<dev>"'
+          "removeAdmin",
+          "Falta el valor de admin",
+          '+removeAdmin "<admin>"'
         );
       }
 
       // Asegúrate de que el valor incluye '@s.whatsapp.net'
-      const fullDevValue = devValue.endsWith("@s.whatsapp.net")
-        ? devValue
-        : `${devValue}@s.whatsapp.net`;
+      const fullAdminValue = adminValue.endsWith("@s.whatsapp.net")
+        ? adminValue
+        : `${adminValue}@s.whatsapp.net`;
 
       const settingsPath = path.join(__dirname, "../../../settings.json");
 
@@ -55,12 +55,13 @@ module.exports = {
       const settingsData = await fs.promises.readFile(settingsPath, "utf8");
       const settings = JSON.parse(settingsData);
 
-      // Agregar el nuevo valor a dev
-      if (!settings.dev.includes(fullDevValue)) {
-        settings.dev.push(fullDevValue);
+      // Encontrar y eliminar el admin de la lista
+      const adminIndex = settings.admin.indexOf(fullAdminValue);
+      if (adminIndex > -1) {
+        settings.admin.splice(adminIndex, 1); // Elimina el admin encontrado
       } else {
-        // Notificar si el dev ya está en la lista
-        return msg.reply("El dev ya está en la lista.");
+        // Notificar si el admin no está en la lista
+        return msg.reply("El admin no está en la lista.");
       }
 
       // Escribimos los cambios de vuelta en settings.json
@@ -70,7 +71,7 @@ module.exports = {
       );
 
       // Notificamos al usuario que la operación fue exitosa
-      sendSuccess(totoro, msg, "Dev actualizado correctamente.");
+      sendSuccess(totoro, msg, "Admin eliminado correctamente.");
     } catch (error) {
       console.error(error);
       msg.reply("Hubo un error al intentar actualizar settings.json.");

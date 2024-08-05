@@ -3,12 +3,12 @@ const path = require("path");
 const { sendSuccess, help } = require("../../functions/messages");
 
 module.exports = {
-  name: "addDev",
+  name: "removeDev",
   category: "developer",
   subcategory: "owner",
-  aliases: ["devadd", "adddev", "promo", "dev"],
+  aliases: ["devdelete", "devremove", "devdel", "rdev"],
   usage: "<dev>",
-  description: "Agrega un nuevo dev a settings.json",
+  description: "Elimina un dev de settings.json",
   dev: true,
 
   async execute(totoro, msg, args) {
@@ -38,16 +38,14 @@ module.exports = {
         return help(
           totoro,
           msg,
-          "addDev",
+          "removeDev",
           "Falta el valor de dev",
-          '+addDev "<dev>"'
+          '+removeDev "<dev>"'
         );
       }
 
       // Asegúrate de que el valor incluye '@s.whatsapp.net'
-      const fullDevValue = devValue.endsWith("@s.whatsapp.net")
-        ? devValue
-        : `${devValue}@s.whatsapp.net`;
+      const fullDevValue = `${devValue.trim()}@s.whatsapp.net`;
 
       const settingsPath = path.join(__dirname, "../../../settings.json");
 
@@ -55,13 +53,19 @@ module.exports = {
       const settingsData = await fs.promises.readFile(settingsPath, "utf8");
       const settings = JSON.parse(settingsData);
 
-      // Agregar el nuevo valor a dev
-      if (!settings.dev.includes(fullDevValue)) {
-        settings.dev.push(fullDevValue);
-      } else {
-        // Notificar si el dev ya está en la lista
-        return msg.reply("El dev ya está en la lista.");
+      // Depuración: muestra los valores en settings.json
+      console.log(`Valores en settings.json: ${JSON.stringify(settings.dev)}`);
+
+      // Filtramos el nuevo array de devs para eliminar el valor
+      const newDevArray = settings.dev.filter((dev) => dev !== fullDevValue);
+
+      // Si el array no ha cambiado, notificamos al usuario
+      if (settings.dev.length === newDevArray.length) {
+        return msg.reply("El dev especificado no se encuentra en la lista.");
       }
+
+      // Actualizamos el array de devs en settings.json
+      settings.dev = newDevArray;
 
       // Escribimos los cambios de vuelta en settings.json
       await fs.promises.writeFile(
@@ -70,7 +74,7 @@ module.exports = {
       );
 
       // Notificamos al usuario que la operación fue exitosa
-      sendSuccess(totoro, msg, "Dev actualizado correctamente.");
+      sendSuccess(totoro, msg, "Dev eliminado correctamente.");
     } catch (error) {
       console.error(error);
       msg.reply("Hubo un error al intentar actualizar settings.json.");

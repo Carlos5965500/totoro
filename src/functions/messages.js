@@ -62,7 +62,6 @@ async function sendError(totoro, msg, errorMessage) {
     `> ${errorMessage}`;
   try {
     const remoteJid = msg.messages[0].key.remoteJid;
-    console.log(remoteJid);
     msg.react("❌");
     await totoro.sendMessage(remoteJid, { text: mensaje });
   } catch (error) {
@@ -202,10 +201,10 @@ async function infoSerial(msg, warningMessage) {
 async function sendLicence(msg, userName, Licence) {
   try {
     await msg.reply(
-      `╭─⬣「 *Número de Serie* 」⬣\n` + 
-      `│  ≡◦ *ℹ️ ${userName} Obten tu licencia para ser totoPremium*\n` +
-      `╰─⬣\n` +
-      `> ${Licence}`
+      `╭─⬣「 *Número de Serie* 」⬣\n` +
+        `│  ≡◦ *ℹ️ ${userName} Obten tu licencia para ser totoPremium*\n` +
+        `╰─⬣\n` +
+        `> ${Licence}`
     );
   } catch (error) {
     totoroLog.error(
@@ -318,7 +317,6 @@ async function dev(msg, totoro, pluginName, devMessage) {
     const message = msg.messages[0];
     const key = message.key;
     const from = key.remoteJid;
-    console.log("from:", from);
 
     await msg.react("👑");
 

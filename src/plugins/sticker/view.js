@@ -18,6 +18,7 @@ module.exports = {
     const from = info.key.remoteJid;
     const participant = info.key.participant || info.key.remoteJid; // Asegurarse de obtener el participante
 
+    msg.react("⌛");
     const quotedMessage =
       info.message?.extendedTextMessage?.contextInfo?.quotedMessage;
     if (!quotedMessage) {
@@ -72,6 +73,7 @@ module.exports = {
         buffer = Buffer.concat([buffer, chunk]);
       }
 
+      msg.react("👀");
       const finalCaption = `© ᴍᴀᴅᴇ ʙʏ ᴛᴏᴛᴏʀᴏ ꜱᴏʟɪᴄɪᴛᴀᴅᴏ ᴘᴏʀ: @${participant.split("@")[0]}`;
 
       if (mime === "image") {

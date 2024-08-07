@@ -4,10 +4,17 @@ const {
   infoPremium,
   dev,
 } = require("../functions/messages");
-const { totoUser, totoDev, totoCounter, totoPremium } = require("../models");
+const {
+  totoUser,
+  totoDev,
+  totoCounter,
+  totoPremium,
+  totoGroupMantainance,
+} = require("../models");
 const { matcher } = require("../functions/matcher");
 const totoroLog = require("../functions/totoroLog");
 const { prepareWAMessageMedia } = require("@whiskeysockets/baileys");
+
 module.exports = {
   name: "messages.upsert",
 
@@ -16,7 +23,7 @@ module.exports = {
 
     if (msg.type !== "notify") return;
 
-    if (msg.messages[0].key?.fromMe) return;
+    //if (msg.messages[0].key?.fromMe) return;
 
     if (msg.sender && msg.sender.is_bot) {
       return;
@@ -47,8 +54,10 @@ module.exports = {
       toto?.videoMessage?.caption ||
       toto?.templateButtonReplyMessage?.selectedId ||
       toto?.buttonsResponseMessage?.selectedButtonId;
-
     if (!body) return;
+
+    // Verificar si el usuario está en modo AFK e ignorar si es desarrollador
+    await require("../plugins/set up/afk").verify(msg, body);
 
     //  Mencionar a Totoro solo y solo si no es un grupo con el comando "Totoro" o "Toto" o "Toto " o "@Totoro" o "@totoro"
     if (
@@ -253,18 +262,40 @@ module.exports = {
         block &&
         block.status === "on" &&
         !totoro.config.dev.includes(userJid) &&
-        !totoro.config.block.includes(groupId)
+        !groupId.includes("@broadcast")
       ) {
         msg.reply({
           text:
             `╭─⬣「 Totoro bloqueado 」\n` +
-            `│ ≡◦ Totoro ha sido bloqueado en este grupo.\n` +
+            `│ ≡◦ Totoro ha sido bloqueado en este ${isGroupMessage ? "grupo" : "chat"}.\n` +
             `│ ≡◦ Disculpa las molestias.\n` +
             `│ ≡◦ Los administradores pueden desbloquear el bot.\n` +
             `│ ≡◦ Para más información, contacta a @34638579630\n` +
             `╰─⬣\n` +
             `> @${participant}, el bot está bloqueado en este grupo. Inténtalo más tarde.`,
           mentions: [userJid, "34638579630@s.whatsapp.net"],
+        });
+        return;
+      }
+
+      const groupMantainance = await totoGroupMantainance.findOne({
+        where: { groupId },
+      });
+
+      if (
+        groupMantainance &&
+        groupMantainance.status === "on" &&
+        !totoro.config.dev.includes(userJid)
+      ) {
+        msg.reply({
+          text:
+            `╭─⬣「 ${isGroupMessage ? "Grupo" : "Chat"} en mantenimiento 」\n` +
+            `│ ≡◦ Totoro está en mantenimiento en este ${isGroupMessage ? "grupo" : "chat"}.\n` +
+            `│ ≡◦ Disculpa las molestias.\n` +
+            `│ ≡◦ Para más información, contacta a @34638579630\n` +
+            `╰─⬣\n` +
+            `> @${participant}, el bot está en mantenimiento. Inténtalo más tarde.`,
+          mentions: [userJid, "34638579630.s.whatsapp.net"],
         });
         return;
       }
@@ -366,12 +397,12 @@ module.exports = {
     });
 
     const devUsers = await totoDev.findAll({ attributes: ["phone"] });
-    const activateTotoCounter = require("../models/activateTotoCounter");
+    const totoCounterActivate = require("../models/totoCounterActivate");
     const devPhones = devUsers.map((dev) =>
       dev.phone.replace("@s.whatsapp.net", "")
     );
 
-    const activateCounter = await activateTotoCounter.findOne({
+    const activateCounter = await totoCounterActivate.findOne({
       where: { counterId: 1 },
     });
 
@@ -381,7 +412,7 @@ module.exports = {
       activateCounter.status !== "on" ||
       devPhones.includes(user.split("@")[0]) ||
       user.split("@")[0] === specificPhoneToExclude
-    )  {
+    ) {
       return plugin.execute(totoro, msg, args);
     } else {
       const counterRecord = await totoCounter.findOne({
@@ -412,7 +443,7 @@ module.exports = {
         });
 
       totoroLog.error(
-        "./logs/events/messages.upsert.js",
+        "./logs/events/messages.upsert.log",
         `Error ejecutando ${pluginName}: ${error.message}`
       );
       console.error(error);

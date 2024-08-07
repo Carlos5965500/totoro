@@ -1,8 +1,6 @@
 const { help, sendWarning } = require("../../functions/messages");
-const activateTotoCounter = require("../../models/activateTotoCounter");
-const totoCounter = require("../../models/totoCounter");
-const settings = require("../../../settings.json");
-const totoroLog = require("../../functions/totoroLog");
+const {totoCounterActivate, totoCounter} = require("../../models");
+const settings = require("../../../settings.json"); 
 
 module.exports = {
   name: "Contador Totoro",
@@ -55,13 +53,13 @@ module.exports = {
     }
 
     // Obtener el estado actual del contador
-    let currentStatus = await activateTotoCounter.findOne({
+    let currentStatus = await totoCounterActivate.findOne({
       where: { counterId: 1 },
     });
 
     // Si no existe un estado actual, crearlo con estado "off" por defecto
     if (!currentStatus) {
-      currentStatus = await activateTotoCounter.create({
+      currentStatus = await totoCounterActivate.create({
         counterId: 1,
         status: "off",
       });

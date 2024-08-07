@@ -1,8 +1,7 @@
 const { help, sendWarning } = require("../../functions/messages");
 const totoStatus = require("../../models/totoStatus");
 const settings = require("../../../settings.json");
-
-let startTime = null; // Variable para almacenar la fecha de inicio del estado
+const runtime = require("../../functions/runtime");
 
 module.exports = {
   name: "Status Totoro",
@@ -54,6 +53,7 @@ module.exports = {
       currentStatus = await totoStatus.create({
         statusId: 1,
         status: "off",
+        startTime: null,
       });
     }
 
@@ -71,9 +71,7 @@ module.exports = {
     const time = now.toLocaleTimeString("es-ES", { timeZone: "Europe/Madrid" });
 
     if (status === "on") {
-      startTime = now; // Guardamos la fecha de inicio en una variable local
-
-      await currentStatus.update({ status });
+      await currentStatus.update({ status, startTime: now });
 
       await msg.react("✅");
       msg.reply({
@@ -88,20 +86,11 @@ module.exports = {
         mentions: [userWithDomain],
       });
     } else {
-      const endTime = now;
-      const durationMs = endTime - startTime;
+      const startTime = new Date(currentStatus.startTime);
+      const durationSeconds = Math.floor((now - startTime) / 1000); 
+      const duration = await runtime(durationSeconds);
 
-      // Calcular horas, minutos y segundos
-      const hours = Math.floor(durationMs / 3600000);
-      const minutes = Math.floor((durationMs % 3600000) / 60000);
-      const seconds = Math.floor((durationMs % 60000) / 1000);
-
-      // Formatear la duración en hh:mm:ss
-      const duration = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-
-      startTime = null; // Reiniciamos la variable de fecha de inicio
-
-      await currentStatus.update({ status });
+      await currentStatus.update({ status, startTime: null });
 
       await msg.react("✅");
       msg.reply({

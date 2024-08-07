@@ -1,8 +1,7 @@
 const { help } = require("../../functions/messages");
 const totoMantainance = require("../../models/totoMantainance");
 const settings = require("../../../settings.json");
-
-let startTime = null; // Variable para almacenar la fecha de inicio del mantenimiento
+const runtime = require("../../functions/runtime");
 
 module.exports = {
   name: "Mantenimiento Totoro",
@@ -54,6 +53,7 @@ module.exports = {
       currentMaintenance = await totoMantainance.create({
         maintenanceId: 1,
         status: "off",
+        startTime: null,
       });
     }
 
@@ -71,11 +71,10 @@ module.exports = {
     const time = now.toLocaleTimeString("es-ES", { timeZone: "Europe/Madrid" });
 
     if (maintenance === "on") {
-      startTime = now; // Guardamos la fecha de inicio en una variable local
-
       await totoMantainance.upsert({
         maintenanceId: 1,
         status: maintenance,
+        startTime: now, // Guardamos la fecha de inicio en la base de datos
       });
 
       await msg.react("✅");
@@ -91,22 +90,14 @@ module.exports = {
         mentions: [userWithDomain],
       });
     } else {
-      const endTime = now;
-      const durationMs = endTime - startTime;
-
-      // Calcular horas, minutos y segundos
-      const hours = Math.floor(durationMs / 3600000);
-      const minutes = Math.floor((durationMs % 3600000) / 60000);
-      const seconds = Math.floor((durationMs % 60000) / 1000);
-
-      // Formatear la duración en hh:mm:ss
-      const duration = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-
-      startTime = null; // Reiniciamos la variable de fecha de inicio
+      const startTime = new Date(currentMaintenance.startTime);
+      const durationSeconds = Math.floor((now - startTime) / 1000); // Convertir a segundos
+      const duration = await runtime(durationSeconds);
 
       await totoMantainance.upsert({
         maintenanceId: 1,
         status: maintenance,
+        startTime: null, // Reiniciamos la variable de fecha de inicio en la base de datos
       });
 
       await msg.react("✅");

@@ -1,15 +1,14 @@
 const { help } = require("../../functions/messages");
-const totoBlock = require("../../models/totoBlock");
+const { totoGroupMantainance, totoMantainance } = require("../../models");
 const settings = require("../../../settings.json");
-const runtime = require("../../functions/runtime");
 
 module.exports = {
-  name: "Bloquear Totoro",
+  name: "Mantenimiento Totoro en grupo",
   category: "developer",
   subcategory: "settings",
-  aliases: ["block"],
-  usage: `${settings.prefix}block <on|off>`,
-  description: "Bloquea o desbloquea el bot",
+  aliases: ["gmantainance", "mantainancegroup", "gme"],
+  usage: `${settings.prefix}mantainance <on|off>`,
+  description: "Activa o desactiva el estado de mantenimiento del bot",
   dev: true,
 
   async execute(totoro, msg, args) {
@@ -72,59 +71,54 @@ module.exports = {
         msg,
         `Bloquear Totoro en el grupo`,
         "Falta el estado de bloqueo",
-        `${settings.prefix}block <on/off>`
+        `${settings.prefix}groupMantainance <on/off>`
       );
     }
 
-    const block = args[0].toLowerCase();
-    if (block !== "on" && block !== "off") {
+    const groupMantainance = args[0].toLowerCase();
+    if (groupMantainance !== "on" && groupMantainance !== "off") {
       return msg.reply({
-        text: `@${participant}, ${block} no es un estado válido. Debe ser 'on' o 'off'.`,
+        text: `@${participant}, ${groupMantainance} no es un estado válido. Debe ser 'on' o 'off'.`,
         mentions: [userWithDomain],
       });
     }
 
-    let currentBlock = await totoBlock.findOne({
+    let currentGroupMantainance = await totoGroupMantainance.findOne({
       where: { groupId: groupId },
     });
 
-    if (!currentBlock) {
-      currentBlock = await totoBlock.create({
+    if (!currentGroupMantainance) {
+      currentGroupMantainance = await totoGroupMantainance.create({
         groupId: groupId,
         groupName: groupName,
-        blockId: 1,
+        mantainanceId: 1,
         status: "off",
         startTime: null,
       });
     }
 
-    if (block === currentBlock.status) {
+    if (groupMantainance === currentGroupMantainance.status) {
       msg.react("⚠️");
       return msg.reply({
-        text: `@${participant}, el estado de bloqueo ya está en ${block} para este grupo.`,
+        text: `@${participant}, el estado de bloqueo ya está en ${groupMantainance} para este grupo.`,
         mentions: [userWithDomain],
       });
     }
 
     const now = new Date();
 
-    if (block === "on") {
-      await totoBlock.update(
-        {
-          status: block,
-          startTime: now, // Guardamos la fecha de inicio en la base de datos
-        },
-        {
-          where: { groupId: groupId },
-        }
+    if (groupMantainance === "on") {
+      await totoGroupMantainance.update(
+        { status: groupMantainance },
+        { where: { groupId: groupId } }
       );
 
       await msg.react("✅");
       msg.reply({
         text:
-          `╭─⬣「 Totoro bloqueado 」\n` +
-          `│  ≡◦ Estado: ${block}\n` +
-          `│  ≡◦ Acción: bloqueado\n` +
+          `╭─⬣「 Totoro está en mantenimiento en ${groupName} 」\n` +
+          `│  ≡◦ Estado: ${groupMantainance}\n` +
+          `│  ≡◦ Acción: ${groupMantainance.status}\n` +
           `│  ≡◦ Moderador: @${participant}\n` +
           `│  ≡◦ Grupo: ${groupName}\n` +
           `│  ≡◦ Fecha: ${now.toLocaleString("es-ES", {
@@ -134,35 +128,41 @@ module.exports = {
         mentions: [userWithDomain],
       });
     } else {
-      const startTime = new Date(currentBlock.startTime);
-      const durationMs = Math.floor((now - startTime) / 1000); // Convertir a segundos
-      const duration = await runtime(durationMs);
-
-      await totoBlock.update(
-        {
-          status: block,
-          startTime: null, // Reiniciamos la variable de fecha de inicio en la base de datos
-        },
-        {
-          where: { groupId: groupId },
-        }
+      await totoGroupMantainance.update(
+        { status: groupMantainance },
+        { where: { groupId: groupId } }
       );
 
-      await msg.react("✅");
+      await await msg.react("✅");
       msg.reply({
         text:
-          `╭─⬣「 Totoro desbloqueado 」\n` +
-          `│  ≡◦ Estado: ${block}\n` +
-          `│  ≡◦ Acción: desbloqueado\n` +
+          `╭─⬣「 Totoro dejó de estar en mantenimiento en ${groupName} 」\n` +
+          `│  ≡◦ Estado: ${groupMantainance}\n` +
+          `│  ≡◦ Acción: ${groupMantainance.status}\n` +
           `│  ≡◦ Moderador: @${participant}\n` +
           `│  ≡◦ Grupo: ${groupName}\n` +
-          `│  ≡◦ Fecha: ${now.toLocaleString("es-ES", {
-            timeZone: "Europe/Madrid",
-          })}\n` +
-          `│  ≡◦ Duración: ${duration}\n` +
+          `│  ≡◦ Fecha: ${now.toLocaleString("es-ES", { timeZone: "Europe/Madrid" })}\n` +
+          `│  ≡◦ Duración: ${formattedTime}\n` +
           `╰──────────────`,
         mentions: [userWithDomain],
       });
     }
   },
 };
+
+async function duration(durationMs) {  // en teoría funciona ya.
+  const hours = Math.floor(durationMs / 3600);
+  const min = Math.floor((durationMs % (60 * 60)) / 60);
+  const sec = Math.floor(durationMs % 60);
+
+  const formattedTime = [];
+
+  if (hours == 1) formattedTime.push("1 hora");
+  else if (hours > 1) formattedTime.push(`${hours} horas`);
+  if (min == 1) formattedTime.push("1 minuto");
+  else if (min > 1) formattedTime.push(`${min} minutos`);
+  if (sec == 1) formattedTime.push("1 segundo");
+  else if (sec > 1) formattedTime.push(`${sec} segundos`);
+
+  return formattedTime.join(", ");
+}

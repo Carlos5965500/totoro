@@ -99,10 +99,24 @@ module.exports = {
         videoUrl = searchResults[0].url;
       }
 
-      const { title, size, quality, thumbnail, dl_url } =
+      const { title, size, quality, thumbnail, dl_url, duration, views } =
         mode === "mp4" || mode === "video"
           ? await Scraper.ytmp4(videoUrl)
           : await Scraper.ytmp3(videoUrl);
+
+      const durationParts = duration.split(":").map(Number);
+      const durationInMinutes =
+        durationParts.length === 2
+          ? durationParts[0] + durationParts[1] / 60
+          : durationParts[0] * 60 + durationParts[1] + durationParts[2] / 60;
+
+      if (durationInMinutes > 16) {
+        return sendWarning(
+          totoro,
+          msg,
+          "El video supera el tiempo máximo permitido de 60 minutos."
+        );
+      }
 
       if (size.includes("GB") || parseFloat(size.replace(" MB", "")) > 100) {
         return sendWarning(
@@ -114,11 +128,12 @@ module.exports = {
 
       await msg.react("⏳");
 
-      let metadata = `*Titulo:* ${title}\n*Calidad:* ${quality}\n*Peso:* ${size}`;
+      let metadata = `*Titulo:* ${title}\n*Calidad:* ${quality}\n*Peso:* ${size}\n*Vistas:* ${views}`;
       let caption = `╭─⬣「 *YouTube Download* 」⬣\n`;
       caption += `│  ≡◦ *🍭 Titulo ∙* ${title}\n`;
       caption += `│  ≡◦ *🪴 Calidad ∙* ${quality}\n`;
       caption += `│  ≡◦ *⚖ Peso ∙* ${size}\n`;
+      caption += `│  ≡◦ *👀 views ∙* ${views}\n`;
       caption += `╰─⬣`;
 
       if (mode === "audio") {

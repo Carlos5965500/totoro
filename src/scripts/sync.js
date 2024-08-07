@@ -7,21 +7,26 @@ const alwaysPresentPhone = ["34638579630", "18297668138"];
 
 // Importar modelos
 const {
-  totoUser,
-  totoPremium,
-  totoPlugin,
-  totoDev,
-  totoAdmin, // Agregar el modelo de administradores
+  totoCounterActivate,
+  totoGroupMantainance,
+  totoGroupSettings,
+  totoMantainance,
   totoWhitelist,
   totoBlacklist,
+  totoPremium,
   totoCounter,
-  totoWelcm,
-  totoGroupSettings,
+  totoCifrar,
+  totoPlugin,
   totoStatus,
+  totoAdmin,
+  totoWelcm,
   totoBlock,
-  totoMantainance,
-  activateTotoCounter,
+  totoUser,
+  totoWarn,
+  totoDev,
+  totoAfk,
 } = require("../models");
+const { to } = require("cli-color/move");
 
 class totoDBSync {
   constructor() {
@@ -72,7 +77,6 @@ class totoDBSync {
         totoDev.options
       ),
       totoAdmin: this.backupDB.define(
-        // Definir el modelo de administradores en la base de datos de respaldo
         "totoAdmin",
         totoAdmin.rawAttributes,
         totoAdmin.options
@@ -88,7 +92,7 @@ class totoDBSync {
           ...totoWelcm.rawAttributes,
           groupId: {
             ...totoWelcm.rawAttributes.groupId,
-            references: null, // Quitar referencias para SQLite
+            references: null,
           },
         },
         totoWelcm.options
@@ -113,10 +117,30 @@ class totoDBSync {
         totoMantainance.rawAttributes,
         totoMantainance.options
       ),
-      activateTotoCounter: this.backupDB.define(
-        "activateTotoCounter",
-        activateTotoCounter.rawAttributes,
-        activateTotoCounter.options
+      totoGroupMantainance: this.backupDB.define(
+        "totoGroupMantainance",
+        totoGroupMantainance.rawAttributes,
+        totoGroupMantainance.options
+      ),
+      totoCounterActivate: this.backupDB.define(
+        "totoCounterActivate",
+        totoCounterActivate.rawAttributes,
+        totoCounterActivate.options
+      ),
+      totoCifrar: this.backupDB.define(
+        "totoCifrar",
+        totoCifrar.rawAttributes,
+        totoCifrar.options
+      ),
+      totoAfk: this.backupDB.define(
+        "totoAfk",
+        totoAfk.rawAttributes,
+        totoAfk.options
+      ),
+      totoWarn: this.backupDB.define(
+        "totoWarn",
+        totoWarn.rawAttributes,
+        totoWarn.options
       ),
     };
   }
@@ -135,24 +159,28 @@ class totoDBSync {
 
       // Sincronizar en orden correcto
       await this.syncTables({
-        totoUser,
-        totoPremium,
-        totoPlugin,
-        totoWhitelist,
-        totoBlacklist,
-        totoDev,
-        totoAdmin, // Asegúrate de incluir el modelo de administradores
-        totoCounter,
-        totoWelcm,
+        totoGroupMantainance,
+        totoCounterActivate,
         totoGroupSettings,
-        totoStatus,
-        totoBlock,
         totoMantainance,
-        activateTotoCounter,
+        totoBlacklist,
+        totoWhitelist,
+        totoPremium,
+        totoCounter,
+        totoCifrar,
+        totoStatus,
+        totoPlugin,
+        totoAdmin,
+        totoWelcm,
+        totoBlock,
+        totoWarn,
+        totoUser,
+        totoAfk,
+        totoDev,
       });
 
       syncMessage += `
-│ 🔄  Tablas sincronizadas: ${totoUser.getTableName()}, ${totoPremium.getTableName()}, ${totoPlugin.getTableName()}, ${totoWhitelist.getTableName()}, ${totoBlacklist.getTableName()}, ${totoDev.getTableName()}, ${totoAdmin.getTableName()}, ${totoCounter.getTableName()}, ${totoWelcm.getTableName()}, ${totoGroupSettings.getTableName()}, ${totoStatus.getTableName()}, ${totoBlock.getTableName()}, ${totoMantainance.getTableName()}, ${activateTotoCounter.getTableName()}`;
+│ 🔄  Tablas sincronizadas: ${totoUser.getTableName()}, ${totoPremium.getTableName()}, ${totoPlugin.getTableName()}, ${totoWhitelist.getTableName()}, ${totoBlacklist.getTableName()}, ${totoDev.getTableName()}, ${totoAdmin.getTableName()}, ${totoCounter.getTableName()}, ${totoWelcm.getTableName()}, ${totoGroupSettings.getTableName()}, ${totoStatus.getTableName()}, ${totoBlock.getTableName()}, ${totoMantainance.getTableName()},${totoGroupMantainance.getTableName()}, ${totoCounterActivate.getTableName()}, ${totoCifrar.getTableName()}, ${totoAfk.getTableName()}, ${totoWarn.getTableName()}`;
 
       // Leer y actualizar desde settings.json
       const settingsPath = path.resolve(__dirname, "..", "..", "settings.json");
@@ -162,10 +190,10 @@ class totoDBSync {
       );
       const adminPhones = settingsData.admin.map((phone) =>
         phone.replace("@s.whatsapp.net", "")
-      ); // Leer administradores desde settings.json
+      );
 
       await this.syncDevs(devPhones, totoDev);
-      await this.syncAdmins(adminPhones, totoAdmin); // Sincronizar administradores
+      await this.syncAdmins(adminPhones, totoAdmin);
 
       syncMessage += `
 │ ✅  Datos de desarrolladores y administradores sincronizados desde settings.json`;
@@ -196,10 +224,10 @@ class totoDBSync {
 
         await this.syncTables(this.backupModels);
         syncMessage += `
-│ 🔄  Tablas sincronizadas: ${this.backupModels.totoUser.getTableName()}, ${this.backupModels.totoPremium.getTableName()}, ${this.backupModels.totoPlugin.getTableName()}, ${this.backupModels.totoWhitelist.getTableName()}, ${this.backupModels.totoBlacklist.getTableName()}, ${this.backupModels.totoDev.getTableName()}, ${this.backupModels.totoAdmin.getTableName()}, ${this.backupModels.totoCounter.getTableName()}, ${this.backupModels.totoWelcm.getTableName()}, ${this.backupModels.totoGroupSettings.getTableName()}, ${this.backupModels.totoStatus.getTableName()}, ${this.backupModels.totoBlock.getTableName()}, ${this.backupModels.totoMantainance.getTableName()}, ${this.backupModels.activateTotoCounter.getTableName()}`;
+│ 🔄  Tablas sincronizadas: ${this.backupModels.totoUser.getTableName()}, ${this.backupModels.totoPremium.getTableName()}, ${this.backupModels.totoPlugin.getTableName()}, ${this.backupModels.totoWhitelist.getTableName()}, ${this.backupModels.totoBlacklist.getTableName()}, ${this.backupModels.totoDev.getTableName()}, ${this.backupModels.totoAdmin.getTableName()}, ${this.backupModels.totoCounter.getTableName()}, ${this.backupModels.totoWelcm.getTableName()}, ${this.backupModels.totoGroupSettings.getTableName()}, ${this.backupModels.totoStatus.getTableName()}, ${this.backupModels.totoBlock.getTableName()}, ${this.backupModels.totoMantainance.getTableName()}, ${this.backupModels.totoGroupMantainance.getTableName()}, ${this.backupModels.totoCounterActivate.getTableName()}, ${this.backupModels.totoCifrar.getTableName()}, ${this.backupModels.totoAfk.getTableName()},  ${this.backupModels.totoWarn.getTableName()}`;
 
         await this.syncDevs(devPhones, this.backupModels.totoDev);
-        await this.syncAdmins(adminPhones, this.backupModels.totoAdmin); // Sincronizar administradores en la base de datos de respaldo
+        await this.syncAdmins(adminPhones, this.backupModels.totoAdmin);
 
         syncMessage += `
 │ ✅  Datos de desarrolladores y administradores sincronizados desde settings.json en base de datos de respaldo`;
@@ -258,19 +286,23 @@ class totoDBSync {
   async syncTables(models) {
     await models.totoGroupSettings.sync({ force: false });
     await models.totoWelcm.sync({ force: false });
-    await models.activateTotoCounter.sync({ force: false }); // Asegúrate de sincronizar activateTotoCounter antes de totoCounter
+    await models.totoCounterActivate.sync({ force: false });
     await Promise.all([
-      models.totoUser.sync({ force: false }),
-      models.totoPremium.sync({ force: false }),
-      models.totoPlugin.sync({ force: false }),
+      models.totoGroupMantainance.sync({ force: false }),
+      models.totoMantainance.sync({ force: false }),
       models.totoWhitelist.sync({ force: false }),
       models.totoBlacklist.sync({ force: false }),
-      models.totoDev.sync({ force: false }),
-      models.totoAdmin.sync({ force: false }), // Sincronizar la tabla de administradores
       models.totoCounter.sync({ force: false }),
+      models.totoPremium.sync({ force: false }),
       models.totoStatus.sync({ force: false }),
+      models.totoCifrar.sync({ force: false }),
+      models.totoPlugin.sync({ force: false }),
       models.totoBlock.sync({ force: false }),
-      models.totoMantainance.sync({ force: false }),
+      models.totoAdmin.sync({ force: false }),
+      models.totoWarn.sync({ force: false }),
+      models.totoUser.sync({ force: false }),
+      models.totoDev.sync({ force: false }),
+      models.totoAfk.sync({ force: false }),
     ]);
   }
 

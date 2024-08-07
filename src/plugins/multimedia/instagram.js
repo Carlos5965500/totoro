@@ -1,94 +1,68 @@
-const Scraper = require("@SumiFX/Scraper");
-const { prepareWAMessageMedia } = require("@whiskeysockets/baileys");
-const { sendWarning } = require("../../functions/messages");
+const igdl = require("@sasmeee/igdl");
+const { sendError, help, sendWarning } = require("../../functions/messages");
 const totoroLog = require("../../functions/totoroLog");
+const { mediaFromUrl } = require("../../functions/mediaFromUrl");
 
 module.exports = {
   name: "instagram",
   category: "multimedia",
   subcategory: "instagram",
-  usage: "instagram <enlace>",
-  description: "Descarga video de Instagram.",
-  example: "instagram https://www.instagram.com/p/CS8X3v3L6WV/",
+  description: "Descarga imágenes o videos de Instagram",
+  aliases: ["ig", "instagram"],
+  usage: "ig <enlace>",
   dev: false,
   blockcmd: true,
   cmdPrem: false,
   async execute(totoro, msg, args) {
-    msg.react("⏳");
-    let { dl_url } = await Scraper.igdl(args[0]);
-    if (!dl_url) {
-      totoroLog.info(
-        "./logs/plugins/multimedia/igmp4.log",
-        "Error al obtener el enlace de descarga."
-      );
-      return sendWarning(
-        totoro,
-        msg,
-        "No se pudo obtener el enlace de descarga."
-      );
-    }
+    try {
+      const url = args.join(" ");
+      const regexp = /^(https?:\/\/(www\.)?instagram\.com)/;
 
-    if (dl_url.match(/.jpg|.jpeg|.png/gi)) {
-      totoroLog.info(
-        "./logs/plugins/multimedia/igmp4.log",
-        "No se pudo obtener el enlace de descarga."
-      );
-      return sendWarning(totoro, msg, `No se pueden descargar imágenes.`);
-    } else if (dl_url.match(/.mp4/gi)) {
-      totoroLog.info(
-        "./logs/plugins/multimedia/igmp4.log",
-        "Enlace de descarga obtenido."
-      );
-    }
+      if (!url || !regexp.test(url)) {
+        help(
+          totoro,
+          msg,
+          "igmedia",
+          "Debes proporcionar un enlace de Instagram.",
+          "igmedia https://www.instagram.com/p/1234567890/"
+        );
 
-    const user = msg.messages[0]?.pushName || ".";
-    const content = `Solicitada por ${user}`;
-
-    const { imageMessage } = await prepareWAMessageMedia(
-      {
-        image: { url: "https://i.ibb.co/j9N5kj3/image.jpg" },
-      },
-      { upload: totoro.waUploadToServer }
-    );
-
-    const message = {
-      interactiveMessage: {
-        header: {
-          hasMediaAttachment: true,
-          imageMessage: imageMessage,
-        },
-        body: { text: content },
-        footer: { text: `Descargado por Totoro` },
-        nativeFlowMessage: {
-          buttons: [
-            {
-              name: "quick_reply",
-              buttonParamsJson: JSON.stringify({
-                display_text: `Download MP4`,
-                id: `sendmp4+${dl_url}`,
-              }),
-            },
-            {
-              name: "cta_url",
-              buttonParamsJson: JSON.stringify({
-                display_text: `Open in instagram 📲`,
-                url: args[0],
-              }),
-            },
-          ],
-          messageParamsJson: "",
-        },
-      },
-    };
-
-    await totoro.relayMessage(
-      msg.messages[0].key.remoteJid,
-      { viewOnceMessage: { message } },
-      {
-        quoted: msg.messages[0],
+        return;
       }
-    );
 
-    await msg.react("📽️");
+      totoro.sendMessage(msg.messages[0]?.key?.remoteJid, {
+        react: { text: "⏳", key: msg.messages[0]?.key },
+      });
+
+      const request = await igdl(url);
+
+      for (const value of request) {
+        const response = await mediaFromUrl(value.download_link);
+
+        if (response === "limit exceeded") {
+          sendWarning(
+            totoro,
+            msg,
+            "El archivo excede el límite de 100 MB. No se puede descargar."
+          );
+          continue;
+        } else {
+          await totoro.sendMessage(msg.messages[0].key.remoteJid, {
+            [response.mimetype.split("/")[0] || "document"]: response.data,
+          });
+        }
+      }
+
+      totoro.sendMessage(msg.messages[0]?.key?.remoteJid, {
+        react: { text: "✅", key: msg.messages[0]?.key },
+      });
+    } catch (error) {
+      totoroLog.error(
+        "./logs/plugins/multimedia/igmedia.log",
+        `Error en igmedia: ${error}`
+      );
+
+      sendError(totoro, msg, error);
+    }
   },
 };

@@ -63,13 +63,6 @@ module.exports = {
               `> 😃 Si tienes alguna duda, sugerencia o problema no dudes en usar: ${prefix}report, ${prefix}review, ${prefix}suggest\n` +
               `> ❤ Disfruta de tu estancia en Only 3! 🌿🍃\n\n` +
               `> 🪼 Actualmente en *${groupName}* hay ${groupInfo.participants.length} miembros.`;
-            const ms =
-              `> *Bienvenido @${phone.split("@")[0]}* al grupo ${groupName}.\n` +
-              `> Para poder tener acceso completo al bot sin problemas usa ${prefix}register\n` +
-              `> Asegúrate de leer las reglas del grupo en la descripción.\n` +
-              `> Si tienes alguna duda, sugerencia o problema no dudes en usar ${prefix}report, ${prefix}review, ${prefix}suggest\n` +
-              //`> Si tienes alguna duda, sugerencia o problema no dudes en usar \n> - ${prefix}report\n> - ${prefix}review\n> - ${prefix}suggest\n` +
-              `> Disfruta de tu estancia en ${groupName}! 🌿🍃`;
 
             await totoro.sendMessage(groupId, {
               image: card,

@@ -8,7 +8,7 @@ module.exports = {
   category: "multimedia",
   subcategory: "instagram",
   description: "Descarga imágenes o videos de Instagram",
-  aliases: ["ig", "instagram"],
+  aliases: ["igm", "instagram"],
   usage: "ig <enlace>",
   dev: false,
   blockcmd: true,
